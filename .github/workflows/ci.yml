@@ -1,0 +1,40 @@
+name: CI (Build & Test)
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [24]
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v6
+    
+      - name: setup node ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: install dependencies
+        run: npm ci 
+        # 'npm ci' ist wie 'npm install', aber speziell für CI-Server und schneller.
+        # Es erfordert, dass eine package-lock.json existiert!
+
+      - name: lint
+        run: npm run lint
+
+      - name: build application
+        run: npm run build
+
+      # Optional: sobald wir Tests haben
+      # - name: run tests
+      #   run: npm run test
