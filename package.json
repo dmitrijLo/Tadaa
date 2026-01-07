@@ -1,0 +1,27 @@
+{
+  "name": "tadaa",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "version": "1.0.0",
+  "description": "Weihnachten wird durch gesellschaftliche Konventionen oft zur Stressfalle statt zur besinnlichen Zeit. Das klassische Szenario, bei dem jeder jedem etwas schenken muss (One-to-Many), ist nicht nur ineffizient, sondern oft auch verschwenderisch. Hinzu kommt der Faktor Prokrastination: Viele Menschen (häufig männliche Individuen) erledigen Einkäufe erst in letzter Sekunde und verpassen so die entspannte Vorweihnachtszeit.",
+  "scripts": {
+    "build:all": "npm run build --workspaces",
+    "dev:frontend": "npm run dev -w frontend-nextjs",
+    "dev:backend": "npm run start:dev -w backend-nestjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmitrijLo/Tadaa.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dmitrijLo/Tadaa/issues"
+  },
+  "homepage": "https://github.com/dmitrijLo/Tadaa#readme"
+}
