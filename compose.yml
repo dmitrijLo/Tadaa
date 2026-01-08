@@ -18,7 +18,7 @@ services:
       NODE_ENV: development
     volumes:
       - ./:/workspace
-      - backend_node_modules:/workspace/node_modules
+      - node_modules:/workspace/node_modules
 
   frontend:
     container_name: tadaa-frontend
@@ -33,10 +33,9 @@ services:
       NODE_ENV: development
     volumes:
       - ./:/workspace
-      - frontend_node_modules:/workspace/node_modules
+      - node_modules:/workspace/node_modules
     depends_on:
       - backend
 
 volumes:
-  backend_node_modules:
-  frontend_node_modules:
+  node_modules:
