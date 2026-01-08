@@ -1,20 +1,58 @@
+## Docker (Build & Start)
+
+```bash
+# 1) Environment-Datei anlegen
+cp .env.example .env
+
+# 2) Container bauen & starten
+docker compose up -d --build
+
+# (optional) Logs ansehen
+docker compose logs -f
+
+# Stoppen (Container bleiben bestehen)
+docker compose stop
+
+# Stoppen + Container entfernen
+docker compose down
+
+# Komplett neu bauen (ohne Cache)
+docker compose build --no-cache
+docker compose up -d
+```
+
+Standard-Ports:
+
+- Frontend: http://localhost:3000
+- Backend: http://localhost:3001
+
 ## Dev-Notes
 
 (später löschen)
 
-Da wir mit `npm workspaces` arbeiten
+Neue Dependencies hinzufügen:
 
 ```bash
-# Beispiele Workflow
+# Runtime Dependency ins Backend
+docker compose exec backend npm i -w backend-nestjs <paket>
 
-npm install # installiert alle dependencies auf einmal
+# Dev Dependency ins Backend (z.B. testing/types)
+docker compose exec backend npm i -D -w backend-nestjs <paket>
 
-# Paket einem einzelnen Workspace hinzufügen bzw. starten
-npm i axios -w frontend-nextjs
-npm run dev -w frontend-nextjs
+# Runtime Dependency ins Frontend
+docker compose exec frontend npm i -w frontend-nextjs <paket>
 
-npm test --workspaces # testet alle Apps parallel
+# Dev Dependency ins Frontend
+docker compose exec frontend npm i -D -w frontend-nextjs <paket>
+
+# Tests im Backend ausführen
+docker compose exec backend npm test -w backend-nestjs
+
+# Tests im Frontend ausführen
+docker compose exec frontend npm test -w frontend-nextjs
 ```
+
+Hinweis: Danach `apps/*/package.json` und `package-lock.json` committen.
 
 ## DONE
 

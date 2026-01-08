@@ -1,0 +1,50 @@
+services:
+  backend:
+    container_name: tadaa-backend
+    build:
+      context: .
+      dockerfile: apps/backend-nestjs/Dockerfile.dev
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT:-5432}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
+      JWT_SECRET: ${JWT_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      PORT: 3001
+    volumes:
+      - ./:/workspace
+      - backend_node_modules:/workspace/node_modules
+    networks:
+      - tadaa-network
+
+  frontend:
+    container_name: tadaa-frontend
+    build:
+      context: .
+      dockerfile: apps/frontend-nextjs/Dockerfile.dev
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      PUBLIC_API_URL: http://localhost:3001
+      INTERNAL_API_URL: http://backend:3001
+    volumes:
+      - ./:/workspace
+      - frontend_node_modules:/workspace/node_modules
+    depends_on:
+      - backend
+    networks:
+      - tadaa-network
+
+volumes:
+  backend_node_modules:
+  frontend_node_modules:
+
+networks:
+  tadaa-network:
+    driver: bridge

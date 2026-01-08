@@ -1,0 +1,17 @@
+FROM node:20-alpine
+
+WORKDIR /workspace
+
+# Monorepo (npm workspaces): install dependencies from repo root.
+COPY package.json package-lock.json ./
+COPY apps/backend-nestjs/package.json apps/backend-nestjs/package.json
+COPY apps/frontend-nextjs/package.json apps/frontend-nextjs/package.json
+COPY packages/shared/package.json packages/shared/package.json
+
+RUN npm ci
+
+COPY . .
+
+EXPOSE 3001
+
+CMD ["npm", "run", "start:dev", "-w", "backend-nestjs"]
