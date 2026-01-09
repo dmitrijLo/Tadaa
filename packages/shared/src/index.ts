@@ -1,5 +1,3 @@
-// Shared types and utilities for Tadaa
-
 export interface User {
   id: string;
   email: string;
@@ -19,3 +17,5 @@ export interface GiftExchange {
   participants: string[];
   date: Date;
 }
+
+export * from "./enums";

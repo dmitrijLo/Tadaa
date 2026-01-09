@@ -28,6 +28,9 @@ jobs:
       - name: install dependencies
         run: npm ci
 
+      - name: build dependencies
+        run: npm run build -w @tadaa/shared
+
       # machen wir später
       # - name: lint
       #   run: npm run lint
