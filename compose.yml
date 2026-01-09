@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: apps/backend-nestjs/Dockerfile.dev
-    restart: always
     ports:
       - "3001:3001"
     environment:
@@ -16,35 +15,27 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       PORT: 3001
+      NODE_ENV: development
     volumes:
       - ./:/workspace
-      - backend_node_modules:/workspace/node_modules
-    networks:
-      - tadaa-network
+      - node_modules:/workspace/node_modules
 
   frontend:
     container_name: tadaa-frontend
     build:
       context: .
       dockerfile: apps/frontend-nextjs/Dockerfile.dev
-    restart: always
     ports:
       - "3000:3000"
     environment:
       PUBLIC_API_URL: http://localhost:3001
       INTERNAL_API_URL: http://backend:3001
+      NODE_ENV: development
     volumes:
       - ./:/workspace
-      - frontend_node_modules:/workspace/node_modules
+      - node_modules:/workspace/node_modules
     depends_on:
       - backend
-    networks:
-      - tadaa-network
 
 volumes:
-  backend_node_modules:
-  frontend_node_modules:
-
-networks:
-  tadaa-network:
-    driver: bridge
+  node_modules:

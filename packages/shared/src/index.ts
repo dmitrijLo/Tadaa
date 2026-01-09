@@ -18,4 +18,4 @@ export interface GiftExchange {
   date: Date;
 }
 
-export * from './enums';
+export * from "./enums";

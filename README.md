@@ -1,5 +1,10 @@
 ## Docker (Build & Start)
 
+Lokale Entwicklung: `docker compose up -d`
+
+- Startet frontend, backend und postgres-db komplett lokal.
+- Sollte man eine gehostete DB verwenden, dann `compose.override.yml` lokal löschen/umbenennen und in `.gitignore` eintragen.
+
 ```bash
 # 1) Environment-Datei anlegen
 cp .env.example .env

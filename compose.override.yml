@@ -1,0 +1,20 @@
+services:
+  backend:
+    environment:
+      - DATABASE_HOST=postgresql://max_power:super-secret@postgres-db:5432/tadaa_db
+      - DATABASE_USER=max_power
+      - DATABASE_PASSWORD=super-secret
+      - DATABASE_NAME:tadaa_db
+
+  tadaa-postgres:
+    image: "postgres:18"
+    container_name: tadaa-postgres-db
+    environment:
+      - POSTGRES_USER=max_power
+      - POSTGRES_PASSWORD=super-secret
+      - POSTGRES_DB=tadaa_db
+    ports: ["5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql"]
+
+volumes:
+  postgres-data:
