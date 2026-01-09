@@ -8,8 +8,6 @@ email string unique
 password_hash string
 name string
 
-// host | guest
-role string
 created_at timestamp
 updated_at timestamp
 }
