@@ -28,10 +28,24 @@ docker compose up -d
 
 Standard-Ports:
 
-- Frontend: http://localhost:3000
-- Backend: http://localhost:3001
+- Frontend: <http://localhost:3000>
+- Backend: <http://localhost:3001>
 
-## Dev-Notes
+## Development Auth Bypass
+
+For development purposes, you can bypass the regular JWT authentication to test protected routes easily. This allows frontend and backend teams to work in parallel without waiting for the full authentication flow to be implemented.
+
+**Usage:**
+
+1. Enable the dev mode in your `.env` file:
+    `JWT_DEV_MODE=true` 2. Restart the backend container to apply the environment variable change:
+    `docker compose restart backend` 3. Access protected routes directly. A default development user will be automatically injected:
+    `curl http://localhost:3001/events`
+
+        *Optional:* To specify a custom user ID, you can still use the `X-Dev-User-Id` header:
+        `curl -H "X-Dev-User-Id: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" http://localhost:3001/events`
+
+    ## Dev-Notes
 
 (später löschen)
 
