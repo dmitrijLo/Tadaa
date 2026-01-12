@@ -11,6 +11,8 @@ RUN --mount=type=cache,target=/root/.npm npm ci
 
 COPY . .
 
+RUN npm run build -w @tadaa/shared
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev", "-w", "frontend-nextjs"]

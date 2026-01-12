@@ -1,10 +1,11 @@
 services:
   backend:
     environment:
-      - DATABASE_HOST=postgresql://max_power:super-secret@postgres-db:5432/tadaa_db
+      - DATABASE_HOST=postgresql://max_power:super-secret@tadaa-postgres:5432/tadaa_db
       - DATABASE_USER=max_power
       - DATABASE_PASSWORD=super-secret
-      - DATABASE_NAME:tadaa_db
+      - DATABASE_NAME=tadaa_db
+      - HAS_LOKAL_DB=true
 
   tadaa-postgres:
     image: "postgres:18"
