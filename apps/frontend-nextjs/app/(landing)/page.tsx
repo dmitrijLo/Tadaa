@@ -1,0 +1,26 @@
+import ImageCarousel, {
+  CarouselItem,
+} from "@/components/images/image-carousel";
+import CallToActionSection from "@/components/landing/call-to-action-section";
+import HeroSection from "@/components/landing/hero-section";
+
+import { carouselImages } from "@/assets/carousel";
+
+export default function LandingPage() {
+  return (
+    <main style={{ width: "100%" }}>
+      <HeroSection
+        leftSlot={<CallToActionSection />}
+        rightSlot={
+          <ImageCarousel
+            items={carouselImages}
+            autoplay
+            autoplaySpeed={5000}
+            effect="fade"
+          />
+        }
+      />
+      {/* </div> */}
+    </main>
+  );
+}
