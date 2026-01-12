@@ -156,24 +156,6 @@ Das Projekt verwendet eine zentrale `.env`-Datei im Root-Verzeichnis. Wichtige V
 
 ---
 
-## Environment Variablen
-
-Das Projekt verwendet eine zentrale `.env`-Datei im Root-Verzeichnis. Wichtige Variablen:
-
-| Variable | Beschreibung | Beispiel |
-|----------|--------------|----------|
-| `NODE_ENV` | Umgebung (development/production) | `development` |
-| `DATABASE_URL` | PostgreSQL Verbindungs-URL | `postgresql://user:pass@host:5432/db` |
-| `JWT_SECRET` | Secret für JWT-Token-Signierung | `your-secret-key` |
-| `JWT_DEV_MODE` | Development Auth Bypass aktivieren | `true` |
-| `NEXT_PUBLIC_API_URL` | Backend API URL für Frontend | `http://localhost:3001` |
-| `OPENAI_API_KEY` | OpenAI API Key (optional) | `sk-...` |
-
-**Für lokale Entwicklung:** `.env.example` kopieren und anpassen
-**Für Production:** `.env.production.example` kopieren und mit echten Credentials füllen
-
----
-
 # Tadaa
 
 Weihnachten wird durch gesellschaftliche Konventionen oft zur Stressfalle statt zur besinnlichen Zeit. Das klassische Szenario, bei dem jeder jedem etwas schenken muss (One-to-Many), ist nicht nur ineffizient, sondern oft auch verschwenderisch. Hinzu kommt der Faktor Prokrastination: Viele Menschen (häufig männliche Individuen) erledigen Einkäufe erst in letzter Sekunde und verpassen so die entspannte Vorweihnachtszeit.
