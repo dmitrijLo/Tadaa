@@ -2,14 +2,21 @@
 
 Lokale Entwicklung: `docker compose up -d`
 
-- Startet frontend, backend und postgres-db komplett lokal.
-- Sollte man eine gehostete DB verwenden, dann `compose.override.yml` lokal löschen/umbenennen und in `.gitignore` eintragen.
+- Startet frontend, backend und die lokale postgres-db komplett lokal.
+- Die Datenbankverbindung wird über die `DATABASE_URL` in der `.env`-Datei im Projekt-Root gesteuert.
 
 ```bash
 # 1) Environment-Datei anlegen
 cp .env.example .env
 
-# 2) Container bauen & starten
+# 2) Anpassen der .env-Datei:
+#    Für lokale Datenbank (Docker-Container):
+#    DATABASE_URL="postgresql://max_power:super-secret@db:5432/tadaa_db"
+#
+#    Für externe Datenbank (z.B. Render):
+#    DATABASE_URL="<Deine_externe_Datenbank_URL_von_Render>"
+
+# 3) Container bauen & starten
 docker compose up -d --build
 
 # (optional) Logs ansehen
@@ -18,8 +25,8 @@ docker compose logs -f
 # Stoppen (Container bleiben bestehen)
 docker compose stop
 
-# Stoppen + Container entfernen
-docker compose down
+# Stoppen + Container und zugehörige Netzwerke/Volumes entfernen (für einen sauberen Neustart)
+docker compose down -v
 
 # Komplett neu bauen (ohne Cache)
 docker compose build --no-cache
@@ -46,44 +53,6 @@ For development purposes, you can bypass the regular JWT authentication to test 
 
    _Optional:_ To specify a custom user ID, you can still use the `X-Dev-User-Id` header:
    `curl -H "X-Dev-User-Id: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" http://localhost:3001/events`
-
-## Dev-Notes
-
-(später löschen)
-
-Neue Dependencies hinzufügen:
-
-```bash
-# Runtime Dependency ins Backend ("backend" bezieht sich auf den ServiceNamen siehe compose.yml)
-docker compose exec backend npm i <paket>
-# danach im backend-nestjs npm install ausführen
-
-# Dev Dependency ins Backend ("backend" bezieht sich auf den ServiceNamen siehe compose.yml)
-docker compose exec backend npm i -D <paket>
-# danach im backend-nestjs npm install ausführen
-
-# Runtime Dependency ins Frontend ("frontend" bezieht sich auf den ServiceNamen siehe compose.yml)
-docker compose exec frontend npm i <paket>
-# danach im frontend-nextjs npm install ausführen
-
-# Dev Dependency ins Frontend ("frontend" bezieht sich auf den ServiceNamen siehe compose.yml)
-docker compose exec frontend npm i <paket>
-# danach im frontend-nextjs npm install ausführen
-```
-
-Hinweis: Danach `{backend-nestjs,frontend-nextjs}/package.json` und `package-lock.json` committen.
-
-## DONE
-
-```bash
-npm install @nestjs/typeorm typeorm pg @nestjs/jwt @nestjs/passport passport-jwt passport -w backend-nestjs
-npm install @nestjs/swagger swagger-ui-express class-validator class-transformer -w backend-nestjs
-npm install bcrypt -w backend-nestjs
-npm install @types/bcrypt --save-dev -w backend-nestjs
-npm install @nestjs/jwt @nestjs/passport passport-jwt passport -w backend-nestjs
-npm install @types/passport-jwt --save-dev -w backend-nestjs
-```
-
 # Tadaa
 
 Weihnachten wird durch gesellschaftliche Konventionen oft zur Stressfalle statt zur besinnlichen Zeit. Das klassische Szenario, bei dem jeder jedem etwas schenken muss (One-to-Many), ist nicht nur ineffizient, sondern oft auch verschwenderisch. Hinzu kommt der Faktor Prokrastination: Viele Menschen (häufig männliche Individuen) erledigen Einkäufe erst in letzter Sekunde und verpassen so die entspannte Vorweihnachtszeit.
