@@ -8,7 +8,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { EventStatus, EventMode, DrawRule } from '@tadaa/shared';
+import { EventStatus, EventMode, DrawRule } from '../../enums';
 import { User } from '../../users/entities/user.entity';
 import { Guest } from '../../guests/entities/guest.entity';
 import { Assignment } from './assignment.entity';
