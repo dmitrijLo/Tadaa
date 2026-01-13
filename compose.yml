@@ -7,17 +7,20 @@ services:
     ports:
       - "3001:3001"
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT:-5432}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_NAME: ${DATABASE_NAME}
       JWT_SECRET: ${JWT_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       JWT_DEV_MODE: ${JWT_DEV_MODE}
       PORT: 3001
       NODE_ENV: development
+      # HAS_LOKAL_DB: false
     volumes:
       - ./backend-nestjs/:/app
       - /app/node_modules
-    depends_on:
-      - db
 
   frontend:
     container_name: tadaa-frontend
@@ -35,18 +38,3 @@ services:
       - /app/node_modules
     depends_on:
       - backend
-
-  db:
-    image: "postgres:16"
-    container_name: tadaa-postgres-db
-    environment:
-      - POSTGRES_USER=max_power
-      - POSTGRES_PASSWORD=super-secret
-      - POSTGRES_DB=tadaa_db
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-
-volumes:
-  postgres-data:

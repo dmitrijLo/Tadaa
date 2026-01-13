@@ -8,7 +8,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { InviteStatus } from '../../enums/enums';
+import { InviteStatus } from '../../enums';
 import { Event } from '../../events/entities/event.entity';
 import { Assignment } from '../../events/entities/assignment.entity';
 
