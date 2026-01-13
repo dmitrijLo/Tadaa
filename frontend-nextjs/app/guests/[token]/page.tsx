@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound } from "next/navigation";
 
 const fetchGuest = async (token: string): Promise<Guest | undefined> => {
   try {
@@ -38,9 +38,7 @@ export default async function Guestpage({
         <h1 className="text-3xl font-bold text-gray-900 mb-4">
           Welcome, {guest.name}!
         </h1>
-        <p className="text-lg text-gray-700">
-          Event: {guest.event.name}
-        </p>
+        <p className="text-lg text-gray-700">Event: {guest.event.name}</p>
         <div className="mt-6 text-sm text-gray-600">
           <p>Status: {guest.inviteStatus}</p>
           <p>Email: {guest.email}</p>
