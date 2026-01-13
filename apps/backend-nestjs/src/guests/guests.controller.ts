@@ -15,6 +15,12 @@ import { UpdateGuestDto } from './dto/update-guest.dto';
 export class GuestsController {
   constructor(private readonly guestsService: GuestsService) {}
 
+  @Get(`:id`)
+  findByToken(@Param('token') token: string) {
+    return this.guestsService.findOneByToken(token);
+  }
+
+  // default routes
   @Post()
   create(@Body() createGuestDto: CreateGuestDto) {
     return this.guestsService.create(createGuestDto);
@@ -23,11 +29,6 @@ export class GuestsController {
   @Get()
   findAll() {
     return this.guestsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.guestsService.findOne(+id);
   }
 
   @Patch(':id')

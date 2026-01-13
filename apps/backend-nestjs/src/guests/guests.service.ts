@@ -16,8 +16,8 @@ export class GuestsService {
   findOneByToken(token: string) {
     const guest = this.guestRepository.findOne({
       where: { inviteToken: token },
+      relations: ['event'],
     });
-
     return guest;
   }
 
@@ -28,10 +28,6 @@ export class GuestsService {
 
   findAll() {
     return `This action returns all guests`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} guest`;
   }
 
   update(id: number, updateGuestDto: UpdateGuestDto) {
