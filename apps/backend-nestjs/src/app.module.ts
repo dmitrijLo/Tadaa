@@ -6,6 +6,7 @@ import { UsersModule } from './users/users.module';
 import { EventsModule } from './events/events.module';
 import { GuestsModule } from './guests/guests.module';
 import { InterestsModule } from './interests/interests.module';
+import { AuthModule } from './auth/auth.module';
 
 const REMOTE_DB_OPTIONS = {
   host: process.env.DATABASE_HOST,
@@ -35,6 +36,7 @@ const LOKAL_DB_OPTIONS = {
     EventsModule,
     GuestsModule,
     InterestsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
