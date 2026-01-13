@@ -1,5 +1,5 @@
 "use client";
-import { Carousel } from "antd";
+import { Carousel, CarouselProps } from "antd";
 import Image, { StaticImageData } from "next/image";
 
 export interface CarouselItem {
@@ -8,7 +8,7 @@ export interface CarouselItem {
   info: string;
 }
 
-interface ImageCarouselProps {
+interface ImageCarouselProps extends CarouselProps {
   items: CarouselItem[];
 }
 
