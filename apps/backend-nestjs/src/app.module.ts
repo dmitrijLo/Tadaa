@@ -29,7 +29,7 @@ const LOKAL_DB_OPTIONS = {
       type: 'postgres',
       ...(process.env.HAS_LOKAL_DB ? LOKAL_DB_OPTIONS : REMOTE_DB_OPTIONS),
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: false,
       logging: process.env.NODE_ENV === 'development' ? true : ['error'],
     }),
     UsersModule,

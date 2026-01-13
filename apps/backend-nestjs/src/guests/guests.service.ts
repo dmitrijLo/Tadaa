@@ -13,8 +13,8 @@ export class GuestsService {
   ) {}
 
   // get guestpage by token
-  findOneByToken(token: string) {
-    const guest = this.guestRepository.findOne({
+  async findOneByToken(token: string) {
+    const guest = await this.guestRepository.findOne({
       where: { inviteToken: token },
       relations: ['event'],
     });
