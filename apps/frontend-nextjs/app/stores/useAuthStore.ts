@@ -14,9 +14,9 @@ type CurrentUser = {
 type AuthState = {
   currentUser: CurrentUser | null;
   token: string | null;
+  loading: boolean;
+  error: string | null;
   register: (email: string, name: string, password: string) => Promise<void>;
-  //   login: (email: string, password: string) => Promise<void>;
-  //   logout: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -28,34 +28,42 @@ export const useAuthStore = create<AuthState>()(
       error: null,
 
       async register(email, name, password) {
-        set({ currentUser: null, token: null });
+        set({ loading: true, error: null });
+
         try {
-          const res = await fetch(`${API_URL}/api/auth/register`, {
+          const res = await fetch(`${API_URL}/auth/register`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              body: JSON.stringify({ email, name, password }),
             },
+            body: JSON.stringify({ email, name, password }),
           });
+
           if (!res.ok) {
-            throw new Error("Registration failed");
+            const errorData = await res.json();
+            throw new Error(errorData.message || "Registration failed");
           }
+
           const data = await res.json();
           set({
-            token: data.access_token,
             currentUser: {
               id: data.user.id,
               name: data.user.name,
               email: data.user.email,
             },
+            loading: false,
           });
         } catch (error) {
-          set({ error: (error as Error).message, loading: false });
+          const message = (error as Error).message;
+          set({
+            error: message,
+            loading: false,
+            currentUser: null,
+            token: null,
+          });
+          throw error;
         }
       },
-      //   async logout() {
-      //     set({ currentUser: null, token: null });
-      //   },
     }),
     {
       name: "auth-storage",
