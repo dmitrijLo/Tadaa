@@ -28,36 +28,48 @@ docker compose up -d
 
 Standard-Ports:
 
-- Frontend: http://localhost:3000
-- Backend: http://localhost:3001
+- Frontend: <http://localhost:3000>
+- Backend: <http://localhost:3001>
 
-## Dev-Notes
+## Development Auth Bypass
+
+For development purposes, you can bypass the regular JWT authentication to test protected routes easily. This allows frontend and backend teams to work in parallel without waiting for the full authentication flow to be implemented.
+
+**Usage:**
+
+1.  Enable the dev mode in your `.env` file:
+    `JWT_DEV_MODE=true` 2. Restart the backend container to apply the environment variable change:
+    `docker compose restart backend` 3. Access protected routes directly. A default development user will be automatically injected:
+    `curl http://localhost:3001/events`
+
+        *Optional:* To specify a custom user ID, you can still use the `X-Dev-User-Id` header:
+        `curl -H "X-Dev-User-Id: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" http://localhost:3001/events`
+
+    ## Dev-Notes
 
 (später löschen)
 
 Neue Dependencies hinzufügen:
 
 ```bash
-# Runtime Dependency ins Backend
-docker compose exec backend npm i -w backend-nestjs <paket>
+# Runtime Dependency ins Backend ("backend" bezieht sich auf den ServiceNamen siehe compose.yml)
+docker compose exec backend npm i <paket>
+# danach im backend-nestjs npm install ausführen
 
-# Dev Dependency ins Backend (z.B. testing/types)
-docker compose exec backend npm i -D -w backend-nestjs <paket>
+# Dev Dependency ins Backend ("backend" bezieht sich auf den ServiceNamen siehe compose.yml)
+docker compose exec backend npm i -D <paket>
+# danach im backend-nestjs npm install ausführen
 
-# Runtime Dependency ins Frontend
-docker compose exec frontend npm i -w frontend-nextjs <paket>
+# Runtime Dependency ins Frontend ("frontend" bezieht sich auf den ServiceNamen siehe compose.yml)
+docker compose exec frontend npm i <paket>
+# danach im frontend-nextjs npm install ausführen
 
-# Dev Dependency ins Frontend
-docker compose exec frontend npm i -D -w frontend-nextjs <paket>
-
-# Tests im Backend ausführen
-docker compose exec backend npm test -w backend-nestjs
-
-# Tests im Frontend ausführen
-docker compose exec frontend npm test -w frontend-nextjs
+# Dev Dependency ins Frontend ("frontend" bezieht sich auf den ServiceNamen siehe compose.yml)
+docker compose exec frontend npm i <paket>
+# danach im frontend-nextjs npm install ausführen
 ```
 
-Hinweis: Danach `apps/*/package.json` und `package-lock.json` committen.
+Hinweis: Danach `{backend-nestjs,frontend-nextjs}/package.json` und `package-lock.json` committen.
 
 ## DONE
 

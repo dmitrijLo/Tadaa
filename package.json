@@ -1,16 +1,12 @@
 {
   "name": "tadaa",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "version": "1.0.0",
   "description": "Weihnachten wird durch gesellschaftliche Konventionen oft zur Stressfalle statt zur besinnlichen Zeit. Das klassische Szenario, bei dem jeder jedem etwas schenken muss (One-to-Many), ist nicht nur ineffizient, sondern oft auch verschwenderisch. Hinzu kommt der Faktor Prokrastination: Viele Menschen (häufig männliche Individuen) erledigen Einkäufe erst in letzter Sekunde und verpassen so die entspannte Vorweihnachtszeit.",
   "scripts": {
-    "build:all": "npm run build --workspaces",
-    "dev:frontend": "npm run dev -w frontend-nextjs",
-    "dev:backend": "npm run start:dev -w backend-nestjs"
+    "dev": "docker compose up -d",
+    "dev:stop": "docker compose down",
+    "dev:build": "docker compose up --build",
+    "dev:update": "cd ./frontend-nextjs && npm install && cd ../backend-nestjs && npm install && cd .."
   },
   "repository": {
     "type": "git",
