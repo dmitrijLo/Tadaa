@@ -37,7 +37,7 @@ For development purposes, you can bypass the regular JWT authentication to test 
 
 **Usage:**
 
-1. Enable the dev mode in your `.env` file:
+1.  Enable the dev mode in your `.env` file:
     `JWT_DEV_MODE=true` 2. Restart the backend container to apply the environment variable change:
     `docker compose restart backend` 3. Access protected routes directly. A default development user will be automatically injected:
     `curl http://localhost:3001/events`
@@ -52,23 +52,21 @@ For development purposes, you can bypass the regular JWT authentication to test 
 Neue Dependencies hinzufügen:
 
 ```bash
-# Runtime Dependency ins Backend
-docker compose exec backend npm i -w backend-nestjs <paket>
+# Runtime Dependency ins Backend ("backend" bezieht sich auf den ServiceNamen siehe compose.yml)
+docker compose exec backend npm i <paket>
+# danach im backend-nestjs npm install ausführen
 
-# Dev Dependency ins Backend (z.B. testing/types)
-docker compose exec backend npm i -D -w backend-nestjs <paket>
+# Dev Dependency ins Backend ("backend" bezieht sich auf den ServiceNamen siehe compose.yml)
+docker compose exec backend npm i -D <paket>
+# danach im backend-nestjs npm install ausführen
 
-# Runtime Dependency ins Frontend
-docker compose exec frontend npm i -w frontend-nextjs <paket>
+# Runtime Dependency ins Frontend ("frontend" bezieht sich auf den ServiceNamen siehe compose.yml)
+docker compose exec frontend npm i <paket>
+# danach im frontend-nextjs npm install ausführen
 
-# Dev Dependency ins Frontend
-docker compose exec frontend npm i -D -w frontend-nextjs <paket>
-
-# Tests im Backend ausführen
-docker compose exec backend npm test -w backend-nestjs
-
-# Tests im Frontend ausführen
-docker compose exec frontend npm test -w frontend-nextjs
+# Dev Dependency ins Frontend ("frontend" bezieht sich auf den ServiceNamen siehe compose.yml)
+docker compose exec frontend npm i <paket>
+# danach im frontend-nextjs npm install ausführen
 ```
 
 Hinweis: Danach `apps/*/package.json` und `package-lock.json` committen.
