@@ -1,5 +1,5 @@
 "use client";
-import { Carousel } from "antd";
+import { Carousel, type CarouselProps } from "antd";
 import Image, { StaticImageData } from "next/image";
 
 export interface CarouselItem {
@@ -8,7 +8,7 @@ export interface CarouselItem {
   info: string;
 }
 
-interface ImageCarouselProps {
+interface ImageCarouselProps extends CarouselProps {
   items: CarouselItem[];
 }
 
@@ -26,10 +26,7 @@ const imageWrapperStyle: React.CSSProperties = {
   width: "100%",
   height: "300px",
 };
-export default function ImageCarousel({
-  items,
-  ...restProps
-}: ImageCarouselProps) {
+const ImageCarousel = ({ items, ...restProps }: ImageCarouselProps) => {
   return (
     <Carousel {...restProps}>
       {items.map(({ idx, src, info }) => (
@@ -52,4 +49,6 @@ export default function ImageCarousel({
       ))}
     </Carousel>
   );
-}
+};
+
+export default ImageCarousel;

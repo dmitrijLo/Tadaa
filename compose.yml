@@ -2,8 +2,8 @@ services:
   backend:
     container_name: tadaa-backend
     build:
-      context: .
-      dockerfile: apps/backend-nestjs/Dockerfile.dev
+      context: ./backend-nestjs
+      dockerfile: Dockerfile.dev
     ports:
       - "3001:3001"
     environment:
@@ -14,17 +14,19 @@ services:
       DATABASE_NAME: ${DATABASE_NAME}
       JWT_SECRET: ${JWT_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      JWT_DEV_MODE: ${JWT_DEV_MODE}
       PORT: 3001
       NODE_ENV: development
+      # HAS_LOKAL_DB: false
     volumes:
-      - ./:/workspace
-      - node_modules:/workspace/node_modules
+      - ./backend-nestjs/:/app
+      - /app/node_modules
 
   frontend:
     container_name: tadaa-frontend
     build:
-      context: .
-      dockerfile: apps/frontend-nextjs/Dockerfile.dev
+      context: ./frontend-nextjs
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     environment:
@@ -32,10 +34,5 @@ services:
       INTERNAL_API_URL: http://backend:3001
       NODE_ENV: development
     volumes:
-      - ./:/workspace
-      - node_modules:/workspace/node_modules
-    depends_on:
-      - backend
-
-volumes:
-  node_modules:
+      - ./frontend-nextjs:/app
+      - /app/node_modules
