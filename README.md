@@ -69,7 +69,7 @@ docker compose exec frontend npm i <paket>
 # danach im frontend-nextjs npm install ausführen
 ```
 
-Hinweis: Danach `apps/*/package.json` und `package-lock.json` committen.
+Hinweis: Danach `{backend-nestjs,frontend-nextjs}/package.json` und `package-lock.json` committen.
 
 ## DONE
 
