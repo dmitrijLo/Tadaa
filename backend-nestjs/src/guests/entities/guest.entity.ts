@@ -17,7 +17,7 @@ export class Guest {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'event_id' })
+  @Column({ name: 'event_id', type: 'uuid' })
   eventId: string;
 
   @Column()
