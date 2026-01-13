@@ -8,7 +8,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { EventStatus, EventMode, DrawRule } from '@tadaa/shared';
+// import { EventStatus, EventMode, DrawRule } from '@tadaa/shared';
 import { User } from '../../users/entities/user.entity';
 import { Guest } from '../../guests/entities/guest.entity';
 import { Assignment } from './assignment.entity';
@@ -33,14 +33,14 @@ export class Event {
   @Column()
   currency: string;
 
-  @Column({ type: 'enum', enum: EventStatus })
-  status: EventStatus;
+  // @Column({ type: 'enum', enum: EventStatus })
+  // status: EventStatus;
 
-  @Column({ name: 'event_mode', type: 'enum', enum: EventMode })
-  eventMode: EventMode;
+  // @Column({ name: 'event_mode', type: 'enum', enum: EventMode })
+  // eventMode: EventMode;
 
-  @Column({ name: 'draw_rule', type: 'enum', enum: DrawRule })
-  drawRule: DrawRule;
+  // @Column({ name: 'draw_rule', type: 'enum', enum: DrawRule })
+  // drawRule: DrawRule;
 
   @Column({ name: 'event_date', type: 'timestamp', nullable: true })
   eventDate: Date;

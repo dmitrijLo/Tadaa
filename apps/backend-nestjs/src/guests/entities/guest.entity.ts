@@ -8,7 +8,7 @@ import {
   OneToMany,
   JoinColumn,
 } from 'typeorm';
-import { InviteStatus } from '@tadaa/shared';
+// import { InviteStatus } from '@tadaa/shared';
 import { Event } from '../../events/entities/event.entity';
 import { Assignment } from '../../events/entities/assignment.entity';
 
@@ -35,8 +35,8 @@ export class Guest {
   @Column({ name: 'invite_token', unique: true })
   inviteToken: string;
 
-  @Column({ name: 'invite_status', type: 'enum', enum: InviteStatus })
-  inviteStatus: InviteStatus;
+  // @Column({ name: 'invite_status', type: 'enum', enum: InviteStatus })
+  // inviteStatus: InviteStatus;
 
   @Column({ name: 'received_at', type: 'timestamp', nullable: true })
   receivedAt: Date;
