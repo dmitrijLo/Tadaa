@@ -2,9 +2,9 @@ import { notFound } from "next/navigation";
 
 const fetchGuest = async (token: string): Promise<Guest | undefined> => {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/guests/${token}`,
-    );
+    // Use API_URL for server-side requests (Docker internal)
+    const apiUrl = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+    const response = await fetch(`${apiUrl}/guests/${token}`);
     if (!response.ok) return undefined;
     const guest: Guest = await response.json();
     return guest;
