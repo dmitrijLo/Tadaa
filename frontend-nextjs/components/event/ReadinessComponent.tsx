@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import GuestListing from "./readiness/GuestlistComponent";
 
 const fetchEventUsers = async (eventid: string) => {
   try {
@@ -23,11 +24,10 @@ export default async function ReadinessComponent({
   const users = await fetchEventUsers(eventid);
   if (!users) notFound();
 
-  console.log(users);
-
   return (
     <>
       <h1>SOO Ready</h1>
+      <GuestListing guests={users} />
     </>
   );
 }
