@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsString, IsUUID, MinLength } from 'class-validator';
+import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class CreateGuestDto {
   @ApiProperty({ example: 'Max Power' })
@@ -13,9 +13,4 @@ export class CreateGuestDto {
   })
   @IsEmail()
   email: string;
-
-  // TODO: nicht sicher ob das in die API gehört
-  // @ApiProperty({ description: 'The UUID of the event' })
-  @IsUUID()
-  eventId: string;
 }
