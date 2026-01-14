@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -18,6 +19,13 @@ import { JwtDevGuard } from '../auth/guards/jwt-dev.guard';
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
+  // get all guests for event with status:
+  @Get(':id/readiness')
+  findAllGuests(@Param('id', ParseUUIDPipe) id: string) {
+    return this.eventsService.findAllEventGuests(id);
+  }
+
+  // generic routes
   @Post()
   create(@Body() createEventDto: CreateEventDto) {
     return this.eventsService.create(createEventDto);
