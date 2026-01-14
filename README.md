@@ -113,6 +113,19 @@ docker compose exec frontend sh
 docker compose exec db psql -U tadaa_user -d tadaa_db
 ```
 
+### Database Management
+
+For easy database management during development, an **Adminer** service is included. It provides a simple web interface to view and edit your PostgreSQL database.
+
+- **URL**: http://localhost:8080
+- **System**: `PostgreSQL`
+- **Server**: `db`
+- **Username**: `tadaa_user`
+- **Password**: `tadaa_password`
+- **Database**: `tadaa_db`
+
+_Note: This service is only available in the development environment and should not be deployed to production._
+
 ## Projekt-Struktur
 
 ```
