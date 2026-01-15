@@ -11,7 +11,6 @@ import {
 import { EventStatus, EventMode, DrawRule } from '../../enums';
 import { User } from '../../users/entities/user.entity';
 import { Guest } from '../../guests/entities/guest.entity';
-import { Assignment } from './assignment.entity';
 
 @Entity('events')
 export class Event {
@@ -63,9 +62,4 @@ export class Event {
 
   @OneToMany(() => Guest, (guest) => guest.event, { cascade: true })
   guests: Guest[];
-
-  @OneToMany(() => Assignment, (assignment) => assignment.event, {
-    cascade: true,
-  })
-  assignments: Assignment[];
 }
