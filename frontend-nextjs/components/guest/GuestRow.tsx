@@ -1,14 +1,22 @@
 import { CreateGuestDto, Guest } from "@/types/guest";
+import {
+  EditOutlined,
+  HolderOutlined,
+  MailOutlined,
+  PlusOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { api } from "@/utils/api";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
+import styles from "./Guest.module.css";
+import { Button, Input, message } from "antd";
+import { AxiosError } from "axios";
 
 interface GuestRowProps {
   eventId: string;
   guest?: Guest; // EditMode wenn vorhanden, ansonsten CreateMode
   onGuestAdded?: (guest: Guest) => void;
-  // onSave: (data: CreateGuestDto) => Promise<void>;
-  // onDelete: (id: string) => Promise<void>;
 }
 
 export default function GuestRow({
@@ -17,66 +25,137 @@ export default function GuestRow({
   onGuestAdded,
 }: GuestRowProps) {
   const isExistent = !!guest;
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
   const {
-    register,
+    control,
     handleSubmit,
     reset,
-    formState: { isValid, isSubmitting, errors },
+    formState: { isValid },
   } = useForm<CreateGuestDto>({
     mode: "onChange",
     defaultValues: { name: guest?.name || "", email: guest?.email || "" },
   });
 
   const onSubmit = async (data: CreateGuestDto) => {
-    if (isExistent) return;
-    setErrorMsg(null);
+    if (isExistent) {
+      // TODO: Logik fürs editieren
+      // setErrorMsg(null);
+      console.log("Edit Mode not implemented yet");
+      return;
+    }
+    setIsSaving(true);
+
     try {
       const response = await api.post(`/events/${eventId}/guests`, data);
+      message.success("Guest added!");
 
       if (onGuestAdded) {
         onGuestAdded(response.data);
       }
 
       reset();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err.response.data.message);
+      if (err instanceof AxiosError) {
+        message.error(err.response?.data?.message || "Fehler beim Speichern");
+      }
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <div className="drag-handle cursor-grab">⋮⋮</div>
-      <input
-        {...register("name", { required: true, minLength: 2 })}
-        placeholder="Name"
-        className="input-style"
-        disabled={isExistent}
-      />
-      <div>
-        <input
-          {...register("email", { required: true, pattern: /^\S+@\S+$/i })}
-          placeholder="email@gmx.com"
-          className="input-style"
-          disabled={isExistent}
-        />
-        {errorMsg && (
-          <span className="text-xs text-red-500 absolute mt-1">{errorMsg}</span>
-        )}
-      </div>
+  const containerClass = `${styles.card} ${!isExistent ? styles.addCard : ""}`;
 
-      <div className="actions">
-        {isExistent ? (
-          <button type="button" onClick={() => console.log("Edit!")}>
-            Edit
-          </button>
-        ) : (
-          <button type="submit" disabled={!isValid}>
-            Add
-          </button>
+  return (
+    <div className={containerClass}>
+      <form className={styles.formGrid} onSubmit={handleSubmit(onSubmit)}>
+        {/* Drag Handle */}
+        {isExistent && (
+          <div className={`${styles.areaHandle} ${styles.dragHandle}`}>
+            <HolderOutlined />
+          </div>
         )}
-      </div>
-    </form>
+        {/* Name Input */}
+        <div className={`${styles.areaName} ${styles.inputWrapper}`}>
+          <Controller
+            name="name"
+            control={control}
+            rules={{
+              required: "Name ist Pflicht",
+              minLength: { value: 2, message: "Min. 2 Zeichen" },
+            }}
+            render={({ field, fieldState: { error } }) => (
+              <>
+                <Input
+                  {...field}
+                  placeholder="Name des Gastes"
+                  prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
+                  status={error ? "error" : ""}
+                  disabled={isExistent}
+                  variant={isExistent ? "borderless" : "outlined"}
+                  style={{ paddingLeft: isExistent ? 0 : 11 }}
+                />
+                {error && error.message && !isExistent && (
+                  <span className={styles.errorText}>
+                    {String(error.message)}
+                  </span>
+                )}
+              </>
+            )}
+          />
+        </div>
+        {/* Email Input */}
+        <div className={`${styles.areaEmail} ${styles.inputWrapper}`}>
+          <Controller
+            name="email"
+            control={control}
+            rules={{
+              required: "Email ist Pflicht",
+              pattern: { value: /^\S+@\S+$/i, message: "Ungültige Email" },
+            }}
+            render={({ field, fieldState: { error } }) => (
+              <>
+                <Input
+                  {...field}
+                  placeholder="email@example.de"
+                  prefix={<MailOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
+                  status={error ? "error" : ""}
+                  disabled={isExistent}
+                  variant={isExistent ? "borderless" : "outlined"}
+                  style={{ paddingLeft: isExistent ? 0 : 11 }}
+                />
+                {error && error.message && !isExistent && (
+                  <span className={styles.errorText}>
+                    {String(error.message)}
+                  </span>
+                )}
+              </>
+            )}
+          />
+        </div>
+        {/* Actions */}
+        <div className={styles.areaActions}>
+          {isExistent ? (
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => console.log("Edit clicked")}
+            />
+          ) : (
+            <Button
+              type="primary"
+              htmlType="submit"
+              disabled={!isValid}
+              loading={isSaving}
+              icon={<PlusOutlined />}
+              block
+            >
+              Add
+            </Button>
+          )}
+        </div>
+      </form>
+    </div>
   );
 }
