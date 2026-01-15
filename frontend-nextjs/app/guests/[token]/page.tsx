@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import GuestCard from "./GuestCard";
+import { Guest } from "@/types/guest";
 
 const fetchGuest = async (token: string): Promise<Guest | undefined> => {
   try {
