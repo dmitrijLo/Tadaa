@@ -44,3 +44,9 @@ export interface Guest {
 export type CreateGuestDto = Pick<Guest, ["name", "email"]>;
 
 export type UpdateGuestDto = Partial<Guest>;
+
+interface InterestOption {
+  id: string;
+  name: string;
+  usageCount: number;
+}
