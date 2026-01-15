@@ -3,8 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
 import { EventStatus } from '../enums';
 
@@ -14,7 +12,7 @@ export class EventsService {
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
   ) {}
-  
+
   async findAllEventGuests(id: string) {
     const event = await this.eventRepository.findOne({
       where: { id },
