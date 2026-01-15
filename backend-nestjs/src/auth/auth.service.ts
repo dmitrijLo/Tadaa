@@ -7,7 +7,6 @@ import { UsersService } from 'src/users/users.service';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto } from 'src/auth/dto/register.dto';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from './dto/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +15,7 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  private async validateUser(email: string, password: string) {
+  async validateUser(email: string, password: string): Promise<any> {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
       return null;
@@ -25,8 +24,8 @@ export class AuthService {
     if (!isMatch) {
       return null;
     }
-
-    return user;
+    const { passwordHash, ...result } = user;
+    return result;
   }
 
   async register(registerDto: RegisterDto) {
@@ -57,15 +56,7 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto): Promise<{
-    accessToken: string;
-    user: { id: string; email: string; name: string; createdAt: Date };
-  }> {
-    const user = await this.validateUser(loginDto.email, loginDto.password);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
+  async login(user: any) {
     const payload = { sub: user.id, email: user.email };
     const access_token = await this.jwtService.signAsync(payload);
 

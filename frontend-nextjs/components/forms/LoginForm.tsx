@@ -31,7 +31,7 @@ export default function LoginForm() {
       await loginUser(data.email, data.password);
       message.success("Login successful!");
       reset();
-      setTimeout(() => router.push("/events"), 2000);
+      setTimeout(() => router.push("/dashboard"), 2000);
     } catch (err: any) {
       message.error(err.message || "Login failed");
     }
@@ -83,7 +83,7 @@ export default function LoginForm() {
         loading={loading}
         style={{ marginTop: "20px" }}
       >
-        {loading ? "Registering..." : "Register"}
+        {loading ? "Logging in..." : "Login"}
       </Button>
     </form>
   );

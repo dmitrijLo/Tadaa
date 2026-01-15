@@ -7,6 +7,8 @@ import { EventsModule } from './events/events.module';
 import { GuestsModule } from './guests/guests.module';
 import { InterestsModule } from './interests/interests.module';
 import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 // const REMOTE_DB_OPTIONS = {
 //   host: process.env.DATABASE_HOST,
@@ -46,6 +48,6 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
 export class AppModule {}
