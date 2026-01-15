@@ -39,6 +39,7 @@ export class EventsService implements OnApplicationBootstrap {
         currency: 'euro',
         eventMode: EventMode.CLASSIC,
         drawRule: DrawRule.CHAIN,
+        status: EventStatus.CREATED,
       });
 
       try {
