@@ -5,12 +5,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
-  OneToMany,
+  OneToOne,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { InviteStatus } from '../../enums';
 import { Event } from '../../events/entities/event.entity';
-import { Assignment } from '../../events/entities/assignment.entity';
+import { InterestOption } from 'src/interests/entities/interest-option.entity';
 
 @Entity('guests')
 export class Guest {
@@ -50,6 +52,9 @@ export class Guest {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
+  // ReLations
+  // the event this gues belongs to
+
   @ManyToOne(() => Event, (event) => event.guests, {
     nullable: false,
     onDelete: 'CASCADE',
@@ -57,13 +62,36 @@ export class Guest {
   @JoinColumn({ name: 'event_id' })
   event: Event;
 
-  @OneToMany(() => Assignment, (assignment) => assignment.giverGuest, {
-    cascade: true,
-  })
-  givenAssignments: Assignment[];
+  // the guest receiving the gift
+  @OneToOne(() => Guest, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'assigned_recipient_id' })
+  assignedRecipient: Guest;
 
-  @OneToMany(() => Assignment, (assignment) => assignment.receiverGuest, {
-    cascade: true,
+  // the interests submited by the guest
+  @ManyToMany(() => InterestOption, {
+    onDelete: 'CASCADE',
   })
-  receivedAssignments: Assignment[];
+  @JoinTable({
+    name: 'guest_interests',
+    joinColumn: { name: 'guest_id', referencedColumnName: 'id' },
+    inverseJoinColumn: {
+      name: 'interest_option_id',
+      referencedColumnName: 'id',
+    },
+  })
+  interests: InterestOption[];
+
+  // the no-interest submited by the guest
+  @ManyToMany(() => InterestOption, {
+    onDelete: 'CASCADE',
+  })
+  @JoinTable({
+    name: 'guest_interests',
+    joinColumn: { name: 'guest_id', referencedColumnName: 'id' },
+    inverseJoinColumn: {
+      name: 'interest_option_id',
+      referencedColumnName: 'id',
+    },
+  })
+  no_interests: InterestOption[];
 }
