@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,6 +18,17 @@ async function bootstrap() {
       transform: true,
     }),
   );
+
+  const swaggerCfg = new DocumentBuilder()
+    .setTitle('Tadaa API')
+    .setDescription('This is a Swagger-API Documentation for the fullstack Application Tadaa.')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addApiKey({ type: 'apiKey', name: 'x-dev-user-id', in: 'header' }, 'DevUserHeader')
+    .build();
+  const swaggerDoc = SwaggerModule.createDocument(app, swaggerCfg);
+  SwaggerModule.setup('swagger', app, swaggerDoc);
+
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
