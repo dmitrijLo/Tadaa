@@ -8,6 +8,6 @@ import { InterestOption } from './entities/interest-option.entity';
   imports: [TypeOrmModule.forFeature([InterestOption])],
   controllers: [InterestsController],
   providers: [InterestsService],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, InterestsService],
 })
 export class InterestsModule {}

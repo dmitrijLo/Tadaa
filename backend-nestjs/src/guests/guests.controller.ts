@@ -3,15 +3,24 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   NotFoundException,
   ParseUUIDPipe,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { GuestsService } from './guests.service';
-import { CreateGuestDto } from './dto/create-guest.dto';
-import { UpdateGuestDto } from './dto/update-guest.dto';
+import { GuestInterestDto } from './dto/guest-interest.dto';
+import { JwtDevGuard } from '../auth/guards/jwt-dev.guard';
+
+interface RequestWithUser {
+  user: {
+    id: string;
+  };
+}
 
 @Controller('guests')
 export class GuestsController {
@@ -26,24 +35,31 @@ export class GuestsController {
     return guest;
   }
 
-  // default routes
-  @Post()
-  create(@Body() createGuestDto: CreateGuestDto) {
-    return this.guestsService.create(createGuestDto);
+  @Post('interests')
+  @UseGuards(JwtDevGuard)
+  @HttpCode(HttpStatus.OK)
+  addInterestToGuest(
+    @Req() req: RequestWithUser,
+    @Body() guestInterestDto: GuestInterestDto,
+  ) {
+    const guestId = req.user.id;
+    return this.guestsService.addInterestToGuest(
+      guestId,
+      guestInterestDto.interestId,
+    );
   }
 
-  @Get()
-  findAll() {
-    return this.guestsService.findAll();
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateGuestDto: UpdateGuestDto) {
-    return this.guestsService.update(+id, updateGuestDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.guestsService.remove(+id);
+  @Delete('interests')
+  @UseGuards(JwtDevGuard)
+  @HttpCode(HttpStatus.OK)
+  removeInterestFromGuest(
+    @Req() req: RequestWithUser,
+    @Body() guestInterestDto: GuestInterestDto,
+  ) {
+    const guestId = req.user.id;
+    return this.guestsService.removeInterestFromGuest(
+      guestId,
+      guestInterestDto.interestId,
+    );
   }
 }
