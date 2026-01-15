@@ -21,15 +21,10 @@ async function bootstrap() {
 
   const swaggerCfg = new DocumentBuilder()
     .setTitle('Tadaa API')
-    .setDescription(
-      'This is a Swagger-API Documentation for the fullstack Application Tadaa.',
-    )
+    .setDescription('This is a Swagger-API Documentation for the fullstack Application Tadaa.')
     .setVersion('1.0')
     .addBearerAuth()
-    .addApiKey(
-      { type: 'apiKey', name: 'x-dev-user-id', in: 'header' },
-      'DevUserHeader',
-    )
+    .addApiKey({ type: 'apiKey', name: 'x-dev-user-id', in: 'header' }, 'DevUserHeader')
     .build();
   const swaggerDoc = SwaggerModule.createDocument(app, swaggerCfg);
   SwaggerModule.setup('swagger', app, swaggerDoc);

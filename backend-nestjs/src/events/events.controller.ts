@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -38,8 +28,12 @@ export class EventsController {
     private readonly guestsService: GuestsService,
   ) {}
 
+  @Get(':eventId/guests')
+  async getGuests(@Param('eventId', ParseUUIDPipe) eventId: string) {
+    return [];
+  }
+
   @Post(':eventId/guests')
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Add a guest to an event.' })
   @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 201, description: 'Guest successfully invited.' })
@@ -67,10 +61,7 @@ export class EventsController {
   @ApiCreatedResponse({ description: 'Event has been successfully created.' })
   @ApiBadRequestResponse({ description: 'Validation failed.' })
   @ApiUnauthorizedResponse({ description: 'User not logged in.' })
-  createEvent(
-    @Body() createEventDto: CreateEventDto,
-    @UserFromRequest() user: { id: string },
-  ) {
+  createEvent(@Body() createEventDto: CreateEventDto, @UserFromRequest() user: { id: string }) {
     return this.eventsService.create(createEventDto, user.id);
   }
 
