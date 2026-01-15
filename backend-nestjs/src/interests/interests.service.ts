@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-//import { CreateInterestDto } from './dto/create-interest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InterestOption } from './entities/interest-option.entity';
 import { Repository } from 'typeorm';
+import { CreateInterestDto } from './dto/create-interest.dto';
+import { InterestDto } from './dto/interest.dto';
 
 @Injectable()
 export class InterestsService {
@@ -11,11 +12,14 @@ export class InterestsService {
     private readonly InterestOptionRepository: Repository<InterestOption>,
   ) {}
 
-  //  create(createInterestDto: CreateInterestDto) {
-  //  return 'This action adds a new interest';
-  //}
+  async create(interest: CreateInterestDto): Promise<InterestDto> {
+    const interestToCreate = this.InterestOptionRepository.create(interest);
+    await this.InterestOptionRepository.save(interestToCreate);
+    return interestToCreate;
+  }
 
-  findAll() {
-    return this.InterestOptionRepository.find();
+  // a list of all interest options in db
+  async findAll(): Promise<InterestDto[]> {
+    return await this.InterestOptionRepository.find();
   }
 }
