@@ -10,36 +10,18 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
-// const REMOTE_DB_OPTIONS = {
-//   host: process.env.DATABASE_HOST,
-//   port: parseInt(process.env.DATABASE_PORT || '5432'),
-//   username: process.env.DATABASE_USER,
-//   password: process.env.DATABASE_PASSWORD,
-//   database: process.env.DATABASE_NAME,
-//   ssl: {
-//     rejectUnauthorized: false,
-//   },
-// };
-//
-// const LOKAL_DB_OPTIONS = {
-//   url: process.env.DATABASE_HOST,
-// };
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: process.env.DATABASE_HOST,
-      ...(process.env.HAS_LOKAL_DB
-        ? {}
-        : {
-            ssl: {
-              rejectUnauthorized: false,
-            },
-          }),
+      url: process.env.DATABASE_URL,
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: false }
+          : false,
       autoLoadEntities: true,
-      synchronize: true,
-      logging: process.env.NODE_ENV === 'development' ? true : ['error'],
+      synchronize: process.env.NODE_ENV === 'development',
+      logging: process.env.NODE_ENV === 'development',
     }),
     UsersModule,
     EventsModule,
