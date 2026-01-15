@@ -13,6 +13,17 @@ export class EventsService {
     private readonly eventRepository: Repository<Event>,
   ) {}
 
+  async findAllEventGuests(id: string) {
+    const event = await this.eventRepository.findOne({
+      where: { id },
+      relations: {
+        guests: true,
+      },
+    });
+
+    return event?.guests ?? [];
+  }
+
   async create(createEventDto: CreateEventDto, hostId: string): Promise<Event> {
     const event = this.eventRepository.create({
       ...createEventDto,

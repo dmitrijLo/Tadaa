@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  ParseUUIDPipe,
   Req,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -35,6 +36,13 @@ interface RequestWithUser extends Request {
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
+  // get all guests for event with status:
+  @Get(':id/readiness')
+  findAllGuests(@Param('id', ParseUUIDPipe) id: string) {
+    return this.eventsService.findAllEventGuests(id);
+  }
+
+  // generic routes
   @Post()
   @ApiOperation({ summary: 'Create a new event.' })
   @ApiCreatedResponse({ description: 'Event has been successfully created.' })

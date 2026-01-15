@@ -113,6 +113,19 @@ docker compose exec frontend sh
 docker compose exec db psql -U tadaa_user -d tadaa_db
 ```
 
+### Database Management
+
+For easy database management during development, an **Adminer** service is included. It provides a simple web interface to view and edit your PostgreSQL database.
+
+- **URL**: http://localhost:8080
+- **System**: `PostgreSQL`
+- **Server**: `db`
+- **Username**: `tadaa_user`
+- **Password**: `tadaa_password`
+- **Database**: `tadaa_db`
+
+_Note: This service is only available in the development environment and should not be deployed to production._
+
 ## Projekt-Struktur
 
 ```
@@ -124,6 +137,24 @@ Tadaa/
 ├── .env.production.example  # Environment Template für Production
 └── README.md
 ```
+
+## Environment Variablen
+
+Das Projekt verwendet eine zentrale `.env`-Datei im Root-Verzeichnis. Wichtige Variablen:
+
+| Variable | Beschreibung | Beispiel |
+|----------|--------------|----------|
+| `NODE_ENV` | Umgebung (development/production) | `development` |
+| `DATABASE_URL` | PostgreSQL Verbindungs-URL | `postgresql://user:pass@host:5432/db` |
+| `JWT_SECRET` | Secret für JWT-Token-Signierung | `your-secret-key` |
+| `JWT_DEV_MODE` | Development Auth Bypass aktivieren | `true` |
+| `NEXT_PUBLIC_API_URL` | Backend API URL für Frontend | `http://localhost:3001` |
+| `OPENAI_API_KEY` | OpenAI API Key (optional) | `sk-...` |
+
+**Für lokale Entwicklung:** `.env.example` kopieren und anpassen
+**Für Production:** `.env.production.example` kopieren und mit echten Credentials füllen
+
+---
 
 ## Environment Variablen
 
