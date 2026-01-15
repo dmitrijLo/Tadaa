@@ -40,3 +40,9 @@ interface Guest {
   givenAssignments?: Assignment[];
   receivedAssignments?: Assignment[];
 }
+
+interface InterestOption {
+  id: string;
+  name: string;
+  usageCount: number;
+}
