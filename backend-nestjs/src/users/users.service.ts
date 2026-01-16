@@ -48,7 +48,7 @@ export class UsersService implements OnApplicationBootstrap {
     return this.usersRepository.find();
   }
 
-  async findOne(id: string): Promise<User | null> {
+  async findbyId(id: string): Promise<User | null> {
     const user = await this.usersRepository.findOne({ where: { id } });
     return user;
   }
@@ -59,7 +59,7 @@ export class UsersService implements OnApplicationBootstrap {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
+    const user = await this.findbyId(id);
     if (!user) {
       throw new Error('User not found');
     }
