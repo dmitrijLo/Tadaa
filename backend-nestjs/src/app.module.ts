@@ -13,13 +13,10 @@ import { AuthModule } from './auth/auth.module';
     TypeOrmModule.forRoot({
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      ssl:
-        process.env.NODE_ENV === 'production'
-          ? { rejectUnauthorized: false }
-          : false,
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV === 'development',
-      logging: process.env.NODE_ENV === 'development',
+      synchronize: process.env.NODE_ENV === 'development' ? true : false,
+      logging: process.env.NODE_ENV === 'development' ? true : false,
     }),
     UsersModule,
     EventsModule,

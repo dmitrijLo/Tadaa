@@ -1,0 +1,108 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Die einzelne Karte (Row) */
+.card {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.card:hover {
+  border-color: #d9d9d9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Der "Add New" Bereich darf etwas anders aussehen */
+.addCard {
+  background: #fafafa;
+  border: 1px dashed #d9d9d9;
+}
+
+/* Das Grid Layout */
+.formGrid {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  /* Mobile First: Alles untereinander (1 Spalte) */
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "handle"
+    "name"
+    "email"
+    "actions";
+}
+
+/* Desktop Breakpoint (ab Tablet) */
+@media (min-width: 768px) {
+  .formGrid {
+    /* Desktop: Handle | Name | Email | Actions */
+    grid-template-columns: auto 1fr 1.5fr auto;
+    grid-template-areas: "handle name email actions";
+    gap: 16px;
+  }
+}
+
+/* Zuweisung der Grid Areas */
+.areaHandle {
+  grid-area: handle;
+  display: flex;
+  justify-content: center;
+}
+.areaName {
+  grid-area: name;
+}
+.areaEmail {
+  grid-area: email;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 22px;
+}
+
+.areaActions {
+  grid-area: actions;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Drag Handle Styling */
+.dragHandle {
+  color: #bfbfbf;
+  cursor: grab;
+  font-size: 1.2rem;
+  padding: 0 8px;
+  /* Auf Mobile verstecken wir den Handle vielleicht oder zeigen ihn oben rechts */
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .dragHandle {
+    display: block;
+  }
+}
+
+.errorText {
+  color: #ff4d4f;
+  font-size: 12px;
+  line-height: 1.5;
+
+  position: absolute;
+  bottom: 0;
+  left: 0;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}

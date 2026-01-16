@@ -23,7 +23,7 @@ interface Assignment {
   createdAt: Date;
 }
 
-interface Guest {
+export interface Guest {
   id: string;
   eventId: string;
   name: string;
@@ -39,4 +39,9 @@ interface Guest {
   event: Event;
   givenAssignments?: Assignment[];
   receivedAssignments?: Assignment[];
+}
+
+export interface CreateGuestDto {
+  name: string;
+  email: string;
 }

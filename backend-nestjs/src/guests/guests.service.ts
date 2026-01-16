@@ -1,16 +1,59 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { UpdateGuestDto } from './dto/update-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
 import { Repository } from 'typeorm';
+import { InviteStatus } from '../enums';
+
+import { randomUUID } from 'crypto';
+import { Event } from 'src/events/entities/event.entity';
 
 @Injectable()
 export class GuestsService {
   constructor(
-    @InjectRepository(Guest)
-    private guestRepository: Repository<Guest>,
+    @InjectRepository(Guest) private guestRepository: Repository<Guest>,
+    @InjectRepository(Event) private eventRepository: Repository<Event>,
   ) {}
+
+  async create(eventId: string, userId: string, createGuestDto: CreateGuestDto): Promise<Guest> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+    });
+
+    if (!event) throw new NotFoundException('Event not found!');
+    if (event.hostId !== userId) {
+      throw new ForbiddenException('You are not allowed to add guests to this event!');
+    }
+
+    const { email } = createGuestDto;
+    const existingGuest = await this.guestRepository.findOne({
+      where: { email, eventId },
+    });
+
+    if (existingGuest) {
+      throw new ConflictException('Guest with this email already exists for this event.');
+    }
+
+    const newGuest = this.guestRepository.create({
+      ...createGuestDto,
+      eventId: eventId,
+      inviteToken: randomUUID(),
+      inviteStatus: InviteStatus.INVITED,
+    });
+
+    try {
+      return await this.guestRepository.save(newGuest);
+    } catch {
+      throw new InternalServerErrorException();
+    }
+  }
 
   // get guestpage by token
   async findOneByToken(token: string) {
@@ -19,11 +62,6 @@ export class GuestsService {
       relations: ['event'],
     });
     return guest;
-  }
-
-  // default generate resources
-  create(createGuestDto: CreateGuestDto) {
-    return 'This action adds a new guest';
   }
 
   findAll() {
