@@ -64,8 +64,9 @@ export class GuestsService {
     return guest;
   }
 
-  findAll() {
-    return `This action returns all guests`;
+  async findAllGuestsByEventId(eventId: string): Promise<Guest[]> {
+    const guests = await this.guestRepository.findBy({ eventId });
+    return guests;
   }
 
   update(id: number, updateGuestDto: UpdateGuestDto) {
