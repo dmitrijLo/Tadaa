@@ -14,7 +14,7 @@ import { AuthModule } from './auth/auth.module';
       type: 'postgres',
       url: process.env.DATABASE_URL,
       autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV === 'development' ? true : false,
+      synchronize: true,
       logging: process.env.NODE_ENV === 'development' ? true : false,
     }),
     UsersModule,
