@@ -1,8 +1,7 @@
-import { CreateGuestDto, Guest } from "@/types/guest";
+import { CreateGuestDto, Guest, UpdateGuestDto } from "@/types/guest";
 import {
   CheckOutlined,
   CloseOutlined,
-  CopyOutlined,
   EditOutlined,
   HolderOutlined,
   LinkOutlined,
@@ -17,7 +16,7 @@ import styles from "./Guest.module.css";
 import { Tag, Button, Input, message } from "antd";
 import { AxiosError } from "axios";
 
-const STATUS_TAG: Record<status, color> = {
+const STATUS_TAG: Record<string, string> = {
   default: "cyan",
   invited: "geekblue",
   opened: "gold",
