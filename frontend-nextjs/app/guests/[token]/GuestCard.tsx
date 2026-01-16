@@ -1,6 +1,5 @@
 "use client";
 
-import { Guest } from "@/types/guest";
 import { Card, Typography } from "antd";
 
 const { Title, Text, Paragraph } = Typography;

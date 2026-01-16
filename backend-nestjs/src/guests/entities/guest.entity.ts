@@ -86,7 +86,7 @@ export class Guest {
     onDelete: 'CASCADE',
   })
   @JoinTable({
-    name: 'guest_interests',
+    name: 'guest_no_interests',
     joinColumn: { name: 'guest_id', referencedColumnName: 'id' },
     inverseJoinColumn: {
       name: 'interest_option_id',

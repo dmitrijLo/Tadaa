@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import GuestCard from "./GuestCard";
-import { Guest } from "@/types/guest";
+import InterestOptionComponent from "@/components/guests/interests/InterestComponent";
 
 const fetchGuest = async (token: string): Promise<Guest | undefined> => {
   try {
@@ -30,5 +30,10 @@ export default async function Guestpage({
     notFound();
   }
 
-  return <GuestCard guest={guest} />;
+  return (
+    <>
+      <GuestCard guest={guest} />
+      <InterestOptionComponent />
+    </>
+  );
 }
