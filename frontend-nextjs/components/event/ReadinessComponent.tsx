@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import GuestListing from "./readiness/GuestlistComponent";
+import { Guest } from "@/types/guest";
 
 const fetchEventUsers = async (eventid: string) => {
   try {

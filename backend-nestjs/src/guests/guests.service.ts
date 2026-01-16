@@ -1,7 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import { CreateGuestDto } from './dto/create-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
 import { Repository } from 'typeorm';
+import { InviteStatus } from '../enums';
+import { randomUUID } from 'crypto';
+import { Event } from '../events/entities/event.entity';
 import { InterestOption } from '../interests/entities/interest-option.entity';
 
 @Injectable()
@@ -11,7 +21,42 @@ export class GuestsService {
     private guestRepository: Repository<Guest>,
     @InjectRepository(InterestOption)
     private interestOptionRepository: Repository<InterestOption>,
+    @InjectRepository(Event)
+    private eventRepository: Repository<Event>,
   ) {}
+
+  async create(eventId: string, userId: string, createGuestDto: CreateGuestDto): Promise<Guest> {
+    const event = await this.eventRepository.findOne({
+      where: { id: eventId },
+    });
+
+    if (!event) throw new NotFoundException('Event not found!');
+    if (event.hostId !== userId) {
+      throw new ForbiddenException('You are not allowed to add guests to this event!');
+    }
+
+    const { email } = createGuestDto;
+    const existingGuest = await this.guestRepository.findOne({
+      where: { email, eventId },
+    });
+
+    if (existingGuest) {
+      throw new ConflictException('Guest with this email already exists for this event.');
+    }
+
+    const newGuest = this.guestRepository.create({
+      ...createGuestDto,
+      eventId: eventId,
+      inviteToken: randomUUID(),
+      inviteStatus: InviteStatus.INVITED,
+    });
+
+    try {
+      return await this.guestRepository.save(newGuest);
+    } catch {
+      throw new InternalServerErrorException();
+    }
+  }
 
   // get guestpage by token
   async findOneByToken(token: string) {
@@ -23,10 +68,7 @@ export class GuestsService {
   }
 
   //add interest to guest
-  async addInterestToGuest(
-    guestId: string,
-    interestId: string,
-  ): Promise<Guest> {
+  async addInterestToGuest(guestId: string, interestId: string): Promise<Guest> {
     const guest = await this.guestRepository.findOne({
       where: { id: guestId },
       relations: ['interests'],
@@ -51,10 +93,7 @@ export class GuestsService {
   }
 
   // remove interst from guest
-  async removeInterestFromGuest(
-    guestId: string,
-    interestId: string,
-  ): Promise<Guest> {
+  async removeInterestFromGuest(guestId: string, interestId: string): Promise<Guest> {
     const guest = await this.guestRepository.findOne({
       where: { id: guestId },
       relations: ['interests'],
@@ -63,18 +102,12 @@ export class GuestsService {
       throw new NotFoundException(`Guest with ID ${guestId} not found`);
     }
 
-    const interestExists = guest.interests.some(
-      (interest) => interest.id === interestId,
-    );
+    const interestExists = guest.interests.some((interest) => interest.id === interestId);
     if (!interestExists) {
-      throw new NotFoundException(
-        `Interest with ID ${interestId} not found in guest's interests`,
-      );
+      throw new NotFoundException(`Interest with ID ${interestId} not found in guest's interests`);
     }
 
-    guest.interests = guest.interests.filter(
-      (interest) => interest.id !== interestId,
-    );
+    guest.interests = guest.interests.filter((interest) => interest.id !== interestId);
     await this.guestRepository.save(guest);
     return guest;
   }
