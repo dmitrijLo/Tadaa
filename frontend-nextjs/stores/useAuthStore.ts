@@ -87,14 +87,13 @@ export const useAuthStore = create<AuthState>()(
           }
 
           const data = await res.json();
-
           set({
             currentUser: {
               id: data.user.id,
               name: data.user.name,
               email: data.user.email,
             },
-            token: data.access_token,
+            token: data.accessToken,
             loading: false,
           });
         } catch (error) {
@@ -121,6 +120,6 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         currentUser: state.currentUser,
       }),
-    }
-  )
+    },
+  ),
 );
