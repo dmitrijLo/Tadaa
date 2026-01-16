@@ -1,40 +1,54 @@
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe } from '@nestjs/common';
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  UseGuards,
-  ParseUUIDPipe,
-  Req,
-  UnauthorizedException,
-} from '@nestjs/common';
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiBadRequestResponse,
+  ApiCreatedResponse,
+  ApiUnauthorizedResponse,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { JwtDevGuard } from '../auth/guards/jwt-dev.guard';
-import type { Request } from 'express';
-import {
-  ApiBadRequestResponse,
-  ApiBearerAuth,
-  ApiCreatedResponse,
-  ApiOperation,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { GuestsService } from 'src/guests/guests.service';
+import { CreateGuestDto } from 'src/guests/dto/create-guest.dto';
+import { UserFromRequest } from 'src/decorators/user-payload.decorator';
 
-interface RequestWithUser extends Request {
-  user?: { id: number };
-}
-
+@ApiTags('Events')
 @Controller('events')
 @ApiTags('Events')
 @ApiBearerAuth()
 @UseGuards(JwtDevGuard)
 export class EventsController {
-  constructor(private readonly eventsService: EventsService) {}
+  constructor(
+    private readonly eventsService: EventsService,
+    private readonly guestsService: GuestsService,
+  ) {}
+
+  @Get(':eventId/guests')
+  async getGuests(@Param('eventId', ParseUUIDPipe) eventId: string) {
+    return [];
+  }
+
+  @Post(':eventId/guests')
+  @ApiOperation({ summary: 'Add a guest to an event.' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 201, description: 'Guest successfully invited.' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden. You are not the owner.',
+  })
+  @ApiResponse({ status: 409, description: 'Guest already invited.' })
+  async addGuest(
+    @Param('eventId', ParseUUIDPipe) eventId: string,
+    @Body() createGuestDto: CreateGuestDto,
+    @UserFromRequest() user: { id: string },
+  ) {
+    return this.guestsService.create(eventId, user.id, createGuestDto);
+  }
 
   // get all guests for event with status:
   @Get(':id/readiness')
@@ -42,23 +56,16 @@ export class EventsController {
     return this.eventsService.findAllEventGuests(id);
   }
 
-  // generic routes
   @Post()
   @ApiOperation({ summary: 'Create a new event.' })
   @ApiCreatedResponse({ description: 'Event has been successfully created.' })
   @ApiBadRequestResponse({ description: 'Validation failed.' })
   @ApiUnauthorizedResponse({ description: 'User not logged in.' })
-  createEvent(
-    @Body() createEventDto: CreateEventDto,
-    @Req() req: RequestWithUser,
-  ) {
-    const hostId = req.user?.id;
-    if (!hostId) {
-      throw new UnauthorizedException('User ID is required');
-    }
-    return this.eventsService.create(createEventDto, hostId.toString());
+  createEvent(@Body() createEventDto: CreateEventDto, @UserFromRequest() user: { id: string }) {
+    return this.eventsService.create(createEventDto, user.id);
   }
 
+  // generic routes
   @Get()
   findAll() {
     return this.eventsService.findAll();

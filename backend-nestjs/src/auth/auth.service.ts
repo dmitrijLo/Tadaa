@@ -52,7 +52,7 @@ export class AuthService {
           createdAt: newUser.createdAt,
         },
       };
-    } catch (error) {
+    } catch {
       throw new ConflictException('Registration failed');
     }
   }
