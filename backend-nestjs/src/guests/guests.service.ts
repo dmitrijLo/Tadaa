@@ -11,8 +11,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
 import { Repository } from 'typeorm';
 import { InviteStatus } from '../enums';
-
-import { randomUUID } from 'crypto';
 import { Event } from '../events/entities/event.entity';
 
 @Injectable()
@@ -56,7 +54,6 @@ export class GuestsService {
     const newGuest = this.guestRepository.create({
       ...createGuestDto,
       eventId: eventId,
-      inviteToken: randomUUID(),
       inviteStatus: InviteStatus.INVITED,
     });
 
@@ -68,9 +65,9 @@ export class GuestsService {
   }
 
   // get guestpage by token
-  async findOneByToken(token: string) {
+  async findOneById(guestId: string) {
     const guest = await this.guestRepository.findOne({
-      where: { inviteToken: token },
+      where: { id: guestId },
       relations: ['event', 'interests'],
     });
     return guest;

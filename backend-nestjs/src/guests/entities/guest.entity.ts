@@ -34,9 +34,6 @@ export class Guest {
   @Column({ name: 'decline_message', type: 'text', nullable: true })
   declineMessage: string;
 
-  @Column({ name: 'invite_token', unique: true })
-  inviteToken: string;
-
   @Column({ name: 'invite_status', type: 'enum', enum: InviteStatus })
   inviteStatus: InviteStatus;
 
