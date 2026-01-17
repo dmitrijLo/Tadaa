@@ -25,6 +25,8 @@ export class GuestsService {
     private interestOptionRepository: Repository<InterestOption>,
   ) {}
 
+  // create a new guest
+  // TODO uuids should be generted by pg, also make inveite token and guest id same
   async create(
     eventId: string,
     userId: string,
@@ -80,6 +82,7 @@ export class GuestsService {
     return guests;
   }
 
+  // INTEEREST SERVICES
   //add interest to guest
   async addInterestToGuest(
     guestId: string,
