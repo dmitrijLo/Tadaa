@@ -25,6 +25,8 @@ export class GuestsService {
     private eventRepository: Repository<Event>,
   ) {}
 
+  // create a new guest
+  // TODO uuids should be generted by pg, also make inveite token and guest id same
   async create(eventId: string, userId: string, createGuestDto: CreateGuestDto): Promise<Guest> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
@@ -67,6 +69,7 @@ export class GuestsService {
     return guest;
   }
 
+  // INTEEREST SERVICES
   //add interest to guest
   async addInterestToGuest(guestId: string, interestId: string): Promise<Guest> {
     const guest = await this.guestRepository.findOne({
