@@ -6,9 +6,9 @@ export class GuestsController {
   constructor(private readonly guestsService: GuestsService) {}
 
   // get guest by invite token
-  @Get(':token')
-  async findByToken(@Param('token', ParseUUIDPipe) token: string) {
-    const guest = await this.guestsService.findOneByToken(token);
+  @Get(':guestId')
+  async findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
+    const guest = await this.guestsService.findOneByToken(guestId);
     if (!guest) {
       throw new NotFoundException('Guest not found');
     }
