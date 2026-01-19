@@ -1,36 +1,37 @@
-"use client";
-
-import { Card, Divider, Form, Tag, Flex } from "antd";
+import { Card, Divider, Form, Tag, Flex, Spin } from "antd";
 import React from "react";
+import { useInterestStore } from "@/stores/useInterestStore";
 const { CheckableTag } = Tag;
 
 export default function InterestPicker({
-  interests,
+  interests: interestOptions,
+  guestId,
+  isLoading,
 }: {
   interests: { name: string; id: string }[] | undefined;
+  guestId: string;
+  isLoading: boolean;
 }) {
-  const [likes, setLikes] = React.useState<string[]>([]);
-  const [dislikes, setDislikes] = React.useState<string[]>([]);
+  const { interests, noInterest, addInterest, removeInterest } =
+    useInterestStore();
 
-  const handleToggle = (
-    name: string,
-    list: string[],
-    setList: (val: string[]) => void,
+  const handleToggle = async (
+    interestId: string,
+    currentList: string[],
+    type: "like" | "dislike",
   ) => {
-    const nextSelectedTags = list.includes(name)
-      ? list.filter((t) => t !== name)
-      : [...list, name];
-    setList(nextSelectedTags);
+    const like = type === "like";
+    if (currentList.includes(interestId)) {
+      await removeInterest(guestId, interestId, like);
+    } else {
+      await addInterest(guestId, interestId, like);
+    }
   };
 
-  const renderTags = (
-    type: "like" | "dislike",
-    currentList: string[],
-    setList: (val: string[]) => void,
-  ) => (
+  const renderTags = (type: "like" | "dislike", currentList: string[]) => (
     <Flex wrap="wrap" gap={8} justify="center" style={{ width: "100%" }}>
-      {interests?.map((interest) => {
-        const isSelected = currentList.includes(interest.name);
+      {interestOptions?.map((interest) => {
+        const isSelected = currentList.includes(interest.id);
 
         const style: React.CSSProperties = {
           borderRadius: "16px",
@@ -49,7 +50,7 @@ export default function InterestPicker({
           <CheckableTag
             key={interest.id}
             checked={isSelected}
-            onChange={() => handleToggle(interest.name, currentList, setList)}
+            onChange={() => handleToggle(interest.id, currentList, type)}
             style={style}
           >
             {interest.name}
@@ -65,23 +66,25 @@ export default function InterestPicker({
       size="small"
       style={{ maxWidth: 600, margin: "0 auto" }}
     >
-      <Form layout="vertical">
-        <Form.Item
-          label="What I like"
-          labelCol={{ style: { width: "100%", textAlign: "center" } }}
-        >
-          {renderTags("like", likes, setLikes)}
-        </Form.Item>
+      <Spin spinning={isLoading} tip="Loading interests...">
+        <Form layout="vertical">
+          <Form.Item
+            label="What I like"
+            labelCol={{ style: { width: "100%", textAlign: "center" } }}
+          >
+            {renderTags("like", interests)}
+          </Form.Item>
 
-        <Divider />
+          <Divider />
 
-        <Form.Item
-          label="What I don't like"
-          labelCol={{ style: { width: "100%", textAlign: "center" } }}
-        >
-          {renderTags("dislike", dislikes, setDislikes)}
-        </Form.Item>
-      </Form>
+          <Form.Item
+            label="What I don't like"
+            labelCol={{ style: { width: "100%", textAlign: "center" } }}
+          >
+            {renderTags("dislike", noInterest)}
+          </Form.Item>
+        </Form>
+      </Spin>
     </Card>
   );
 }

@@ -19,12 +19,12 @@ export default async function Guestpage({
 }: {
   params: Promise<{ token: string }>;
 }) {
-  const token = (await params).token;
-  if (!token) {
+  const guestId = (await params).token;
+  if (!guestId) {
     notFound();
   }
 
-  const guest = await fetchGuest(token);
+  const guest = await fetchGuest(guestId);
 
   if (!guest) {
     notFound();
@@ -33,7 +33,7 @@ export default async function Guestpage({
   return (
     <>
       <GuestCard guest={guest} />
-      <InterestOptionComponent />
+      <InterestOptionComponent guest={guest} guestId={guestId} />
     </>
   );
 }

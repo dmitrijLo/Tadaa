@@ -3,6 +3,7 @@
 import { create } from "zustand";
 
 type InterestStore = {
+  interestOptions: InterestOption[];
   interests: string[];
   noInterest: string[];
   isLoading: boolean;
@@ -17,6 +18,8 @@ type InterestStore = {
     interestId: string,
     like: boolean,
   ) => Promise<void>;
+  fetchInterestOptions: () => Promise<void>;
+  setInitialInterests: (interests: string[], noInterest: string[]) => void;
 };
 
 interface GuestInterestDto {
@@ -25,10 +28,32 @@ interface GuestInterestDto {
 }
 
 export const useInterestStore = create<InterestStore>((set) => ({
+  interestOptions: [],
   interests: [],
   noInterest: [],
   isLoading: false,
   error: null,
+
+  setInitialInterests: (interests, noInterest) => {
+    set({ interests, noInterest });
+  },
+
+  fetchInterestOptions: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/interests`,
+      );
+      if (!response.ok) {
+        throw new Error("Could not fetch interest options");
+      }
+      const interests: InterestOption[] = await response.json();
+      set({ interestOptions: interests, isLoading: false });
+    } catch (error) {
+      console.error(error);
+      set({ error: "Fehler beim Laden der Interessen", isLoading: false });
+    }
+  },
 
   addInterest: async (guestId: string, interestId: string, like: boolean) => {
     const guestInterest: GuestInterestDto = { interestId, like };

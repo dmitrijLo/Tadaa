@@ -68,8 +68,19 @@ export class GuestsService {
   async findOneById(guestId: string) {
     const guest = await this.guestRepository.findOne({
       where: { id: guestId },
-      relations: ['event', 'interests'],
+      relations: ['event', 'interests', 'no_interests'],
     });
-    return guest;
+    if (!guest) {
+      return null;
+    }
+
+    const interests = (guest.interests || []).map((interest) => interest.id);
+    const noInterest = (guest.no_interests || []).map((interest) => interest.id);
+
+    return {
+      ...guest,
+      interests,
+      noInterest,
+    };
   }
 }

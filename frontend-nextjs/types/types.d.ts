@@ -55,8 +55,8 @@ interface Guest {
   createdAt: Date;
   updatedAt: Date;
   event: Event;
-  interests: InterestOption[];
-  no_interests: InterestOption[];
+  interests: string[];
+  noInterest: string[];
   assignedRecipient: Guest | null;
 }
 

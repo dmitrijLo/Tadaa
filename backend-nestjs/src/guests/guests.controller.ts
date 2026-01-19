@@ -12,6 +12,7 @@ export class GuestsController {
     if (!guest) {
       throw new NotFoundException('Guest not found');
     }
+
     return guest;
   }
 }

@@ -1,26 +1,37 @@
+"use client";
+
 import InterestPicker from "./InterestPicker";
+import { useInterestStore } from "@/stores/useInterestStore";
+import React from "react";
 
-const fetchInterestOptions = async (): Promise<
-  InterestOption[] | undefined
-> => {
-  try {
-    const response = await fetch(`${process.env.API_URL}/interests`);
-    if (!response.ok) return undefined;
+export default function InterestOptionComponent({
+  guest,
+  guestId,
+}: {
+  guest: Guest;
+  guestId: string;
+}) {
+  const {
+    interestOptions,
+    fetchInterestOptions,
+    isLoading,
+    setInitialInterests,
+  } = useInterestStore();
 
-    const interests: InterestOption[] = await response.json();
-
-    return interests;
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-export default async function InterestOptionComponent() {
-  const interests = await fetchInterestOptions();
+  React.useEffect(() => {
+    fetchInterestOptions();
+    if (guest.interests && guest.noInterest) {
+      setInitialInterests(guest.interests, guest.noInterest);
+    }
+  }, [fetchInterestOptions, guest, setInitialInterests]);
 
   return (
     <>
-      <InterestPicker interests={interests} />
+      <InterestPicker
+        guestId={guestId}
+        interests={interestOptions}
+        isLoading={isLoading}
+      />
     </>
   );
 }
