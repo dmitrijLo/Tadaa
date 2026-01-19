@@ -1,6 +1,5 @@
 "use client";
 
-import { Guest } from "@/types/guest";
 import {
   Badge,
   Card,
