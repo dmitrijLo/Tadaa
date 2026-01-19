@@ -20,6 +20,7 @@ type InterestStore = {
   ) => Promise<void>;
   fetchInterestOptions: () => Promise<void>;
   setInitialInterests: (interests: string[], noInterest: string[]) => void;
+  addInterestOption: (newOption: string) => Promise<void>;
 };
 
 interface GuestInterestDto {
@@ -27,7 +28,9 @@ interface GuestInterestDto {
   like: boolean;
 }
 
-export const useInterestStore = create<InterestStore>((set) => ({
+const URL = `${process.env.NEXT_PUBLIC_API_URL}/interests`;
+
+export const useInterestStore = create<InterestStore>((set, get) => ({
   interestOptions: [],
   interests: [],
   noInterest: [],
@@ -36,6 +39,33 @@ export const useInterestStore = create<InterestStore>((set) => ({
 
   setInitialInterests: (interests, noInterest) => {
     set({ interests, noInterest });
+  },
+
+  addInterestOption: async (newInterest: string) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await fetch(URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newInterest }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not add a new interest option");
+      }
+
+      const newOption = await response.json();
+
+      set({
+        interestOptions: [...get().interestOptions, newOption],
+        isLoading: false,
+        error: null,
+      });
+    } catch (error) {
+      console.error(error);
+      set({ error: (error as Error).message, isLoading: false });
+    }
   },
 
   fetchInterestOptions: async () => {

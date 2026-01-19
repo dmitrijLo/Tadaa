@@ -11,12 +11,8 @@ export default function InterestOptionComponent({
   guest: Guest;
   guestId: string;
 }) {
-  const {
-    interestOptions,
-    fetchInterestOptions,
-    isLoading,
-    setInitialInterests,
-  } = useInterestStore();
+  const { fetchInterestOptions, isLoading, setInitialInterests } =
+    useInterestStore();
 
   React.useEffect(() => {
     fetchInterestOptions();
@@ -25,13 +21,5 @@ export default function InterestOptionComponent({
     }
   }, [fetchInterestOptions, guest, setInitialInterests]);
 
-  return (
-    <>
-      <InterestPicker
-        guestId={guestId}
-        interests={interestOptions}
-        isLoading={isLoading}
-      />
-    </>
-  );
+  return <InterestPicker guestId={guestId} isLoading={isLoading} />;
 }

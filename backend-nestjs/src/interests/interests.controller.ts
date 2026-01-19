@@ -20,7 +20,6 @@ export class InterestsController {
     return this.interestsService.findAll();
   }
 
-  // TODO should have a valid token of some kind just for protection idealy id of existing user
   @Post()
   create(@Body() createInterestDto: CreateInterestDto): Promise<InterestDto> {
     return this.interestsService.create(createInterestDto);

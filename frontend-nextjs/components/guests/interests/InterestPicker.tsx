@@ -1,19 +1,25 @@
-import { Card, Divider, Form, Tag, Flex, Spin } from "antd";
-import React from "react";
+import React, { useState } from "react";
+import { Card, Divider, Form, Tag, Flex, Spin, Input, Button } from "antd";
 import { useInterestStore } from "@/stores/useInterestStore";
 const { CheckableTag } = Tag;
 
 export default function InterestPicker({
-  interests: interestOptions,
   guestId,
   isLoading,
 }: {
-  interests: { name: string; id: string }[] | undefined;
   guestId: string;
   isLoading: boolean;
 }) {
-  const { interests, noInterest, addInterest, removeInterest } =
-    useInterestStore();
+  const {
+    interestOptions,
+    interests,
+    noInterest,
+    addInterest,
+    removeInterest,
+    addInterestOption,
+  } = useInterestStore();
+
+  const [newInterest, setNewInterest] = useState("");
 
   const handleToggle = async (
     interestId: string,
@@ -25,6 +31,13 @@ export default function InterestPicker({
       await removeInterest(guestId, interestId, like);
     } else {
       await addInterest(guestId, interestId, like);
+    }
+  };
+
+  const handleAddInterest = async () => {
+    if (newInterest.trim() !== "") {
+      await addInterestOption(newInterest);
+      setNewInterest("");
     }
   };
 
@@ -62,7 +75,21 @@ export default function InterestPicker({
 
   return (
     <Card
-      title="Choose your interests"
+      title={
+        <Flex align="center" justify="space-between" wrap="wrap" gap={8}>
+          <span>Choose your interests</span>
+          <Flex gap={8}>
+            <Input
+              value={newInterest}
+              onChange={(e) => setNewInterest(e.target.value)}
+              onPressEnter={handleAddInterest}
+              placeholder="Add an option"
+              style={{ width: "200px" }}
+            />
+            <Button onClick={handleAddInterest}>Add</Button>
+          </Flex>
+        </Flex>
+      }
       size="small"
       style={{ maxWidth: 600, margin: "0 auto" }}
     >
