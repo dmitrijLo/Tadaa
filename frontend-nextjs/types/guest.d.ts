@@ -15,6 +15,17 @@ interface Event {
   updatedAt: Date;
 }
 
+export interface CreateEventDto {
+  name: string;
+  description: string;
+  budget: number;
+  eventMode: EventMode;
+  drawRule: DrawRule;
+  eventDate: string;
+  invitationDate: string;
+  draftDate: string;
+}
+
 interface Assignment {
   id: string;
   eventId: string;

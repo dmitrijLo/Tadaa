@@ -17,7 +17,7 @@ const modeIcons: Record<EventMode, React.ReactNode> = {
 const options: SelectProps["options"] = eventModesMock.map((mode) => ({
   label: mode.name,
   value: mode.modus,
-  disabled: mode.modus === EventMode.CUSTOM || mode.modus === EventMode.SCRAP,
+  disabled: mode.modus === EventMode.CUSTOM,
 }));
 
 type ModeSelectorProps = {
@@ -26,7 +26,7 @@ type ModeSelectorProps = {
 
 export default function ModeSelector({ onModeChange }: ModeSelectorProps) {
   const [selectedMode, setSelectedMode] = useState<EventMode>(
-    EventMode.CLASSIC
+    EventMode.CLASSIC,
   );
 
   const handleChange = (value: EventMode) => {
@@ -40,18 +40,14 @@ export default function ModeSelector({ onModeChange }: ModeSelectorProps) {
   };
 
   return (
-    <>
-      <Card title="Modus auswählen" size="small">
-        <Space orientation="vertical" size="small" style={{ display: "flex" }}>
-          <Select<EventMode>
-            value={selectedMode}
-            {...sharedProps}
-            style={{ width: "100%" }}
-            onChange={handleChange}
-          />
-          <ModeExplainer activeEventMode={selectedMode} />
-        </Space>
-      </Card>
-    </>
+    <Space orientation="vertical" size="small" style={{ display: "flex" }}>
+      <Select<EventMode>
+        value={selectedMode}
+        {...sharedProps}
+        style={{ width: "100%" }}
+        onChange={handleChange}
+      />
+      <ModeExplainer activeEventMode={selectedMode} />
+    </Space>
   );
 }
