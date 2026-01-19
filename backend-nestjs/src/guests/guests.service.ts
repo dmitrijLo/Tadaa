@@ -6,7 +6,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
-import { UpdateGuestDto } from './dto/update-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
 import { Repository } from 'typeorm';
@@ -24,20 +23,14 @@ export class GuestsService {
 
   // create a new guest
   // TODO uuids should be generted by pg, also make inveite token and guest id same
-  async create(
-    eventId: string,
-    userId: string,
-    createGuestDto: CreateGuestDto,
-  ): Promise<Guest> {
+  async create(eventId: string, userId: string, createGuestDto: CreateGuestDto): Promise<Guest> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
     });
 
     if (!event) throw new NotFoundException('Event not found!');
     if (event.hostId !== userId) {
-      throw new ForbiddenException(
-        'You are not allowed to add guests to this event!',
-      );
+      throw new ForbiddenException('You are not allowed to add guests to this event!');
     }
 
     const { email } = createGuestDto;
@@ -46,9 +39,7 @@ export class GuestsService {
     });
 
     if (existingGuest) {
-      throw new ConflictException(
-        'Guest with this email already exists for this event.',
-      );
+      throw new ConflictException('Guest with this email already exists for this event.');
     }
 
     const newGuest = this.guestRepository.create({
@@ -82,5 +73,10 @@ export class GuestsService {
       interests,
       noInterest,
     };
+  }
+
+  async findAllGuestsByEventId(eventId: string): Promise<Guest[]> {
+    const guests = await this.guestRepository.findBy({ eventId });
+    return guests;
   }
 }

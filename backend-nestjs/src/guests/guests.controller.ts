@@ -1,4 +1,4 @@
-import { Controller, Get, Param, NotFoundException, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
 import { GuestsService } from './guests.service';
 
 @Controller('guests')
@@ -7,12 +7,7 @@ export class GuestsController {
 
   // get guest by invite token
   @Get(':guestId')
-  async findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
-    const guest = await this.guestsService.findOneByToken(guestId);
-    if (!guest) {
-      throw new NotFoundException('Guest not found');
-    }
-
-    return guest;
+  findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
+    return this.guestsService.findOneById(guestId);
   }
 }
