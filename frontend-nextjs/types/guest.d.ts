@@ -41,7 +41,6 @@ export interface Guest {
   receivedAssignments?: Assignment[];
 }
 
-export interface CreateGuestDto {
-  name: string;
-  email: string;
-}
+export type CreateGuestDto = Pick<Guest, ["name", "email"]>;
+
+export type UpdateGuestDto = Partial<Guest>;
