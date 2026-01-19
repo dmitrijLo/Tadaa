@@ -79,6 +79,6 @@ interface Event {
   guests: Guest[];
 }
 
-export type CreateGuestDto = Pick<Guest, "name" | "email">;
+type CreateGuestDto = Pick<Guest, "name" | "email">;
 
-export type UpdateGuestDto = Partial<Guest>;
+type UpdateGuestDto = Partial<Guest>;
