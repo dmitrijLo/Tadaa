@@ -8,6 +8,7 @@ import {
   ApiUnauthorizedResponse,
   ApiResponse,
   ApiTags,
+  ApiOkResponse,
 } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -16,6 +17,7 @@ import { JwtDevGuard } from '../auth/guards/jwt-dev.guard';
 import { GuestsService } from 'src/guests/guests.service';
 import { CreateGuestDto } from 'src/guests/dto/create-guest.dto';
 import { UserFromRequest } from 'src/decorators/user-payload.decorator';
+import { GuestResponseDto } from 'src/guests/dto/guest-response.dto';
 
 @ApiTags('Events')
 @Controller('events')
@@ -29,8 +31,10 @@ export class EventsController {
   ) {}
 
   @Get(':eventId/guests')
-  async getGuests(@Param('eventId', ParseUUIDPipe) eventId: string) {
-    return [];
+  @ApiOperation({ summary: 'Receive all guest of specific event.' })
+  @ApiOkResponse({ type: [GuestResponseDto], description: 'Receive a list of guests.' })
+  async getGuests(@Param('eventId', ParseUUIDPipe) eventId: string, @UserFromRequest() user: { id: string }) {
+    return this.eventsService.findAllEventGuests(eventId, user.id);
   }
 
   @Post(':eventId/guests')
@@ -51,10 +55,10 @@ export class EventsController {
   }
 
   // get all guests for event with status:
-  @Get(':id/readiness')
-  findAllGuests(@Param('id', ParseUUIDPipe) id: string) {
-    return this.eventsService.findAllEventGuests(id);
-  }
+  // @Get(':id/readiness')
+  // findAllGuests(@Param('id', ParseUUIDPipe) id: string) {
+  //   return this.eventsService.findAllEventGuests(id);
+  // }
 
   @Post()
   @ApiOperation({ summary: 'Create a new event.' })

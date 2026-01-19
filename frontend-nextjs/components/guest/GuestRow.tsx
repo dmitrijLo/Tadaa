@@ -1,7 +1,10 @@
-import { CreateGuestDto, Guest } from "@/types/guest";
+import { CreateGuestDto, Guest, UpdateGuestDto } from "@/types/guest";
 import {
+  CheckOutlined,
+  CloseOutlined,
   EditOutlined,
   HolderOutlined,
+  LinkOutlined,
   MailOutlined,
   PlusOutlined,
   UserOutlined,
@@ -10,8 +13,16 @@ import { api } from "@/utils/api";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import styles from "./Guest.module.css";
-import { Button, Input, message } from "antd";
+import { Tag, Button, Input, message } from "antd";
 import { AxiosError } from "axios";
+
+const STATUS_TAG: Record<string, string> = {
+  default: "cyan",
+  invited: "geekblue",
+  opened: "gold",
+  accepted: "green",
+  denied: "volcano",
+};
 
 interface GuestRowProps {
   eventId: string;
@@ -25,6 +36,7 @@ export default function GuestRow({
   onGuestAdded,
 }: GuestRowProps) {
   const isExistent = !!guest;
+  const [inEditMode, setInEditMode] = useState(!guest);
   const [isSaving, setIsSaving] = useState(false);
 
   const {
@@ -36,6 +48,24 @@ export default function GuestRow({
     mode: "onChange",
     defaultValues: { name: guest?.name || "", email: guest?.email || "" },
   });
+
+  const handleOnEditClick = () => {
+    setInEditMode(true);
+  };
+
+  const handleOnCancelClick = () => {
+    setInEditMode(false);
+    reset();
+  };
+
+  const handleCopyLink = async () => {
+    if (!guest?.inviteToken) return;
+    const url = `${window.location.origin}/invitation/${guest.inviteToken}`;
+    await navigator.clipboard.writeText(url);
+    message.success("Einladungs-Link kopiert!");
+  };
+
+  const onPatch = async (data: UpdateGuestDto) => {};
 
   const onSubmit = async (data: CreateGuestDto) => {
     if (isExistent) {
@@ -76,7 +106,7 @@ export default function GuestRow({
             <HolderOutlined />
           </div>
         )}
-        {/* Name Input */}
+        {/* Name Input -  */}
         <div className={`${styles.areaName} ${styles.inputWrapper}`}>
           <Controller
             name="name"
@@ -92,7 +122,7 @@ export default function GuestRow({
                   placeholder="Name des Gastes"
                   prefix={<UserOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
                   status={error ? "error" : ""}
-                  disabled={isExistent}
+                  disabled={!inEditMode}
                   variant={isExistent ? "borderless" : "outlined"}
                   style={{ paddingLeft: isExistent ? 0 : 11 }}
                 />
@@ -105,7 +135,7 @@ export default function GuestRow({
             )}
           />
         </div>
-        {/* Email Input */}
+        {/* Email Input -  */}
         <div className={`${styles.areaEmail} ${styles.inputWrapper}`}>
           <Controller
             name="email"
@@ -121,7 +151,7 @@ export default function GuestRow({
                   placeholder="email@example.de"
                   prefix={<MailOutlined style={{ color: "rgba(0,0,0,.25)" }} />}
                   status={error ? "error" : ""}
-                  disabled={isExistent}
+                  disabled={!inEditMode}
                   variant={isExistent ? "borderless" : "outlined"}
                   style={{ paddingLeft: isExistent ? 0 : 11 }}
                 />
@@ -134,14 +164,50 @@ export default function GuestRow({
             )}
           />
         </div>
+        {/* Status Badge */}
+        <div className={styles.areaStatus}>
+          {isExistent && !inEditMode && (
+            <Tag
+              color={STATUS_TAG[guest.inviteStatus || "default"]}
+              variant="solid"
+            >
+              {guest.inviteStatus}
+            </Tag>
+          )}
+        </div>
+
         {/* Actions */}
         <div className={styles.areaActions}>
           {isExistent ? (
-            <Button
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => console.log("Edit clicked")}
-            />
+            inEditMode ? (
+              <>
+                <Button
+                  type="text"
+                  icon={<CheckOutlined style={{ color: "green" }} />}
+                  onClick={handleSubmit(onPatch)}
+                  loading={isSaving}
+                />
+                <Button
+                  type="text"
+                  icon={<CloseOutlined style={{ color: "volcano" }} />}
+                  onClick={handleOnCancelClick}
+                />
+              </>
+            ) : (
+              <>
+                <Button
+                  type="text"
+                  icon={<LinkOutlined />}
+                  onClick={handleCopyLink}
+                  title="Copy Invitation Link"
+                />
+                <Button
+                  type="text"
+                  icon={<EditOutlined />}
+                  onClick={handleOnEditClick}
+                />
+              </>
+            )
           ) : (
             <Button
               type="primary"
@@ -159,3 +225,4 @@ export default function GuestRow({
     </div>
   );
 }
+// <Button type="text" icon={<EditOutlined />} onClick={handleOnEditClick} />;

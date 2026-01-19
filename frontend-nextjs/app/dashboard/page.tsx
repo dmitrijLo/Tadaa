@@ -1,21 +1,33 @@
-import GuestList from "@/components/guest/GuestList";
-import { BACKEND_URL, getAuthHeader, TEST_EVENT_UUID } from "@/utils/api";
+import { BACKEND_URL, getAuthHeader } from "@/utils/api";
+import DashboardEvents, {
+  EventSummary,
+} from "@/components/dashboard/DashboardEvents";
 
 export default async function DashboardPage() {
-  const response = await fetch(
-    `${BACKEND_URL}/events/${TEST_EVENT_UUID}/guests`,
-    {
+  let events: EventSummary[] = [];
+
+  try {
+    const res = await fetch(`${BACKEND_URL}/events`, {
       cache: "no-store",
       headers: getAuthHeader(),
-    },
-  );
+    });
+    if (res.ok) events = await res.json();
+  } catch (e) {
+    console.error("Fetch Error", e);
+  }
 
-  if (!response.ok) return <div>Fehler beim Laden der Gäste</div>;
+  console.log(events);
+  // // MOCK DATA
+  // if (events.length === 0) {
+  //   events = [
+  //     { id: "e77b9a3f-911d-41d4-807b-8f4e315c6f31", title: "Test Geburtstag" },
+  //     { id: "demo-id-2", title: "Weihnachtsfeier 2024" },
+  //   ];
+  // }
 
-  const initialGuests = await response.json();
   return (
-    <div className="p-8">
-      <GuestList eventId={TEST_EVENT_UUID} initialGuests={initialGuests} />
-    </div>
+    <>
+      <DashboardEvents events={events} />;
+    </>
   );
 }
