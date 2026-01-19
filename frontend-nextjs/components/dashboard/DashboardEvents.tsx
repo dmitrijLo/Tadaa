@@ -6,7 +6,7 @@ const { Title } = Typography;
 
 export interface EventSummary {
   id: string;
-  title: string;
+  name: string;
 }
 
 interface Props {
@@ -37,7 +37,7 @@ export default function DashboardEvents({ events }: Props) {
                   size="small"
                   className="text-center font-medium"
                 >
-                  {event.title}
+                  {event.name}
                 </Card>
               </Link>
             ))}

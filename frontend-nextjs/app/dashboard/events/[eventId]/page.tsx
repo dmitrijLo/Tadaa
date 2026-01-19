@@ -2,11 +2,11 @@ import GuestList from "@/components/guest/GuestList";
 import { BACKEND_URL, getAuthHeader } from "@/utils/api";
 
 interface PageProps {
-  params: { eventId: string };
+  params: Promise<{ eventId: string }>;
 }
 
 export default async function EventDetailPage({ params }: PageProps) {
-  const { eventId } = params;
+  const { eventId } = await params;
   const response = await fetch(`${BACKEND_URL}/events/${eventId}/guests`, {
     cache: "no-store",
     headers: getAuthHeader(),

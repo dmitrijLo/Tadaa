@@ -16,13 +16,14 @@ export default async function DashboardPage() {
     console.error("Fetch Error", e);
   }
 
-  // MOCK DATA
-  if (events.length === 0) {
-    events = [
-      { id: "e77b9a3f-911d-41d4-807b-8f4e315c6f31", title: "Test Geburtstag" },
-      { id: "demo-id-2", title: "Weihnachtsfeier 2024" },
-    ];
-  }
+  console.log(events);
+  // // MOCK DATA
+  // if (events.length === 0) {
+  //   events = [
+  //     { id: "e77b9a3f-911d-41d4-807b-8f4e315c6f31", title: "Test Geburtstag" },
+  //     { id: "demo-id-2", title: "Weihnachtsfeier 2024" },
+  //   ];
+  // }
 
   return (
     <>
