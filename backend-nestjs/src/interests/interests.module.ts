@@ -3,19 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { InterestsService } from './interests.service';
 import { InterestsController } from './interests.controller';
 import { InterestOption } from './entities/interest-option.entity';
-import { GuestInterest } from './entities/guest-interest.entity';
-import { GuestNoInterest } from './entities/guest-no-interest.entity';
+import { Guest } from 'src/guests/entities/guest.entity';
+import { GuestInterestsService } from './guestInterests.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      InterestOption,
-      GuestInterest,
-      GuestNoInterest,
-    ]),
-  ],
+  imports: [TypeOrmModule.forFeature([InterestOption, Guest])],
   controllers: [InterestsController],
-  providers: [InterestsService],
-  exports: [TypeOrmModule],
+  providers: [InterestsService, GuestInterestsService],
+  exports: [TypeOrmModule, InterestsService],
 })
 export class InterestsModule {}

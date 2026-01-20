@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import styles from "./Guest.module.css";
-import { Guest } from "@/types/guest";
 import GuestRow from "./GuestRow";
 import { Typography, Divider } from "antd";
 

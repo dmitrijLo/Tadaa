@@ -1,5 +1,3 @@
-import { EventMode } from "@/enums/enums";
-
 export type EventModeInfo = {
   modus: EventMode;
   name: string;

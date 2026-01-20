@@ -1,34 +1,41 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseUUIDPipe, Delete } from '@nestjs/common';
 import { InterestsService } from './interests.service';
 import { CreateInterestDto } from './dto/create-interest.dto';
-import { UpdateInterestDto } from './dto/update-interest.dto';
+import { InterestDto } from './dto/interest.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
+import { GuestInterestReqDto } from './dto/guest-interst.dto';
+import { GuestInterestsService } from './guestInterests.service';
 
 @Controller('interests')
 export class InterestsController {
-  constructor(private readonly interestsService: InterestsService) {}
+  constructor(
+    private readonly interestsService: InterestsService,
+    private readonly guestInterestService: GuestInterestsService,
+  ) {}
 
-  @Post()
-  create(@Body() createInterestDto: CreateInterestDto) {
-    return this.interestsService.create(createInterestDto);
-  }
-
+  // get all interest
+  @Public()
   @Get()
-  findAll() {
+  findAll(): Promise<InterestDto[]> {
     return this.interestsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.interestsService.findOne(+id);
+  @Post()
+  create(@Body() createInterestDto: CreateInterestDto): Promise<InterestDto> {
+    return this.interestsService.create(createInterestDto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateInterestDto: UpdateInterestDto) {
-    return this.interestsService.update(+id, updateInterestDto);
+  // add interst/no interest to guest:
+  // body should have interstId and like:bool indicating if this is an interest or a nointerest
+  @Post(':guestId')
+  addGuestInterest(@Param('guestId', ParseUUIDPipe) guestId: string, @Body() guestInterestDto: GuestInterestReqDto) {
+    return this.guestInterestService.addGuestInterest(guestId, guestInterestDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.interestsService.remove(+id);
+  // remove interest from guest
+  // same body as add above
+  @Delete(':guestId')
+  removeGustInterest(@Param('guestId', ParseUUIDPipe) guestId: string, @Body() guestInterestDto: GuestInterestReqDto) {
+    return this.guestInterestService.removeGuestInterest(guestId, guestInterestDto);
   }
 }
