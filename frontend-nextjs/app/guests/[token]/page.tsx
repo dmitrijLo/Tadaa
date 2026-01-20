@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import GuestCard from "./GuestCard";
-import { Guest } from "@/types/guest";
+import InterestOptionComponent from "@/components/guests/interests/InterestComponent";
 
 const fetchGuest = async (token: string): Promise<Guest | undefined> => {
   try {
@@ -19,16 +19,21 @@ export default async function Guestpage({
 }: {
   params: Promise<{ token: string }>;
 }) {
-  const token = (await params).token;
-  if (!token) {
+  const guestId = (await params).token;
+  if (!guestId) {
     notFound();
   }
 
-  const guest = await fetchGuest(token);
+  const guest = await fetchGuest(guestId);
 
   if (!guest) {
     notFound();
   }
 
-  return <GuestCard guest={guest} />;
+  return (
+    <>
+      <GuestCard guest={guest} />
+      <InterestOptionComponent guest={guest} guestId={guestId} />
+    </>
+  );
 }

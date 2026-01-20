@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card, Select, Space } from "antd";
 import type { SelectProps } from "antd";
-import { EventMode } from "@/enums/enums";
 import { GiftOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import ModeExplainer from "./ModeExplainer";
 import { eventModesMock } from "@/constants/modes";
