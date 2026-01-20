@@ -22,6 +22,7 @@ export class EventOwnerGuard implements CanActivate {
 
     const event = await this.eventService.verifyEventOwner(eventId, user.id);
     request.event = event;
+
     return true;
   }
 }
