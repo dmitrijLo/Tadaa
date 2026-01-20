@@ -1,8 +1,6 @@
 import RevealPartner from "@/components/guest/RevealPartner";
-import { Event, Guest } from "@/types/guest";
 import { notFound } from "next/navigation";
 
-// Mock-Daten für verschiedene Gäste
 const mockData = {
   event: {
     name: "Büro-Weihnachtsfeier 2025",
