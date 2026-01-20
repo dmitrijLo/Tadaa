@@ -14,11 +14,11 @@ export default function RevealPartner({ data }: { data: any }) {
       children: (
         <div className="space-y-4">
           <div>
-            <Text className="text-green-600 font-bold block mb-2 underline">
+            <Text className=" font-bold block mb-2 underline">
               <HeartOutlined className="mr-1" /> Mag ich:
             </Text>
             <Space wrap>
-              {data.receiver.interests.likes.map((item: string) => (
+              {data.receiver.interests.map((item: string) => (
                 <Tag color="green" key={item} className="rounded-md">
                   {item}
                 </Tag>
@@ -26,11 +26,11 @@ export default function RevealPartner({ data }: { data: any }) {
             </Space>
           </div>
           <div>
-            <Text className="text-red-600 font-bold block mb-2 underline">
+            <Text className=" font-bold block mb-2 underline">
               <StopOutlined className="mr-1" /> Lieber nicht:
             </Text>
             <Space wrap>
-              {data.receiver.interests.dislikes.map((item: string) => (
+              {data.receiver.noInterests.map((item: string) => (
                 <Tag color="error" key={item} className="rounded-md">
                   {item}
                 </Tag>
@@ -55,7 +55,10 @@ export default function RevealPartner({ data }: { data: any }) {
         <Paragraph>
           Die Auslosung des Events <Text strong>{data.event.name}</Text> wurde
           erfolgreich beendet. Das Event findet am{" "}
-          <Text strong>{data.event.eventDate}</Text> statt.
+          <Text strong>
+            {new Date(data.event.eventDate).toLocaleDateString("de-DE")}
+          </Text>{" "}
+          statt.
         </Paragraph>
 
         <Card>

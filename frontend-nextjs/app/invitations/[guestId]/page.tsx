@@ -6,15 +6,14 @@ const mockData = {
     name: "Büro-Weihnachtsfeier 2025",
     budget: 20,
     currency: "€",
-    eventDate: "24.12.2025", // Als String für einfachere Anzeige
+    eventDate: "2025-12-24T18:00:00.000Z",
   },
   receiver: {
     name: "Max Mustermann",
     noteForGiver: "Ich sammle Brettspiele und trinke gerne guten Tee.",
-    interests: {
-      likes: ["Brettspiele", "Tee", "Science-Fiction"],
-      dislikes: ["Süßigkeiten", "Alkohol"],
-    },
+
+    interests: ["Brettspiele", "Tee", "Science-Fiction"],
+    noInterests: ["Süßigkeiten", "Alkohol"],
   },
 };
 
@@ -25,10 +24,17 @@ export default async function ResultPage({
 }) {
   const { guestId } = await params;
 
-  // Hier später: const data = await fetchFromYourApi(guestId);
-  const data = mockData;
+  // const response = await fetch(
+  //   `${process.env.BACKEND_URL}/guests/${guestId}/assignment`,
+  //   { cache: "no-store" },
+  // );
+  // if (!response.ok) {
+  //   return notFound();
+  // }
 
-  if (!data) return notFound();
+  // const data = await response.json();
+
+  const data = mockData;
 
   return (
     <main className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4">
