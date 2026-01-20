@@ -117,7 +117,6 @@ export class EventsService implements OnApplicationBootstrap {
    */
   async verifyEventExists(eventId: string): Promise<Event> {
     const event = await this.eventRepository.findOne({ where: { id: eventId } });
-
     if (!event) throw new NotFoundException(`Event with ID "${eventId}" not found`);
 
     return event;
