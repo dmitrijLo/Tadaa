@@ -1,6 +1,5 @@
 "use client";
 
-import { headers } from "next/headers";
 import { create } from "zustand";
 
 type InterestStore = {
@@ -8,7 +7,7 @@ type InterestStore = {
   interests: InterestOption[];
   noInterest: InterestOption[];
   isLoading: boolean;
-  noteForGiver?: string;
+  noteForGiver: string;
   error: string | null;
   addInterest: (
     guestId: string,
@@ -40,7 +39,7 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
   interestOptions: [],
   interests: [],
   noInterest: [],
-  noteForGiver: undefined,
+  noteForGiver: "",
   isLoading: false,
   error: null,
 
@@ -59,11 +58,13 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
       }
 
       const data = await response.json();
-      set({ noteForGiver: data });
+      set({ noteForGiver: data, error: null, isLoading: false });
     } catch (error) {
-      throw new Error(
-        error instanceof Error ? error.message : "An unknown error occurred",
-      );
+      set({
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+        isLoading: false,
+      });
     }
   },
 

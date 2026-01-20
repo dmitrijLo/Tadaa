@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import GuestCard from "./GuestCard";
 import InterestOptionComponent from "@/components/guests/interests/InterestComponent";
+import InterestNoteComponent from "@/components/guests/interests/InterestNoteComponent";
 
 const fetchGuest = async (token: string): Promise<Guest | undefined> => {
   try {
@@ -34,6 +35,7 @@ export default async function Guestpage({
     <>
       <GuestCard guest={guest} />
       <InterestOptionComponent guest={guest} guestId={guestId} />
+      <InterestNoteComponent guestId={guestId} />
     </>
   );
 }
