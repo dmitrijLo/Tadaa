@@ -1,7 +1,6 @@
 "use client";
 
 import { Col, Collapse, Row } from "antd";
-import { EventMode } from "@/enums/enums";
 import { eventModeByModusMock as eventModes } from "@/constants/modes";
 
 type ModeExplainerProps = {

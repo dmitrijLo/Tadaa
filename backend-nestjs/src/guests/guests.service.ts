@@ -6,22 +6,23 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
-import { UpdateGuestDto } from './dto/update-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
 import { Repository } from 'typeorm';
 import { InviteStatus } from '../enums';
-
-import { randomUUID } from 'crypto';
-import { Event } from 'src/events/entities/event.entity';
+import { Event } from '../events/entities/event.entity';
 
 @Injectable()
 export class GuestsService {
   constructor(
-    @InjectRepository(Guest) private guestRepository: Repository<Guest>,
-    @InjectRepository(Event) private eventRepository: Repository<Event>,
+    @InjectRepository(Guest)
+    private guestRepository: Repository<Guest>,
+    @InjectRepository(Event)
+    private eventRepository: Repository<Event>,
   ) {}
 
+  // create a new guest
+  // TODO uuids should be generted by pg, also make inveite token and guest id same
   async create(eventId: string, userId: string, createGuestDto: CreateGuestDto): Promise<Guest> {
     const event = await this.eventRepository.findOne({
       where: { id: eventId },
@@ -44,7 +45,6 @@ export class GuestsService {
     const newGuest = this.guestRepository.create({
       ...createGuestDto,
       eventId: eventId,
-      inviteToken: randomUUID(),
       inviteStatus: InviteStatus.INVITED,
     });
 
@@ -56,23 +56,27 @@ export class GuestsService {
   }
 
   // get guestpage by token
-  async findOneByToken(token: string) {
+  async findOneById(guestId: string) {
     const guest = await this.guestRepository.findOne({
-      where: { inviteToken: token },
-      relations: ['event'],
+      where: { id: guestId },
+      relations: ['event', 'interests', 'no_interests'],
     });
-    return guest;
+    if (!guest) {
+      return null;
+    }
+
+    const interests = (guest.interests || []).map((interest) => interest.id);
+    const noInterest = (guest.no_interests || []).map((interest) => interest.id);
+
+    return {
+      ...guest,
+      interests,
+      noInterest,
+    };
   }
 
-  findAll() {
-    return `This action returns all guests`;
-  }
-
-  update(id: number, updateGuestDto: UpdateGuestDto) {
-    return `This action updates a #${id} guest`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} guest`;
+  async findAllGuestsByEventId(eventId: string): Promise<Guest[]> {
+    const guests = await this.guestRepository.findBy({ eventId });
+    return guests;
   }
 }
