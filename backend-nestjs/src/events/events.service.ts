@@ -113,15 +113,15 @@ export class EventsService implements OnApplicationBootstrap {
    */
   async verifyEventExists(eventId: string): Promise<Event> {
     const event = await this.eventRepository.findOne({ where: { id: eventId } });
-
     if (!event) throw new NotFoundException(`Event with ID "${eventId}" not found`);
+
     return event;
   }
 
   async verifyEventOwner(eventId: string, userId: string): Promise<Event> {
     const event = await this.verifyEventExists(eventId);
-
     if (event.hostId !== userId) throw new ForbiddenException('You are not allowed to access the guest list.');
+
     return event;
   }
 }

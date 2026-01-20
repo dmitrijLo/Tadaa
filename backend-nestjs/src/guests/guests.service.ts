@@ -30,7 +30,7 @@ export class GuestsService {
     const newGuest = this.guestRepository.create({
       ...createGuestDto,
       eventId: event.id,
-      inviteStatus: InviteStatus.DRAFT as InviteStatus,
+      inviteStatus: InviteStatus.DRAFT,
     });
 
     const savedGuest = await this.guestRepository.save(newGuest);
