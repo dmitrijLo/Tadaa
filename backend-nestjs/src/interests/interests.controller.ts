@@ -5,6 +5,7 @@ import { InterestDto } from './dto/interest.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { GuestInterestReqDto } from './dto/guest-interst.dto';
 import { GuestInterestsService } from './guestInterests.service';
+import { NoteForGiverDto } from './dto/interest-note.dto';
 
 @Controller('interests')
 export class InterestsController {
@@ -37,5 +38,10 @@ export class InterestsController {
   @Delete(':guestId')
   removeGustInterest(@Param('guestId', ParseUUIDPipe) guestId: string, @Body() guestInterestDto: GuestInterestReqDto) {
     return this.guestInterestService.removeGuestInterest(guestId, guestInterestDto);
+  }
+
+  @Post(':guestId/note')
+  addNoteForGiver(@Param('guestId', ParseUUIDPipe) guestId: string, @Body() noteDto: NoteForGiverDto) {
+    return this.guestInterestService.submitNoteForGiver(guestId, noteDto.noteForGiver);
   }
 }

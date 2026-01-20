@@ -16,6 +16,8 @@ export class GuestInterestsService {
 
   // add interest to either relationship of guest interest or no_interest
   // find guest by id, like: true =interest | false = no_interest,
+  //
+  // TODO imlplement logic so that interest can not be submitted to both
 
   async addGuestInterest(guestId: string, guestInterestDto: GuestInterestReqDto) {
     const { like, interestId } = guestInterestDto;
@@ -37,7 +39,7 @@ export class GuestInterestsService {
 
     return guest[relationship];
   }
-
+  // romve an interst from guest
   async removeGuestInterest(guestId: string, guestInterestDto: GuestInterestReqDto) {
     const { like, interestId } = guestInterestDto;
     const relationship = like ? 'interests' : 'no_interests';
@@ -57,5 +59,15 @@ export class GuestInterestsService {
     }
 
     return guest[relationship];
+  }
+
+  async submitNoteForGiver(guestId: string, noteforGiver: string) {
+    const guest = await this.GuestRepository.findOne({ where: { id: guestId } });
+    if (!guest) throw new NotFoundException(`Could not find guest with id ${guestId}`);
+
+    guest.noteForGiver = noteforGiver;
+    await this.GuestRepository.save(guest);
+
+    return guest.noteForGiver;
   }
 }
