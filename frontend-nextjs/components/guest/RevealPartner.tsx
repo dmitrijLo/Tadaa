@@ -1,11 +1,15 @@
 "use client";
 import { Card, Typography, Collapse, Tag, Divider, Space } from "antd";
 import { HeartOutlined, StopOutlined } from "@ant-design/icons";
+import { notFound } from "next/navigation";
 
-const { Title, Text, Paragraph } = Typography;
-const { Panel } = Collapse;
+const { Text, Paragraph } = Typography;
 
-export default function RevealPartner({ data }: { data: any }) {
+export default function RevealPartner({ guest }: { guest: Guest }) {
+  const { assignedRecipient } = guest;
+
+  if (!assignedRecipient) notFound();
+
   const collapseItems = [
     {
       key: "1",
@@ -18,11 +22,20 @@ export default function RevealPartner({ data }: { data: any }) {
               <HeartOutlined className="mr-1" /> Mag ich:
             </Text>
             <Space wrap>
-              {data.receiver.interests.map((item: string) => (
-                <Tag color="green" key={item} className="rounded-md">
-                  {item}
-                </Tag>
-              ))}
+              {assignedRecipient.interests &&
+              assignedRecipient.interests.length > 0
+                ? assignedRecipient.interests.map(
+                    (interest: InterestOption) => (
+                      <Tag
+                        color="green"
+                        key={interest.id}
+                        className="rounded-md"
+                      >
+                        {interest.name}
+                      </Tag>
+                    ),
+                  )
+                : "No interests listed"}
             </Space>
           </div>
           <div>
@@ -30,11 +43,20 @@ export default function RevealPartner({ data }: { data: any }) {
               <StopOutlined className="mr-1" /> Lieber nicht:
             </Text>
             <Space wrap>
-              {data.receiver.noInterests.map((item: string) => (
-                <Tag color="error" key={item} className="rounded-md">
-                  {item}
-                </Tag>
-              ))}
+              {assignedRecipient.noInterest &&
+              assignedRecipient.noInterest.length > 0
+                ? assignedRecipient.noInterest.map(
+                    (interest: InterestOption) => (
+                      <Tag
+                        color="error"
+                        key={interest.id}
+                        className="rounded-md"
+                      >
+                        {interest.name}
+                      </Tag>
+                    ),
+                  )
+                : "No no interests listed"}
             </Space>
           </div>
         </div>
@@ -53,26 +75,25 @@ export default function RevealPartner({ data }: { data: any }) {
       <div className="space-y-4">
         {/* Haupttext */}
         <Paragraph>
-          Die Auslosung des Events <Text strong>{data.event.name}</Text> wurde
+          Die Auslosung des Events <Text strong>{guest.event.name}</Text> wurde
           erfolgreich beendet. Das Event findet am{" "}
           <Text strong>
-            {new Date(data.event.eventDate).toLocaleDateString("de-DE")}
+            {new Date(guest.event.eventDate).toLocaleDateString("de-DE")}
           </Text>{" "}
           statt.
         </Paragraph>
 
         <Card>
           <Paragraph className="mb-0">
-            Kaufe nun dein Geschenk für <Text strong>{data.receiver.name}</Text>{" "}
-            im Wert von{" "}
+            Kaufe nun dein Geschenk für{" "}
+            <Text strong>{assignedRecipient.name}</Text> im Wert von{" "}
             <Text strong>
-              {data.event.budget} {data.event.currency}
+              {guest.event.budget} {guest.event.currency}
             </Text>
             .
           </Paragraph>
           <div className="bg-slate-50 rounded-lg border-2 border-dashed border-gray-300 my-4 p-3">
             <div className="flex justify-center items-center mt-2">
-              {" "}
               <Text
                 type="secondary"
                 className="text-sm justify-center flex mt-2"
@@ -93,14 +114,13 @@ export default function RevealPartner({ data }: { data: any }) {
 
         <Divider className="my-2" />
 
-        {/* Notiz des Empfängers */}
-        {data.receiver.noteForGiver && (
+        {assignedRecipient.noteForGiver && (
           <div className="mb-4">
             <Text type="secondary" className="uppercase font-bold text-[10px]">
               Persönliche Notiz für dich:
             </Text>
             <div className="p-3 bg-gray-50 rounded-lg border-l-4 mt-1">
-              <Text italic>"{data.receiver.noteForGiver}"</Text>
+              <Text italic>{assignedRecipient.noteForGiver}</Text>
             </div>
           </div>
         )}

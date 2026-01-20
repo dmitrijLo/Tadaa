@@ -11,7 +11,6 @@ import { Guest } from './entities/guest.entity';
 import { Repository } from 'typeorm';
 import { InviteStatus } from '../enums';
 import { Event } from '../events/entities/event.entity';
-import { AssignmentDto } from './dto/assignment.dto';
 
 @Injectable()
 export class GuestsService {
@@ -81,30 +80,15 @@ export class GuestsService {
     return guests;
   }
 
-  async getAssignment(guestId: string): Promise<AssignmentDto> {
+  async getAssignment(guestId: string): Promise<Guest> {
     const guest = await this.guestRepository.findOne({
       where: { id: guestId },
       relations: ['event', 'assignedRecipient', 'assignedRecipient.interests', 'assignedRecipient.no_interests'],
     });
+
     if (!guest || !guest.assignedRecipient) {
       throw new NotFoundException('Assignment not found for this guest.');
     }
-
-    const receiver = guest.assignedRecipient;
-
-    return {
-      event: {
-        name: guest.event.name,
-        budget: guest.event.budget,
-        currency: guest.event.currency,
-        eventDate: guest.event.eventDate,
-      },
-      receiver: {
-        name: receiver.name,
-        noteForGiver: receiver.noteForGiver,
-        interests: receiver.interests.map((i) => i.name),
-        noInterests: receiver.no_interests.map((i) => i.name),
-      },
-    };
+    return guest;
   }
 }
