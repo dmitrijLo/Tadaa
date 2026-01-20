@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, MinLength } from 'class-validator';
-import { InviteStatus } from 'src/enums';
 
 export class BaseGuestDto {
   @ApiProperty({ example: 'Max Power' })

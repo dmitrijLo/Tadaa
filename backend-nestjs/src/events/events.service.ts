@@ -67,13 +67,6 @@ export class EventsService implements OnApplicationBootstrap {
     return await this.eventRepository.save(event);
   }
 
-  async findAllEventGuests(eventId: string, userId: string): Promise<GuestResponseDto[]> {
-    await this.verifyEventOwner(eventId, userId);
-    const guestList = await this.guestService.findAllGuestsByEventId(eventId);
-
-    return plainToInstance(GuestResponseDto, guestList);
-  }
-
   findAll(): Promise<Event[]> {
     return this.eventRepository.find();
   }
@@ -106,7 +99,7 @@ export class EventsService implements OnApplicationBootstrap {
    * Helper Methods
    */
   async verifyEventExists(eventId: string): Promise<Event> {
-    const event = await this.eventRepository.findOne({ where: { id: eventId }, select: ['id', 'hostId'] });
+    const event = await this.eventRepository.findOne({ where: { id: eventId } });
     if (!event) throw new NotFoundException(`Event with ID "${eventId}" not found`);
     return event;
   }

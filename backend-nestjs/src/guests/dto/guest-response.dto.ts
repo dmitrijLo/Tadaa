@@ -5,9 +5,6 @@ export class GuestResponseDto extends BaseGuestDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty()
-  inviteToken: string;
-
   @ApiProperty({ required: false, nullable: true })
   noteForGiver: string | null;
 

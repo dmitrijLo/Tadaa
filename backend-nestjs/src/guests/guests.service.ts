@@ -1,42 +1,25 @@
-import {
-  BadRequestException,
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
 import { Repository } from 'typeorm';
 import { InviteStatus } from '../enums';
 import { Event } from '../events/entities/event.entity';
+import { GuestResponseDto } from './dto/guest-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class GuestsService {
   constructor(
     @InjectRepository(Guest)
     private guestRepository: Repository<Guest>,
-    @InjectRepository(Event)
-    private eventRepository: Repository<Event>,
   ) {}
 
   // create a new guest
-  // TODO uuids should be generted by pg, also make inveite token and guest id same
-  async create(eventId: string, userId: string, createGuestDto: CreateGuestDto): Promise<Guest> {
-    const event = await this.eventRepository.findOne({
-      where: { id: eventId },
-    });
-
-    if (!event) throw new NotFoundException('Event not found!');
-    if (event.hostId !== userId) {
-      throw new ForbiddenException('You are not allowed to add guests to this event!');
-    }
-
+  async create(event: Event, createGuestDto: CreateGuestDto): Promise<GuestResponseDto> {
     const { email } = createGuestDto;
     const existingGuest = await this.guestRepository.findOne({
-      where: { email, eventId },
+      where: { email, eventId: event.id },
     });
 
     if (existingGuest) {
@@ -45,15 +28,12 @@ export class GuestsService {
 
     const newGuest = this.guestRepository.create({
       ...createGuestDto,
-      eventId: eventId,
-      inviteStatus: InviteStatus.INVITED,
+      eventId: event.id,
+      inviteStatus: InviteStatus.DRAFT,
     });
 
-    try {
-      return await this.guestRepository.save(newGuest);
-    } catch {
-      throw new InternalServerErrorException();
-    }
+    const savedGuest = await this.guestRepository.save(newGuest);
+    return plainToInstance(GuestResponseDto, savedGuest, { excludeExtraneousValues: true });
   }
 
   async removeGuest(event: Event, guestId: string) {
@@ -87,8 +67,8 @@ export class GuestsService {
     };
   }
 
-  async findAllGuestsByEventId(eventId: string): Promise<Guest[]> {
+  async findAllGuestsByEventId(eventId: string): Promise<GuestResponseDto[]> {
     const guests = await this.guestRepository.findBy({ eventId });
-    return guests;
+    return plainToInstance(GuestResponseDto, guests);
   }
 }
