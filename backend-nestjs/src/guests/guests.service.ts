@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -53,6 +54,17 @@ export class GuestsService {
     } catch {
       throw new InternalServerErrorException();
     }
+  }
+
+  async removeGuest(event: Event, guestId: string) {
+    const guest = await this.guestRepository.findOneBy({ id: guestId, eventId: event.id });
+
+    if (!guest) throw new NotFoundException('Guest not found for this event.');
+
+    if (guest.inviteStatus !== InviteStatus.DRAFT)
+      throw new BadRequestException('Cannot remove guest. Invitation already sent.');
+
+    await this.guestRepository.remove(guest);
   }
 
   // get guestpage by token

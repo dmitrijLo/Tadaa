@@ -18,6 +18,8 @@ import { GuestsService } from 'src/guests/guests.service';
 import { CreateGuestDto } from 'src/guests/dto/create-guest.dto';
 import { UserFromRequest } from 'src/decorators/user-payload.decorator';
 import { GuestResponseDto } from 'src/guests/dto/guest-response.dto';
+import { EventOwnerGuard } from './guards/event-owner.guard';
+import { EventFromRequest } from 'src/decorators/event-payload.decorator';
 
 @ApiTags('Events')
 @Controller('events')
@@ -35,6 +37,21 @@ export class EventsController {
   @ApiOkResponse({ type: [GuestResponseDto], description: 'Receive a list of guests.' })
   async getGuests(@Param('eventId', ParseUUIDPipe) eventId: string, @UserFromRequest() user: { id: string }) {
     return this.eventsService.findAllEventGuests(eventId, user.id);
+  }
+
+  @Delete(':eventId/guests/:guestId') // :eventId bleibt in der Route!
+  @UseGuards(EventOwnerGuard)
+  // Swagger Updates:
+  @ApiResponse({ status: 204, description: 'Guest successfully removed.' })
+  @ApiResponse({ status: 400, description: 'Bad Request. Guest already invited.' }) // Korrigiert
+  @ApiResponse({ status: 403, description: 'Forbidden. Not event owner.' })
+  @ApiResponse({ status: 404, description: 'Guest not found.' })
+  removeGuest(
+    // eventId hier gelöscht, da wir es eh nicht nutzen
+    @Param('guestId', ParseUUIDPipe) guestId: string,
+    @EventFromRequest() event: Event,
+  ) {
+    return this.guestsService.removeGuest(event, guestId);
   }
 
   @Post(':eventId/guests')

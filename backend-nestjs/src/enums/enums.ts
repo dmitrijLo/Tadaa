@@ -1,4 +1,5 @@
 export enum EventStatus {
+  DRAFT = 'draft',
   CREATED = 'created',
   INVITED = 'invited',
   ASSIGNED = 'assigned',
@@ -18,6 +19,7 @@ export enum DrawRule {
 }
 
 export enum InviteStatus {
+  DRAFT = 'draft',
   INVITED = 'invited',
   OPENED = 'opened',
   ACCEPTED = 'accepted',
