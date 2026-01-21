@@ -65,13 +65,10 @@ export class GuestsService {
       return null;
     }
 
-    const interests = (guest.interests || []).map((interest) => interest.id);
-    const noInterest = (guest.no_interests || []).map((interest) => interest.id);
-
     return {
       ...guest,
-      interests,
-      noInterest,
+      interests: guest.interests || [],
+      noInterest: guest.no_interests || [],
     };
   }
 

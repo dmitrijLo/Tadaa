@@ -16,7 +16,6 @@ export default function InterestOptionComponent({
 
   React.useEffect(() => {
     fetchInterestOptions();
-
     if (guest.interests && guest.noInterest) {
       setInitialInterests(guest.interests, guest.noInterest);
     }
