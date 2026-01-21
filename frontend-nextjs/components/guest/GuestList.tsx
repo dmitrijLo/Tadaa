@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./Guest.module.css";
 import GuestRow from "./GuestRow";
 import { Typography, Divider } from "antd";
+import { useGuestStore } from "@/stores/useGuestsStore";
+import { useShallow } from "zustand/shallow";
 
 const { Title } = Typography;
 
@@ -13,11 +15,16 @@ interface GuestListProps {
 }
 
 export default function GuestList({ eventId, initialGuests }: GuestListProps) {
-  const [guests, setGuests] = useState<Guest[]>(initialGuests);
+  const { guests, setGuests } = useGuestStore(
+    useShallow(({ guests, setGuests }) => ({
+      guests,
+      setGuests,
+    })),
+  );
 
-  const handleGuestAdded = (newGuest: Guest) => {
-    setGuests((prev) => [...prev, newGuest]);
-  };
+  useEffect(() => {
+    setGuests(initialGuests);
+  }, [initialGuests, setGuests]);
 
   return (
     <div className={styles.container}>
@@ -33,7 +40,7 @@ export default function GuestList({ eventId, initialGuests }: GuestListProps) {
           <GuestRow key={guest.id} eventId={eventId} guest={guest} />
         ))}
         {guests.length > 0 && <Divider plain>Add Guest</Divider>}
-        <GuestRow eventId={eventId} onGuestAdded={handleGuestAdded} />
+        <GuestRow eventId={eventId} />
       </div>
     </div>
   );

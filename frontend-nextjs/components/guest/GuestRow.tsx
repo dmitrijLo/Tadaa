@@ -1,6 +1,7 @@
 import {
   CheckOutlined,
   CloseOutlined,
+  DeleteOutlined,
   EditOutlined,
   HolderOutlined,
   LinkOutlined,
@@ -8,12 +9,12 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { api } from "@/utils/api";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import styles from "./Guest.module.css";
-import { Tag, Button, Input, message } from "antd";
+import { Tag, Button, Input, message, Popconfirm } from "antd";
 import { AxiosError } from "axios";
+import { useGuestStore } from "@/stores/useGuestsStore";
 
 const STATUS_TAG: Record<string, string> = {
   default: "cyan",
@@ -26,17 +27,15 @@ const STATUS_TAG: Record<string, string> = {
 interface GuestRowProps {
   eventId: string;
   guest?: Guest; // EditMode wenn vorhanden, ansonsten CreateMode
-  onGuestAdded?: (guest: Guest) => void;
 }
 
-export default function GuestRow({
-  eventId,
-  guest,
-  onGuestAdded,
-}: GuestRowProps) {
+export default function GuestRow({ eventId, guest }: GuestRowProps) {
   const isExistent = !!guest;
   const [inEditMode, setInEditMode] = useState(!guest);
   const [isSaving, setIsSaving] = useState(false);
+  const { addGuest } = useGuestStore();
+  const { updateGuest } = useGuestStore();
+  const { removeGuest } = useGuestStore();
 
   const {
     control,
@@ -64,26 +63,21 @@ export default function GuestRow({
     message.success("Einladungs-Link kopiert!");
   };
 
-  const onPatch = async (data: UpdateGuestDto) => {};
+  // const onPatch = async (data: UpdateGuestDto) => {};
 
-  const onSubmit = async (data: CreateGuestDto) => {
-    if (isExistent) {
-      // TODO: Logik fürs editieren
-      // setErrorMsg(null);
-      console.log("Edit Mode not implemented yet");
-      return;
-    }
+  const onSubmit = async (newGuest: CreateGuestDto) => {
     setIsSaving(true);
-
     try {
-      const response = await api.post(`/events/${eventId}/guests`, data);
-      message.success("Guest added!");
-
-      if (onGuestAdded) {
-        onGuestAdded(response.data);
+      if (!isExistent) {
+        await addGuest(eventId, newGuest);
+        message.success("Guest added!");
+        reset();
+        return;
       }
-
-      reset();
+      const guestUpdate = await updateGuest(eventId, guest.id, newGuest);
+      message.success("Guest updated!");
+      reset(guestUpdate);
+      setInEditMode(false);
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof AxiosError) {
@@ -92,6 +86,16 @@ export default function GuestRow({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDelete = async () => {
+    if (!isExistent) return;
+    const result = await removeGuest(eventId, guest.id);
+    if (result instanceof AxiosError) {
+      message.error(result.response?.data.message || "Fehler beim Entfernen");
+      return;
+    }
+    message.success("Guest removed!");
   };
 
   const containerClass = `${styles.card} ${!isExistent ? styles.addCard : ""}`;
@@ -183,7 +187,7 @@ export default function GuestRow({
                 <Button
                   type="text"
                   icon={<CheckOutlined style={{ color: "green" }} />}
-                  onClick={handleSubmit(onPatch)}
+                  onClick={handleSubmit(onSubmit)}
                   loading={isSaving}
                 />
                 <Button
@@ -205,6 +209,15 @@ export default function GuestRow({
                   icon={<EditOutlined />}
                   onClick={handleOnEditClick}
                 />
+                <Popconfirm
+                  title="Remove Guest from Event"
+                  description="Are you sure to remove guest?"
+                  okText="Yes"
+                  cancelText="No"
+                  onConfirm={handleDelete}
+                >
+                  <Button danger type="text" icon={<DeleteOutlined />} />
+                </Popconfirm>
               </>
             )
           ) : (
