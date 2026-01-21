@@ -1,9 +1,11 @@
 "use client";
 
-import { Form, Input, Button, Divider } from "antd";
+import { Form, Input, Button, Divider, Typography } from "antd";
 import { notFound } from "next/navigation";
 import { useState, useEffect } from "react";
 import { useInterestStore } from "@/stores/useInterestStore";
+
+const { Text, Paragraph } = Typography;
 
 export default function InterestNoteComponent({
   guestId,
@@ -25,6 +27,9 @@ export default function InterestNoteComponent({
 
   return (
     <>
+      <Paragraph>
+        <Text type="secondary">Leave a note for your wichtel:</Text>
+      </Paragraph>
       <Form layout="inline" onFinish={handleSubmit}>
         <Form.Item style={{ flex: 1, marginRight: "8px" }}>
           <Input

@@ -1,24 +1,25 @@
 "use client";
 
-import { Card, Typography } from "antd";
+import { Card, Splitter, Typography, Divider } from "antd";
+import { notFound } from "next/navigation";
+import InterestOptionComponent from "@/components/guests/interests/InterestComponent";
+import InterestNoteComponent from "@/components/guests/interests/InterestNoteComponent";
 
 const { Title, Text, Paragraph } = Typography;
 
 export default function GuestCard({ guest }: { guest: Guest }) {
+  const { id: guestId } = guest;
+  if (!guest) notFound();
+
   return (
-    <Card className="max-w-md w-full">
-      <Title level={1}>Welcome, {guest.name}!</Title>
+    <Card title={`Welcome, ${guest.name} to ${guest.event.name}`}>
       <Paragraph>
-        <Text strong>Event:</Text> {guest.event.name}
+        <Text type="secondary">Status:</Text> {guest.inviteStatus}
       </Paragraph>
-      <div className="mt-6">
-        <Paragraph>
-          <Text type="secondary">Status:</Text> {guest.inviteStatus}
-        </Paragraph>
-        <Paragraph>
-          <Text type="secondary">Email:</Text> {guest.email}
-        </Paragraph>
-      </div>
+      <Divider />
+      <InterestOptionComponent guest={guest} guestId={guestId} />
+      <Divider />
+      <InterestNoteComponent guestId={guestId} />
     </Card>
   );
 }
