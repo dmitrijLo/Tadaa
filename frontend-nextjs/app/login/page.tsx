@@ -1,6 +1,6 @@
 "use client";
 
-import LoginForm from "@/components/forms/LoginForm";
+import LoginForm from "@/components/auth/LoginForm";
 import { Typography } from "antd";
 
 const { Title } = Typography;

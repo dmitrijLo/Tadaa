@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import RegisterForm from "@/components/forms/RegisterForm";
+import RegisterForm from "@/components/auth/RegisterForm";
 import { Typography } from "antd";
 import styles from "./register.module.css";
 
