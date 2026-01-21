@@ -9,7 +9,6 @@ import {
   PlusOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { api } from "@/utils/api";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import styles from "./Guest.module.css";
@@ -75,9 +74,10 @@ export default function GuestRow({ eventId, guest }: GuestRowProps) {
         reset();
         return;
       }
-      await updateGuest(eventId, guest.id, newGuest);
+      const guestUpdate = await updateGuest(eventId, guest.id, newGuest);
       message.success("Guest updated!");
-      reset();
+      reset(guestUpdate);
+      setInEditMode(false);
     } catch (err: unknown) {
       console.error(err);
       if (err instanceof AxiosError) {

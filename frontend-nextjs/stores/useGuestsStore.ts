@@ -9,7 +9,7 @@ interface GuestStore {
     eventId: string,
     guestId: string,
     updateData: UpdateGuestDto,
-  ) => Promise<void>;
+  ) => Promise<Guest>;
   removeGuest: (
     eventId: string,
     guestId: string,
@@ -27,16 +27,18 @@ export const useGuestStore = create<GuestStore>((set, get) => ({
     }));
   },
   updateGuest: async (eventId, guestId, updateData) => {
-    const response = await api.patch(
-      `/events/${eventId}/guests/${guestId}`,
-      updateData,
-    );
+    const { name, email } = updateData;
+    const response = await api.patch(`/events/${eventId}/guests/${guestId}`, {
+      name,
+      email,
+    });
     const updatedGuest = response.data;
     set((state) => ({
       guests: state.guests.map((guest) =>
         guest.id !== guestId ? guest : updatedGuest,
       ),
     }));
+    return updatedGuest;
   },
   removeGuest: async (eventId, guestId) => {
     const guestsSnapshot = get().guests;
