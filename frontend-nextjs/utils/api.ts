@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useAuthStore } from "../stores/useAuthStore";
 
 const isClient = typeof window !== "undefined";
 
@@ -20,7 +21,10 @@ api.interceptors.request.use((cfg) => {
   if (isDev) {
     cfg.headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
   } else {
-    //token
+    // const token = useAuthStore.getState().token;
+    // if (token) {
+    //   cfg.headers["Authorization"] = `Bearer ${token}`;
+    // }
   }
 
   //if token
@@ -37,6 +41,12 @@ export const getAuthHeader = () => {
   if (process.env.NODE_ENV === "development") {
     headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
   }
+  // }else {
+  //   const token = useAuthStore.getState().token;
+  //   if (token) {
+  //     headers["Authorization"] = `Bearer ${token}`;
+  //   }
+  // }
 
   return headers;
 };

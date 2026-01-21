@@ -18,7 +18,7 @@ type AuthState = {
   error: string | null;
   register: (email: string, name: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
-  // logout: () => void;
+  logout: () => void;
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -108,10 +108,11 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // LOGOUT
-      // logout() {
-      //   set({ currentUser: null, token: null, error: null, loading: false });
-      // },
+      //LOGOUT
+      logout() {
+        set({ currentUser: null, token: null, error: null, loading: false });
+        localStorage.removeItem("auth-storage");
+      },
     }),
     {
       name: "auth-storage",
