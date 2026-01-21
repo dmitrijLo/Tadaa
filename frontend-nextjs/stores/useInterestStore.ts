@@ -4,8 +4,8 @@ import { create } from "zustand";
 
 type InterestStore = {
   interestOptions: InterestOption[];
-  interests: InterestOption[];
-  noInterest: InterestOption[];
+  interests: string[];
+  noInterest: string[];
   isLoading: boolean;
   error: string | null;
   addInterest: (
@@ -19,7 +19,7 @@ type InterestStore = {
     like: boolean,
   ) => Promise<void>;
   fetchInterestOptions: () => Promise<void>;
-  setInitialInterests: (interests: InterestOption[], noInterest: InterestOption[]) => void;
+  setInitialInterests: (interests: string[], noInterest: string[]) => void;
   addInterestOption: (newOption: string) => Promise<void>;
 };
 
