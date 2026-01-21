@@ -23,11 +23,11 @@ export default function InterestPicker({
 
   const handleToggle = async (
     interestId: string,
-    currentList: string[],
+    currentList: InterestOption[],
     type: "like" | "dislike",
   ) => {
     const like = type === "like";
-    if (currentList.includes(interestId)) {
+    if (currentList.some((i) => i.id === interestId)) {
       await removeInterest(guestId, interestId, like);
     } else {
       await addInterest(guestId, interestId, like);
@@ -41,10 +41,13 @@ export default function InterestPicker({
     }
   };
 
-  const renderTags = (type: "like" | "dislike", currentList: string[]) => (
+  const renderTags = (
+    type: "like" | "dislike",
+    currentList: InterestOption[],
+  ) => (
     <Flex wrap="wrap" gap={8} justify="center" style={{ width: "100%" }}>
       {interestOptions?.map((interest) => {
-        const isSelected = currentList.includes(interest.id);
+        const isSelected = currentList.some((i) => i.id === interest.id);
 
         const style: React.CSSProperties = {
           borderRadius: "16px",
