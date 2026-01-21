@@ -21,6 +21,7 @@ import { GuestResponseDto } from 'src/guests/dto/guest-response.dto';
 import { EventOwnerGuard } from './guards/event-owner.guard';
 import { EventFromRequest } from 'src/decorators/event-payload.decorator';
 import { Event } from './entities/event.entity';
+import { UpdateGuestDto } from 'src/guests/dto/update-guest.dto';
 
 @ApiTags('Events')
 @Controller('events')
@@ -37,18 +38,36 @@ export class EventsController {
   @UseGuards(EventOwnerGuard)
   @ApiOperation({ summary: 'Receive all guest of specific event.' })
   @ApiOkResponse({ type: [GuestResponseDto], description: 'Receive a list of guests.' })
-  async getGuests(@Param('eventId', ParseUUIDPipe) eventId: string) {
+  getGuests(@Param('eventId', ParseUUIDPipe) eventId: string) {
     return this.guestsService.findAllGuestsByEventId(eventId);
   }
 
   @Delete(':eventId/guests/:guestId')
   @UseGuards(EventOwnerGuard)
+  @ApiOperation({ summary: 'Remove guest from event.' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiParam({ name: 'guestId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 204, description: 'Guest successfully removed.' })
   @ApiResponse({ status: 400, description: 'Bad Request. Guest already invited.' })
   @ApiResponse({ status: 403, description: 'Forbidden. Not event owner.' })
   @ApiResponse({ status: 404, description: 'Guest not found.' })
   removeGuest(@Param('guestId', ParseUUIDPipe) guestId: string, @EventFromRequest() event: Event) {
     return this.guestsService.removeGuest(event, guestId);
+  }
+
+  @Patch(':eventId/guests/:guestId')
+  @UseGuards(EventOwnerGuard)
+  @ApiOperation({ summary: 'Update guest details (Draft only).' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiParam({ name: 'guestId', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Guest updated.', type: GuestResponseDto })
+  @ApiResponse({ status: 400, description: 'Guest cannot be edited (not draft).' })
+  updateGuest(
+    @Param('guestId', ParseUUIDPipe) guestId: string,
+    @EventFromRequest() event: Event,
+    @Body() guestUpdate: UpdateGuestDto,
+  ) {
+    return this.guestsService.updateGuest(event, guestId, guestUpdate);
   }
 
   @Post(':eventId/guests')

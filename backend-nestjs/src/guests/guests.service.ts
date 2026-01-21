@@ -7,6 +7,7 @@ import { InviteStatus } from '../enums';
 import { Event } from '../events/entities/event.entity';
 import { GuestResponseDto } from './dto/guest-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { UpdateGuestDto } from './dto/update-guest.dto';
 
 @Injectable()
 export class GuestsService {
@@ -39,12 +40,18 @@ export class GuestsService {
   async removeGuest(event: Event, guestId: string) {
     const guest = await this.guestRepository.findOneBy({ id: guestId, eventId: event.id });
 
-    if (!guest) throw new NotFoundException('Guest not found for this event.');
-
-    if (guest.inviteStatus !== InviteStatus.DRAFT)
-      throw new BadRequestException('Cannot remove guest. Invitation already sent.');
+    this.verifyGuestIsEditable(guest);
 
     await this.guestRepository.remove(guest);
+  }
+
+  async updateGuest(event: Event, guestId: string, guestUpdate: UpdateGuestDto): Promise<GuestResponseDto> {
+    const guest = await this.guestRepository.findOneBy({ id: guestId, eventId: event.id });
+    this.verifyGuestIsEditable(guest);
+    Object.assign(guest, guestUpdate);
+    const savedGuest = await this.guestRepository.save(guest);
+
+    return plainToInstance(GuestResponseDto, savedGuest, { excludeExtraneousValues: true });
   }
 
   // get guestpage by token
@@ -70,5 +77,16 @@ export class GuestsService {
   async findAllGuestsByEventId(eventId: string): Promise<GuestResponseDto[]> {
     const guests = await this.guestRepository.findBy({ eventId });
     return plainToInstance(GuestResponseDto, guests);
+  }
+
+  /*
+   * Helper
+   */
+
+  verifyGuestIsEditable(guest: Guest | null): asserts guest is Guest {
+    if (!guest) throw new NotFoundException('Guest not found for this event.');
+
+    if (guest.inviteStatus !== InviteStatus.DRAFT)
+      throw new BadRequestException('Cannot update or remove guest. Invitation already sent.');
   }
 }
