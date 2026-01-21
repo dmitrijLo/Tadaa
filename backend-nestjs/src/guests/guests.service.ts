@@ -65,18 +65,27 @@ export class GuestsService {
       return null;
     }
 
-    const interests = (guest.interests || []).map((interest) => interest.id);
-    const noInterest = (guest.no_interests || []).map((interest) => interest.id);
-
     return {
       ...guest,
-      interests,
-      noInterest,
+      interests: guest.interests || [],
+      noInterest: guest.no_interests || [],
     };
   }
 
   async findAllGuestsByEventId(eventId: string): Promise<Guest[]> {
     const guests = await this.guestRepository.findBy({ eventId });
     return guests;
+  }
+
+  async getAssignment(guestId: string): Promise<Guest> {
+    const guest = await this.guestRepository.findOne({
+      where: { id: guestId },
+      relations: ['event', 'assignedRecipient', 'assignedRecipient.interests', 'assignedRecipient.no_interests'],
+    });
+
+    if (!guest || !guest.assignedRecipient) {
+      throw new NotFoundException('Assignment not found for this guest.');
+    }
+    return guest;
   }
 }

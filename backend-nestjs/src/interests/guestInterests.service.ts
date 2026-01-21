@@ -35,7 +35,7 @@ export class GuestInterestsService {
       await this.GuestRepository.save(guest);
     } else throw new ConflictException('Interest already added');
 
-    return guest[relationship].map((interest: InterestOption) => interest.id);
+    return guest[relationship];
   }
 
   async removeGuestInterest(guestId: string, guestInterestDto: GuestInterestReqDto) {
@@ -56,6 +56,6 @@ export class GuestInterestsService {
       throw new NotFoundException('This interest was already deleted or never existed');
     }
 
-    return guest[relationship].map((interest: InterestOption) => interest.id);
+    return guest[relationship];
   }
 }

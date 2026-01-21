@@ -10,4 +10,9 @@ export class GuestsController {
   findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
     return this.guestsService.findOneById(guestId);
   }
+
+  @Get(':guestId/assignment')
+  getAssignment(@Param('guestId', ParseUUIDPipe) guestId: string) {
+    return this.guestsService.getAssignment(guestId);
+  }
 }
