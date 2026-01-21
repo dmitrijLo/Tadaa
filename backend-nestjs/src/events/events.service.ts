@@ -6,6 +6,7 @@ import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
 import { DrawRule, EventMode, EventStatus } from '../enums';
 import { GuestsService } from 'src/guests/guests.service';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class EventsService implements OnApplicationBootstrap {
@@ -18,6 +19,7 @@ export class EventsService implements OnApplicationBootstrap {
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
     private readonly guestService: GuestsService,
+    private readonly usersService: UsersService,
   ) {}
 
   async onApplicationBootstrap() {
@@ -38,7 +40,7 @@ export class EventsService implements OnApplicationBootstrap {
         name: 'Secret Santa Party 2026',
         description: 'Das automatische Test-Event für die Entwicklung.',
         budget: 50,
-        currency: 'euro',
+        currency: 'EUR',
         eventMode: EventMode.CLASSIC,
         drawRule: DrawRule.CHAIN,
         status: EventStatus.CREATED,
@@ -62,7 +64,20 @@ export class EventsService implements OnApplicationBootstrap {
       status: EventStatus.CREATED,
     });
 
-    return await this.eventRepository.save(event);
+    const savedEvent = await this.eventRepository.save(event);
+
+    // get host user to extract email and name
+    const hostUser = await this.usersService.findbyId(hostId);
+    if (hostUser && hostUser.email) {
+      const hostGuest = await this.guestService.createHostGuest({
+        email: hostUser.email,
+        name: hostUser.name || 'Host',
+        eventId: savedEvent.id,
+      });
+      this.logger.log(`Host added as guest: ${hostGuest.id}`);
+    }
+
+    return savedEvent;
   }
 
   findAll(): Promise<Event[]> {

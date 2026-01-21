@@ -1,29 +1,3 @@
-enum EventStatus {
-  CREATED = "created",
-  INVITED = "invited",
-  ASSIGNED = "assigned",
-  DONE = "done",
-}
-
-enum EventMode {
-  CLASSIC = "classic",
-  SCRAP = "scrap",
-  CUSTOM = "custom",
-}
-
-enum DrawRule {
-  CHAIN = "chain",
-  EXCHANGE = "exchange",
-  PICK_ORDER = "pick-order",
-}
-
-enum InviteStatus {
-  INVITED = "invited",
-  OPENED = "opened",
-  ACCEPTED = "accepted",
-  DENIED = "denied",
-}
-
 interface InterestOption {
   id: string;
   name: string;
@@ -82,3 +56,15 @@ interface Event {
 type CreateGuestDto = Pick<Guest, "name" | "email">;
 
 type UpdateGuestDto = Partial<Guest>;
+
+type CreateEventDto = Pick<
+  Event,
+  | "name"
+  | "description"
+  | "budget"
+  | "eventMode"
+  | "drawRule"
+  | "eventDate"
+  | "invitationDate"
+  | "draftDate"
+>;

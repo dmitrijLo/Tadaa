@@ -1,52 +1,68 @@
 "use client";
 
 import { useState } from "react";
-import { Card, Select, Space } from "antd";
+import { Select, Space } from "antd";
 import type { SelectProps } from "antd";
-import { GiftOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import ModeExplainer from "./ModeExplainer";
-import { eventModesMock } from "@/constants/modes";
 
-const modeIcons: Record<EventMode, React.ReactNode> = {
-  [EventMode.CLASSIC]: <GiftOutlined />,
-  [EventMode.SCRAP]: <DeleteOutlined />,
-  [EventMode.CUSTOM]: <EditOutlined />,
+export type ModeOption<T = string | number> = {
+  label: string;
+  value: T;
+  disabled?: boolean;
+  icon?: React.ReactNode;
 };
 
-const options: SelectProps["options"] = eventModesMock.map((mode) => ({
-  label: mode.name,
-  value: mode.modus,
-  disabled: mode.modus === EventMode.CUSTOM,
-}));
-
-type ModeSelectorProps = {
-  onModeChange?: (mode: EventMode) => void;
+export type ModeData<T = string | number> = {
+  mode: T;
+  name: string;
+  description: string;
 };
 
-export default function ModeSelector({ onModeChange }: ModeSelectorProps) {
-  const [selectedMode, setSelectedMode] = useState<EventMode>(
-    EventMode.CLASSIC,
+type ModeSelectorProps<T extends string | number = string> = {
+  options: ModeOption<T>[];
+  modeData: Record<T extends string | number ? T : never, ModeData<T>>;
+  defaultValue?: T;
+  collapseLabel: string;
+  onModeChange?: (mode: T) => void;
+};
+
+export default function ModeSelector<T extends string | number = string>({
+  options,
+  modeData,
+  defaultValue,
+  collapseLabel,
+  onModeChange,
+}: ModeSelectorProps<T>) {
+  const [selectedMode, setSelectedMode] = useState<T>(
+    defaultValue ?? options[0]?.value,
   );
 
-  const handleChange = (value: EventMode) => {
+  const handleChange = (value: T) => {
     setSelectedMode(value);
     onModeChange?.(value);
   };
 
+  const selectedOption = options.find((opt) => opt.value === selectedMode);
+
   const sharedProps: SelectProps = {
     options,
-    prefix: modeIcons[selectedMode],
+    prefix: selectedOption?.icon,
   };
 
   return (
     <Space orientation="vertical" size="small" style={{ display: "flex" }}>
-      <Select<EventMode>
+      <Select<T>
         value={selectedMode}
         {...sharedProps}
         style={{ width: "100%" }}
         onChange={handleChange}
+        size="large"
       />
-      <ModeExplainer activeEventMode={selectedMode} />
+      <ModeExplainer
+        activeMode={selectedMode}
+        modeData={modeData}
+        collapseLabel={collapseLabel}
+      />
     </Space>
   );
 }
