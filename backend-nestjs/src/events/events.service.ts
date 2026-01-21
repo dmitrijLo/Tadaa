@@ -5,9 +5,7 @@ import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Event } from './entities/event.entity';
 import { DrawRule, EventMode, EventStatus } from '../enums';
-import { GuestResponseDto } from 'src/guests/dto/guest-response.dto';
 import { GuestsService } from 'src/guests/guests.service';
-import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class EventsService implements OnApplicationBootstrap {
@@ -100,15 +98,15 @@ export class EventsService implements OnApplicationBootstrap {
    */
   async verifyEventExists(eventId: string): Promise<Event> {
     const event = await this.eventRepository.findOne({ where: { id: eventId } });
+
     if (!event) throw new NotFoundException(`Event with ID "${eventId}" not found`);
     return event;
   }
 
-  async verifyEventOwner(eventId: string, userId: string): Promise<string> {
-    const { hostId } = await this.verifyEventExists(eventId);
-    if (hostId !== userId) {
-      throw new ForbiddenException('You are not allowed to access the guest list.');
-    }
-    return hostId;
+  async verifyEventOwner(eventId: string, userId: string): Promise<Event> {
+    const event = await this.verifyEventExists(eventId);
+
+    if (event.hostId !== userId) throw new ForbiddenException('You are not allowed to access the guest list.');
+    return event;
   }
 }
