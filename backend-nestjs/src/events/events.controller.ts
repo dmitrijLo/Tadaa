@@ -18,6 +18,10 @@ import { GuestsService } from 'src/guests/guests.service';
 import { CreateGuestDto } from 'src/guests/dto/create-guest.dto';
 import { UserFromRequest } from 'src/decorators/user-payload.decorator';
 import { GuestResponseDto } from 'src/guests/dto/guest-response.dto';
+import { EventOwnerGuard } from './guards/event-owner.guard';
+import { EventFromRequest } from 'src/decorators/event-payload.decorator';
+import { Event } from './entities/event.entity';
+import { UpdateGuestDto } from 'src/guests/dto/update-guest.dto';
 
 @ApiTags('Events')
 @Controller('events')
@@ -31,27 +35,50 @@ export class EventsController {
   ) {}
 
   @Get(':eventId/guests')
+  @UseGuards(EventOwnerGuard)
   @ApiOperation({ summary: 'Receive all guest of specific event.' })
   @ApiOkResponse({ type: [GuestResponseDto], description: 'Receive a list of guests.' })
-  async getGuests(@Param('eventId', ParseUUIDPipe) eventId: string, @UserFromRequest() user: { id: string }) {
-    return this.eventsService.findAllEventGuests(eventId, user.id);
+  getGuests(@Param('eventId', ParseUUIDPipe) eventId: string) {
+    return this.guestsService.findAllGuestsByEventId(eventId);
+  }
+
+  @Delete(':eventId/guests/:guestId')
+  @UseGuards(EventOwnerGuard)
+  @ApiOperation({ summary: 'Remove guest from event.' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiParam({ name: 'guestId', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 204, description: 'Guest successfully removed.' })
+  @ApiResponse({ status: 400, description: 'Bad Request. Guest already invited.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. Not event owner.' })
+  @ApiResponse({ status: 404, description: 'Guest not found.' })
+  removeGuest(@Param('guestId', ParseUUIDPipe) guestId: string, @EventFromRequest() event: Event) {
+    return this.guestsService.removeGuest(event, guestId);
+  }
+
+  @Patch(':eventId/guests/:guestId')
+  @UseGuards(EventOwnerGuard)
+  @ApiOperation({ summary: 'Update guest details (Draft only).' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiParam({ name: 'guestId', type: 'string', format: 'uuid' })
+  @ApiResponse({ status: 200, description: 'Guest updated.', type: GuestResponseDto })
+  @ApiResponse({ status: 400, description: 'Guest cannot be edited (not draft).' })
+  updateGuest(
+    @Param('guestId', ParseUUIDPipe) guestId: string,
+    @EventFromRequest() event: Event,
+    @Body() guestUpdate: UpdateGuestDto,
+  ) {
+    return this.guestsService.updateGuest(event, guestId, guestUpdate);
   }
 
   @Post(':eventId/guests')
+  @UseGuards(EventOwnerGuard)
   @ApiOperation({ summary: 'Add a guest to an event.' })
   @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
   @ApiResponse({ status: 201, description: 'Guest successfully invited.' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden. You are not the owner.',
-  })
+  @ApiResponse({ status: 403, description: 'Forbidden. You are not the owner.' })
   @ApiResponse({ status: 409, description: 'Guest already invited.' })
-  async addGuest(
-    @Param('eventId', ParseUUIDPipe) eventId: string,
-    @Body() createGuestDto: CreateGuestDto,
-    @UserFromRequest() user: { id: string },
-  ) {
-    return this.guestsService.create(eventId, user.id, createGuestDto);
+  async addGuest(@EventFromRequest() event: Event, @Body() createGuestDto: CreateGuestDto) {
+    return this.guestsService.create(event, createGuestDto);
   }
 
   // get all guests for event with status:
