@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import InterestOptionComponent from "@/components/guests/interests/InterestComponent";
 import InterestNoteComponent from "@/components/guests/interests/InterestNoteComponent";
 import RevealPartner from "@/components/guest/RevealPartner";
+import InvitationStatus from "@/components/guest/InvitationStatus";
 
 const { Text, Paragraph } = Typography;
 
@@ -15,7 +16,11 @@ export default function GuestCard({ guest }: { guest: Guest }) {
   console.log(guest);
 
   if (guest.event.status === "invited" && guest.inviteStatus === "opened")
-    return <>do wou wnat to participate </>;
+    return (
+      <>
+        <InvitationStatus guest={guest} />
+      </>
+    );
 
   if (guest.event.status === "invited" && guest.inviteStatus === "accepted")
     return (

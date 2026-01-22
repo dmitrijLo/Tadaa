@@ -1,4 +1,4 @@
-import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch } from '@nestjs/common';
 import { GuestsService } from './guests.service';
 
 @Controller('guests')
@@ -9,5 +9,13 @@ export class GuestsController {
   @Get(':guestId')
   findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
     return this.guestsService.findOneById(guestId);
+  }
+
+  @Patch(':id/acceptinvitation')
+  async updateGuestStatus(
+    @Param('id', ParseUUIDPipe) guestId: string,
+    @Body() updateData: { accept: boolean; declineMessage?: string },
+  ) {
+    return this.guestsService.updateGuestStatus(guestId, updateData.accept, updateData.declineMessage);
   }
 }
