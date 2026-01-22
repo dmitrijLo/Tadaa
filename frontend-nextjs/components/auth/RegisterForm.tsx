@@ -34,8 +34,9 @@ export default function RegisterForm() {
       message.success("Registration successful!");
       reset();
       setTimeout(() => router.push("/login"), 2000);
-    } catch (err: any) {
-      message.error(err.message || "Registration failed");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Registration failed";
+      message.error(errorMessage);
     }
   };
 

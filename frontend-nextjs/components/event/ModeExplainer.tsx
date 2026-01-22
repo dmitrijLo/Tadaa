@@ -1,18 +1,26 @@
 "use client";
 
 import { Col, Collapse, Row } from "antd";
-import { eventModeByModusMock as eventModes } from "@/constants/modes";
+import type { ModeData } from "./ModeSelector";
 
-type ModeExplainerProps = {
-  activeEventMode?: EventMode;
+type ModeExplainerProps<T = string | number> = {
+  activeMode: T;
+  modeData: Record<T extends string | number ? T : never, ModeData<T>>;
+  collapseLabel: string;
   className?: string;
 };
 
-export default function ModeExplainer({
-  activeEventMode = EventMode.CLASSIC,
+export default function ModeExplainer<T extends string | number>({
+  activeMode,
+  modeData,
   className,
-}: ModeExplainerProps) {
-  const mode = eventModes[activeEventMode];
+  collapseLabel,
+}: ModeExplainerProps<T>) {
+  const mode = modeData[activeMode as T extends string | number ? T : never];
+
+  if (!mode) {
+    return null;
+  }
 
   return (
     <div className={className}>
@@ -23,8 +31,8 @@ export default function ModeExplainer({
             ghost
             items={[
               {
-                key: activeEventMode,
-                label: "Funktionsweise des Modus",
+                key: String(activeMode),
+                label: collapseLabel,
                 children: (
                   <div dangerouslySetInnerHTML={{ __html: mode.description }} />
                 ),

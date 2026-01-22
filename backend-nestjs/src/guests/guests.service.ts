@@ -30,7 +30,7 @@ export class GuestsService {
     const newGuest = this.guestRepository.create({
       ...createGuestDto,
       eventId: event.id,
-      inviteStatus: InviteStatus.DRAFT,
+      inviteStatus: InviteStatus.DRAFT as InviteStatus,
     });
 
     const savedGuest = await this.guestRepository.save(newGuest);
@@ -97,5 +97,27 @@ export class GuestsService {
       throw new NotFoundException('Assignment not found for this guest.');
     }
     return guest;
+  }
+
+  // create host as guest
+  async createHostGuest(data: { email: string; name: string; eventId: string }): Promise<Guest> {
+    const { email, name, eventId } = data;
+
+    const existingGuest = await this.guestRepository.findOne({
+      where: { email, eventId },
+    });
+
+    if (existingGuest) {
+      return existingGuest;
+    }
+
+    const hostGuest = this.guestRepository.create({
+      email,
+      name,
+      eventId,
+      inviteStatus: InviteStatus.ACCEPTED,
+    });
+
+    return await this.guestRepository.save(hostGuest);
   }
 }
