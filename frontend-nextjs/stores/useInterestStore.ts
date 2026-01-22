@@ -7,6 +7,7 @@ type InterestStore = {
   interests: InterestOption[];
   noInterest: InterestOption[];
   isLoading: boolean;
+  noteForGiver: string;
   error: string | null;
   addInterest: (
     guestId: string,
@@ -24,6 +25,7 @@ type InterestStore = {
     noInterest: InterestOption[],
   ) => void;
   addInterestOption: (newOption: string) => Promise<void>;
+  submitNoteForGiver: (guestId: string, noteForGiVer: string) => Promise<void>;
 };
 
 interface GuestInterestDto {
@@ -37,8 +39,34 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
   interestOptions: [],
   interests: [],
   noInterest: [],
+  noteForGiver: "",
   isLoading: false,
   error: null,
+
+  submitNoteForGiver: async (guestId: string, noteForGiver: string) => {
+    set({ noteForGiver });
+
+    try {
+      const response = await fetch(`${URL}/${guestId}/note`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteForGiver }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not post note for giver");
+      }
+
+      const data = await response.json();
+      set({ noteForGiver: data, error: null, isLoading: false });
+    } catch (error) {
+      set({
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+        isLoading: false,
+      });
+    }
+  },
 
   setInitialInterests: (interests, noInterest) => {
     set({ interests, noInterest });
@@ -66,7 +94,6 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
         error: null,
       });
     } catch (error) {
-      console.error(error);
       set({ error: (error as Error).message, isLoading: false });
     }
   },
@@ -83,7 +110,6 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
       const interests: InterestOption[] = await response.json();
       set({ interestOptions: interests, isLoading: false });
     } catch (error) {
-      console.error(error);
       set({ error: "Fehler beim Laden der Interessen", isLoading: false });
     }
   },
@@ -111,7 +137,6 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
         isLoading: false,
       });
     } catch (error) {
-      console.error(error);
       set({ error: "Fehler beim Hinzufügen", isLoading: false });
     }
   },
