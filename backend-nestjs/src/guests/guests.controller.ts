@@ -12,9 +12,9 @@ export class GuestsController {
   }
 
   @Patch(':id/acceptinvitation')
-  async updateGuestStatus(
+  updateGuestStatus(
     @Param('id', ParseUUIDPipe) guestId: string,
-    @Body() updateData: { accept: boolean; declineMessage?: string },
+    @Body() updateData: { accept: boolean; declineMessage: string },
   ) {
     return this.guestsService.updateGuestStatus(guestId, updateData.accept, updateData.declineMessage);
   }

@@ -2,8 +2,8 @@
 
 import { Card } from "antd";
 import { notFound } from "next/navigation";
-import RevealPartner from "@/components/guest/RevealPartner";
-import InvitationStatus from "@/components/guest/InvitationStatus";
+import RevealPartner from "@/components/guests/views/RevealPartner";
+import InvitationStatus from "@/components/guests/views/InvitationStatus";
 import GuestAcceptedView from "@/components/guests/views/GuestAcceptedView";
 
 export default function GuestCard({ guest }: { guest: Guest }) {

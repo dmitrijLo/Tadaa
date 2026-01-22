@@ -78,17 +78,15 @@ export class GuestsService {
     };
   }
 
-  async updateGuestStatus(guestId: string, accept: boolean, declineMessage?: string): Promise<Guest> {
+  async updateGuestStatus(guestId: string, accept: boolean, declineMessage: string): Promise<Guest> {
     const guest = await this.guestRepository.findOneBy({ id: guestId });
     if (!guest) {
       throw new NotFoundException('Guest not found.');
     }
     guest.inviteStatus = accept ? InviteStatus.ACCEPTED : InviteStatus.DENIED;
-    if (guest.declineMessage) {
-      guest.declineMessage = declineMessage as string;
-    }
+    guest.declineMessage = declineMessage;
 
-    return this.guestRepository.save(guest);
+    return await this.guestRepository.save(guest);
   }
 
   async findAllGuestsByEventId(eventId: string): Promise<GuestResponseDto[]> {
