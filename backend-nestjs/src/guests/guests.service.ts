@@ -58,7 +58,14 @@ export class GuestsService {
   async findOneById(guestId: string) {
     const guest = await this.guestRepository.findOne({
       where: { id: guestId },
-      relations: ['event', 'interests', 'no_interests'],
+      relations: [
+        'event',
+        'interests',
+        'no_interests',
+        'assignedRecipient',
+        'assignedRecipient.interests',
+        'assignedRecipient.no_interests',
+      ],
     });
     if (!guest) {
       return null;
@@ -69,6 +76,17 @@ export class GuestsService {
       interests: guest.interests || [],
       noInterest: guest.no_interests || [],
     };
+  }
+
+  async updateGuestStatus(guestId: string, accept: boolean, declineMessage: string): Promise<Guest> {
+    const guest = await this.guestRepository.findOneBy({ id: guestId });
+    if (!guest) {
+      throw new NotFoundException('Guest not found.');
+    }
+    guest.inviteStatus = accept ? InviteStatus.ACCEPTED : InviteStatus.DENIED;
+    guest.declineMessage = declineMessage;
+
+    return await this.guestRepository.save(guest);
   }
 
   async findAllGuestsByEventId(eventId: string): Promise<GuestResponseDto[]> {
@@ -85,18 +103,6 @@ export class GuestsService {
 
     if (guest.inviteStatus !== InviteStatus.DRAFT)
       throw new BadRequestException('Cannot update or remove guest. Invitation already sent.');
-  }
-
-  async getAssignment(guestId: string): Promise<Guest> {
-    const guest = await this.guestRepository.findOne({
-      where: { id: guestId },
-      relations: ['event', 'assignedRecipient', 'assignedRecipient.interests', 'assignedRecipient.no_interests'],
-    });
-
-    if (!guest || !guest.assignedRecipient) {
-      throw new NotFoundException('Assignment not found for this guest.');
-    }
-    return guest;
   }
 
   // create host as guest
