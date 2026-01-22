@@ -25,8 +25,6 @@ export default async function ResultPage({
   const guest = await getGuest(guestId);
 
   return (
-    <main className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4">
-      <RevealPartner guest={guest} />
-    </main>
+    <main className="min-h-screen bg-[#f0f2f5] flex items-center justify-center p-4"></main>
   );
 }
