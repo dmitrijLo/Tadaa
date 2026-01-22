@@ -1,14 +1,12 @@
 "use client";
 
-import { Card, Divider } from "antd";
+import { Card } from "antd";
 import { notFound } from "next/navigation";
-import InterestOptionComponent from "@/components/guests/interests/InterestComponent";
-import InterestNoteComponent from "@/components/guests/interests/InterestNoteComponent";
 import RevealPartner from "@/components/guest/RevealPartner";
 import InvitationStatus from "@/components/guest/InvitationStatus";
+import GuestAcceptedView from "@/components/guests/views/GuestAcceptedView";
 
 export default function GuestCard({ guest }: { guest: Guest }) {
-  const { id: guestId } = guest;
   if (!guest) notFound();
 
   const renderView = () => {
@@ -18,13 +16,7 @@ export default function GuestCard({ guest }: { guest: Guest }) {
 
     // Guest accepted - show interest selection
     if (guest.event.status === "invited" && guest.inviteStatus === "accepted")
-      return (
-        <>
-          <InterestOptionComponent guest={guest} guestId={guestId} />
-          <Divider />
-          <InterestNoteComponent guestId={guestId} />
-        </>
-      );
+      return <GuestAcceptedView guest={guest} />;
 
     // Assignment done - reveal partner
     if (guest.event.status === "assigned")
