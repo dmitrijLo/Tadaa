@@ -27,7 +27,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <DashboardEvents events={events} />;
+      <DashboardEvents events={events} />
     </>
   );
 }
