@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import styles from "./Guest.module.css";
 import GuestRow from "./GuestRow";
-import { Typography, Divider } from "antd";
+import { Typography, Divider, Button } from "antd";
 import { useGuestStore } from "@/stores/useGuestsStore";
 import { useShallow } from "zustand/shallow";
+import { useGuestInvitations } from "@/hooks/useGuestInvitations";
+import { InviteStatus } from "@/types/enums";
 
 const { Title } = Typography;
 
@@ -15,12 +17,20 @@ interface GuestListProps {
 }
 
 export default function GuestList({ eventId, initialGuests }: GuestListProps) {
+  const { sendInvitations, isSending } = useGuestInvitations(eventId);
   const { guests, setGuests } = useGuestStore(
     useShallow(({ guests, setGuests }) => ({
       guests,
       setGuests,
     })),
   );
+
+  const hasGuestsToInvite = true;
+  // guests.some(
+  //   (guest) =>
+  //     guest.inviteStatus === InviteStatus.DRAFT ||
+  //     guest.inviteStatus === InviteStatus.ERROR,
+  // );
 
   useEffect(() => {
     setGuests(initialGuests);
@@ -42,6 +52,24 @@ export default function GuestList({ eventId, initialGuests }: GuestListProps) {
         {guests.length > 0 && <Divider plain>Add Guest</Divider>}
         <GuestRow eventId={eventId} />
       </div>
+
+      <Button
+        type="primary"
+        // htmlType="submit"
+        // disabled={!isValid}
+        // loading={isSaving}
+        // icon={<PlusOutlined />}
+        loading={isSending}
+        disabled={!hasGuestsToInvite}
+        onClick={sendInvitations}
+        block
+      >
+        {isSending
+          ? "Sending Invitations..."
+          : hasGuestsToInvite
+            ? "Send Invitations"
+            : "No Invitations to send"}
+      </Button>
     </div>
   );
 }

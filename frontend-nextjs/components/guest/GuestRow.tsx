@@ -15,13 +15,14 @@ import styles from "./Guest.module.css";
 import { Tag, Button, Input, message, Popconfirm } from "antd";
 import { AxiosError } from "axios";
 import { useGuestStore } from "@/stores/useGuestsStore";
+import { InviteStatus } from "@/types/enums";
 
 const STATUS_TAG: Record<string, string> = {
-  default: "cyan",
-  invited: "geekblue",
-  opened: "gold",
-  accepted: "green",
-  denied: "volcano",
+  [InviteStatus.DRAFT]: "cyan",
+  [InviteStatus.INVITED]: "geekblue",
+  [InviteStatus.OPENED]: "gold",
+  [InviteStatus.ACCEPTED]: "green",
+  [InviteStatus.DENIED]: "volcano",
 };
 
 interface GuestRowProps {
@@ -57,8 +58,8 @@ export default function GuestRow({ eventId, guest }: GuestRowProps) {
   };
 
   const handleCopyLink = async () => {
-    if (!guest?.inviteToken) return;
-    const url = `${window.location.origin}/invitation/${guest.inviteToken}`;
+    if (!guest?.id) return;
+    const url = `${window.location.origin}/invitation/${guest.id}`;
     await navigator.clipboard.writeText(url);
     message.success("Einladungs-Link kopiert!");
   };

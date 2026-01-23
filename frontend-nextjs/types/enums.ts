@@ -19,6 +19,7 @@ export enum DrawRule {
 }
 
 export enum InviteStatus {
+  ERROR = "error",
   DRAFT = "draft",
   INVITED = "invited",
   OPENED = "opened",
