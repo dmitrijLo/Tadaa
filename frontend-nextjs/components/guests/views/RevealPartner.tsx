@@ -2,11 +2,19 @@
 import { Card, Typography, Collapse, Tag, Divider, Space } from "antd";
 import { HeartOutlined, StopOutlined } from "@ant-design/icons";
 import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const { Text, Paragraph } = Typography;
 
 export default function RevealPartner({ guest }: { guest: Guest }) {
   const { assignedRecipient } = guest;
+  const [formattedDate, setFormattedDate] = useState<string>("");
+
+  useEffect(() => {
+    setFormattedDate(
+      new Date(guest.event.eventDate).toLocaleDateString("de-DE"),
+    );
+  }, [guest.event.eventDate]);
 
   if (!assignedRecipient) notFound();
 
@@ -77,10 +85,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
         <Paragraph>
           Die Auslosung des Events <Text strong>{guest.event.name}</Text> wurde
           erfolgreich beendet. Das Event findet am{" "}
-          <Text strong>
-            {new Date(guest.event.eventDate).toLocaleDateString("de-DE")}
-          </Text>{" "}
-          statt.
+          <Text strong>{formattedDate}</Text> statt.
         </Paragraph>
 
         <Card>

@@ -7,24 +7,33 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import { useEffect, useState } from "react";
 import LogoutButton from "@/components/auth/LogoutButton";
 
+const headerStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  background: "#fff",
+  borderBottom: "1px solid #f0f0f0",
+};
+
 export default function AppHeader() {
-  const { currentUser, logout } = useAuthStore();
+  const { currentUser } = useAuthStore();
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const { Header } = Layout;
 
-  if (!mounted) {
-    return (
-      <header className={styles.header}>
-        <div
-          className={styles.logoPlaceholder}
-          style={{ width: 80, height: 80 }}
-        />
-      </header>
-    );
-  }
+  // useEffect(() => {
+  //   setMounted(true);
+  // }, []);
+
+  // if (!mounted) {
+  //   return (
+  //     <header className={styles.header}>
+  //       <div
+  //         className={styles.logoPlaceholder}
+  //         style={{ width: 80, height: 80 }}
+  //       />
+  //     </header>
+  //   );
+  // }
 
   const menuItems = currentUser
     ? [
@@ -57,7 +66,7 @@ export default function AppHeader() {
       ];
 
   return (
-    <header className={styles.header}>
+    <Header style={headerStyle}>
       <Link href={currentUser ? "/dashboard" : "/"}>
         <Image
           src="/logo.png"
@@ -78,6 +87,6 @@ export default function AppHeader() {
           minWidth: 0,
         }}
       />
-    </header>
+    </Header>
   );
 }

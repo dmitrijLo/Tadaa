@@ -14,17 +14,7 @@ export default function MainWrapper({ children }: PropsWithChildren) {
     <Layout style={{ minHeight: "100vh", background: "transparent" }}>
       <AppHeader />
       <Layout style={{ padding: "24px", flex: 1 }}>
-        <Content
-          style={{
-            padding: 24,
-            margin: 0,
-            minHeight: 280,
-            background: token.colorBgContainer,
-            borderRadius: token.borderRadiusLG,
-          }}
-        >
-          {children}
-        </Content>
+        <Content>{children}</Content>
       </Layout>
       <AppFooter />
     </Layout>
