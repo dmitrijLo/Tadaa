@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-
-import AppHeader from "../components/layout/Header";
-import AppFooter from "../components/layout/Footer";
+import { App } from "antd";
+import MainWrapper from "@/components/layout/MainWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,42 +31,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AntdRegistry>
-          <div
-            style={{
-              minHeight: "100vh",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <AppHeader />
-            <main
-              style={{
-                flex: 1,
-                background: "var(--background)",
-              }}
-            >
-              {children}
-            </main>
-            <AppFooter />
-          </div>
-          {/*          
           <App>
-            <Layout style={{ minHeight: "100vh" }}>
-              <AppHeader />
-
-              <Content
-                style={{
-                  flex: 1,
-                  background: "var(--background)",
-                  position: "relative",
-                }}
-              >
-                {children}
-              </Content>
-
-              <AppFooter />
-            </Layout>
-          </App> */}
+            <MainWrapper>{children}</MainWrapper>
+          </App>
         </AntdRegistry>
       </body>
     </html>
