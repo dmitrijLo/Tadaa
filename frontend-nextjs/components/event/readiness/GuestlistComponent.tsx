@@ -26,6 +26,7 @@ export default function GuestListing({ guests }: { guests: Guest[] }) {
     InviteStatus,
     "default" | "processing" | "success" | "error"
   > = {
+    draft: "default",
     invited: "default",
     opened: "processing",
     accepted: "success",
