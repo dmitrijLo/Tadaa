@@ -8,7 +8,7 @@ import { carouselImages } from "@/assets/carousel";
 
 export default function LandingPage() {
   return (
-    <main style={{ width: "100%" }}>
+    <main style={{ width: "100%", padding: "0" }}>
       <HeroSection
         leftSlot={<CallToActionSection />}
         rightSlot={

@@ -2,7 +2,6 @@ import { BACKEND_URL, getAuthHeader } from "@/utils/api";
 import DashboardEvents, {
   EventSummary,
 } from "@/components/dashboard/DashboardEvents";
-import LogoutButton from "@/components/auth/LogoutButton";
 
 export default async function DashboardPage() {
   let events: EventSummary[] = [];
@@ -28,7 +27,6 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <LogoutButton />
       <DashboardEvents events={events} />;
     </>
   );
