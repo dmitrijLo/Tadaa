@@ -8,12 +8,23 @@ import { Event } from '../events/entities/event.entity';
 import { GuestResponseDto } from './dto/guest-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { UpdateGuestDto } from './dto/update-guest.dto';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class GuestsService {
+  private readonly INVITE_STATUS_SEQUENCE = {
+    [InviteStatus.DRAFT]: 0,
+    [InviteStatus.INVITED]: 1,
+    [InviteStatus.OPENED]: 2,
+    [InviteStatus.ACCEPTED]: 3,
+    [InviteStatus.DENIED]: 3,
+  };
+
   constructor(
     @InjectRepository(Guest)
     private guestRepository: Repository<Guest>,
+    @InjectQueue('mail-queue') private readonly mailQueue: Queue,
   ) {}
 
   // create a new guest
@@ -54,6 +65,36 @@ export class GuestsService {
     return plainToInstance(GuestResponseDto, savedGuest, { excludeExtraneousValues: true });
   }
 
+  async inviteGuests(event: Event) {
+    const guests = await this.findAllInvitableGuests(event.id);
+    if (guests.length === 0) return { message: 'Keine Gäste zum Einladen gefunden.', queueCount: 0 };
+
+    // for (let guest of guests) guest.inviteStatus = InviteStatus.INVITED;
+    // await this.guestRepository.save(guests);
+
+    // const results = await Promise.allSettled(
+    //   guests.map((guest) => this.mailService.sendGuestInvitation(guest, event.name)),
+    // );
+
+    // for (let [idx, result] of results.entries()) {
+    //   if (result.status === 'rejected') {
+    //     console.error(`Fehler beim Senden an ${guests[idx].email}:`, result.reason);
+    //   }
+    // }
+    //
+    const jobs = guests.map((guest) => ({
+      name: 'send-invitation',
+      data: {
+        guest,
+        eventName: event.name,
+        eventId: event.id,
+      },
+    }));
+    await this.mailQueue.addBulk(jobs);
+
+    return { message: 'Einladungen werden im Hintergrund verarbeitet.', queueCount: guests.length };
+  }
+
   // get guestpage by token
   async findOneById(guestId: string) {
     const guest = await this.guestRepository.findOne({
@@ -92,6 +133,29 @@ export class GuestsService {
   async findAllGuestsByEventId(eventId: string): Promise<GuestResponseDto[]> {
     const guests = await this.guestRepository.findBy({ eventId });
     return plainToInstance(GuestResponseDto, guests);
+  }
+
+  findAllInvitableGuests(eventId: string): Promise<Guest[]> {
+    return this.guestRepository.find({ where: { eventId, inviteStatus: InviteStatus.DRAFT } });
+  }
+
+  async markInviteStatusAs(guestId: string, nextInviteStatus: InviteStatus) {
+    const guest = await this.guestRepository.findOne({ where: { id: guestId }, select: ['id', 'inviteStatus'] });
+    // nothing to update here
+    if (!guest) return;
+    if (nextInviteStatus === guest.inviteStatus) return;
+    // eventHost wants (and can) reset inviteStatus
+    if (nextInviteStatus === InviteStatus.DRAFT) {
+      await this.guestRepository.update(guestId, { inviteStatus: nextInviteStatus });
+      return;
+    }
+
+    const prevRank = this.INVITE_STATUS_SEQUENCE[guest.inviteStatus];
+    const nextRank = this.INVITE_STATUS_SEQUENCE[nextInviteStatus];
+    // draft -> invited -> opened -> accepted <-> denied
+    if (nextRank >= prevRank) {
+      await this.guestRepository.update(guestId, { inviteStatus: nextInviteStatus });
+    }
   }
 
   /*
