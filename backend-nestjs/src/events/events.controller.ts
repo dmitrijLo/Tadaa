@@ -25,6 +25,14 @@ import { UpdateGuestDto } from 'src/guests/dto/update-guest.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Observable, fromEvent } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
+import { EventStatus } from 'src/enums';
+
+interface MailSentEvent {
+  eventId: string;
+  status: 'SUCCESS' | 'ERROR' | 'DONE';
+  guestId: string;
+  reason?: string;
+}
 
 @Controller('events')
 @ApiTags('Events')
@@ -89,7 +97,8 @@ export class EventsController {
   @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
   @ApiResponse({})
   @UseGuards(EventOwnerGuard)
-  inviteGuests(@EventFromRequest() event: Event) {
+  async inviteGuests(@EventFromRequest() event: Event) {
+    await this.eventsService.markStatusAs(event.id, EventStatus.INVITED);
     return this.guestsService.inviteGuests(event);
   }
 
@@ -97,7 +106,7 @@ export class EventsController {
   @UseGuards(EventOwnerGuard)
   mailStream(@Param('eventId') eventId: string): Observable<MessageEvent> {
     return fromEvent(this.eventEmitter, 'mail.sent').pipe(
-      filter((payload: any) => payload.eventId === eventId),
+      filter((payload: MailSentEvent) => payload.eventId === eventId),
       map((payload) => ({ data: payload }) as MessageEvent),
     );
   }

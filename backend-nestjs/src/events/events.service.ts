@@ -108,6 +108,10 @@ export class EventsService implements OnApplicationBootstrap {
     await this.eventRepository.remove(event);
   }
 
+  async markStatusAs(eventId: string, nextStatus: EventStatus): Promise<void> {
+    await this.eventRepository.update(eventId, { status: nextStatus });
+  }
+
   /*
    * Helper Methods
    */
