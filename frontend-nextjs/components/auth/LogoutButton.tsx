@@ -13,7 +13,7 @@ export default function LogoutButton() {
     router.push("/login");
   };
   return (
-    <Button type="primary" onClick={handleLogout}>
+    <Button type="primary" size="large" shape="round" onClick={handleLogout}>
       Logout
     </Button>
   );
