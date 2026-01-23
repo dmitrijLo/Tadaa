@@ -14,7 +14,7 @@ export class MailService {
     const baseUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
     const backendUrl = this.configService.get('BACKEND_URL') || 'http://localhost:3001';
     const { id: guestId, email, name } = guest;
-    const invitationLink = `${baseUrl}/invitations/${guestId}`;
+    const invitationLink = `${baseUrl}/guests/${guestId}`;
     const hasOpenedLogoUrl = `${backendUrl}/mail/logo.png?guestId=${guest.id}`;
 
     return this.mailerService.sendMail({

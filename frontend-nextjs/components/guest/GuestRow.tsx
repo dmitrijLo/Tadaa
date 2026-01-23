@@ -59,7 +59,7 @@ export default function GuestRow({ eventId, guest }: GuestRowProps) {
 
   const handleCopyLink = async () => {
     if (!guest?.id) return;
-    const url = `${window.location.origin}/invitation/${guest.id}`;
+    const url = `${window.location.origin}/guests/${guest.id}`;
     await navigator.clipboard.writeText(url);
     message.success("Einladungs-Link kopiert!");
   };
