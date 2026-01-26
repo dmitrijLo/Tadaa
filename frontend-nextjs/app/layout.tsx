@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
-import { App } from "antd";
 import MainWrapper from "@/components/layout/MainWrapper";
+import { App, ConfigProvider } from "antd";
+import React from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,11 +31,27 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AntdRegistry>
-          <App>
-            <MainWrapper>{children}</MainWrapper>
-          </App>
-        </AntdRegistry>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#580e9f",
+              borderRadius: 4,
+              borderRadiusLG: 8,
+              colorBgContainer: "white",
+            },
+            components: {
+              Menu: {
+                itemPaddingInline: 40,
+              },
+            },
+          }}
+        >
+          <AntdRegistry>
+            <App>
+              <MainWrapper>{children}</MainWrapper>
+            </App>
+          </AntdRegistry>
+        </ConfigProvider>
       </body>
     </html>
   );

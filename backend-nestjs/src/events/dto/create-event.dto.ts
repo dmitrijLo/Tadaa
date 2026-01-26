@@ -1,19 +1,7 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsNumber,
-  IsEnum,
-  IsDate,
-  Min,
-  MaxLength,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsNumber, IsEnum, IsDate, Min, MaxLength, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 import { EventMode, DrawRule } from '../../enums';
-import {
-  IsAfterToday,
-  IsBeforeField,
-  IsBetweenFields,
-} from './validators/date-validators';
+import { IsAfterToday, IsBeforeField, IsBetweenFields } from './validators/date-validators';
 
 export class CreateEventDto {
   @IsString()
@@ -22,7 +10,7 @@ export class CreateEventDto {
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(1000)
   description: string;
 

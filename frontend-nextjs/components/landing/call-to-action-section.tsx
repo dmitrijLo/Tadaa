@@ -20,7 +20,7 @@ export default function CallToActionSection() {
       </Paragraph>
       <Space size="middle" wrap>
         <Link href="/register">
-          <Button type="primary" variant="solid" size="large" shape="round">
+          <Button type="primary" variant="solid" size="large">
             Registrieren
           </Button>
         </Link>
