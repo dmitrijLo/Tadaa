@@ -50,3 +50,16 @@ export const getAuthHeader = () => {
 
   return headers;
 };
+
+export const makeApiRequest = async (url: string) => {
+  const response = await fetch(url, {
+    cache: "no-store",
+    headers: getAuthHeader(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch: ${url}`);
+  }
+
+  return response.json();
+};
