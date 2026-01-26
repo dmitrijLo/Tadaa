@@ -79,7 +79,7 @@ export default function EventDetailTabs({
       };
 
       await api.patch(`/events/${eventId}`, updateData);
-      setEventData({ ...eventData, ...values });
+      setEventData((prevEventData) => ({ ...prevEventData, ...updateData }));
       message.success("Event wurde aktualisiert");
     } catch (error) {
       console.error("Fehler beim Aktualisieren des Events:", error);
