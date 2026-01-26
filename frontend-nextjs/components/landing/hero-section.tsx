@@ -23,7 +23,7 @@ export default function HeroSection({ leftSlot, rightSlot }: HeroSectionProps) {
   return (
     <section style={{ width: "100%" }}>
       <div className={styles.heroCard}>
-        <Row gutter={[40, 40]} align="middle">
+        <Row gutter={[80, 80]} align="middle">
           <Col xs={24} md={12}>
             {leftSlot}
           </Col>

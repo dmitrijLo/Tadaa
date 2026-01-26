@@ -69,6 +69,8 @@ type CreateEventDto = Pick<
   | "draftDate"
 >;
 
+type UpdateEventDto = Partial<CreateEventDto>;
+
 interface GiftSuggestion {
   name: string;
   description: string;
