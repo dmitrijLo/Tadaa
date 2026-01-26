@@ -1,4 +1,4 @@
-import GuestList from "@/components/guest/GuestList";
+import { EventDetailTabs } from "@/components";
 import { BACKEND_URL, getAuthHeader } from "@/utils/api";
 
 interface PageProps {
@@ -7,17 +7,34 @@ interface PageProps {
 
 export default async function EventDetailPage({ params }: PageProps) {
   const { eventId } = await params;
-  const response = await fetch(`${BACKEND_URL}/events/${eventId}/guests`, {
+
+  const eventResponse = await fetch(`${BACKEND_URL}/events/${eventId}`, {
     cache: "no-store",
     headers: getAuthHeader(),
   });
 
-  if (!response.ok) return <div>Fehler beim Laden der Gäste</div>;
+  const guestsResponse = await fetch(
+    `${BACKEND_URL}/events/${eventId}/guests`,
+    {
+      cache: "no-store",
+      headers: getAuthHeader(),
+    },
+  );
 
-  const initialGuests = await response.json();
+  if (!eventResponse.ok || !guestsResponse.ok) {
+    return <div>Fehler beim Laden der Daten</div>;
+  }
+
+  const initialEvent = await eventResponse.json();
+  const initialGuests = await guestsResponse.json();
+
   return (
-    <div className="p-8">
-      <GuestList eventId={eventId} initialGuests={initialGuests} />
-    </div>
+    <>
+      <EventDetailTabs
+        eventId={eventId}
+        initialEvent={initialEvent}
+        initialGuests={initialGuests}
+      />
+    </>
   );
 }

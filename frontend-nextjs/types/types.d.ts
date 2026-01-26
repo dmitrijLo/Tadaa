@@ -68,3 +68,5 @@ type CreateEventDto = Pick<
   | "invitationDate"
   | "draftDate"
 >;
+
+type UpdateEventDto = Partial<CreateEventDto>;

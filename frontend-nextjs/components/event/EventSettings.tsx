@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Button,
   DatePicker,
@@ -178,11 +180,13 @@ type FormData = CreateEventDto;
 interface EventSettingsProps {
   onSubmit: (data: CreateEventDto) => Promise<void>;
   initialData?: CreateEventDto | null;
+  submitLabel?: string;
 }
 
 export default function EventSettings({
   onSubmit,
   initialData,
+  submitLabel = "Weiter",
 }: EventSettingsProps) {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
@@ -517,8 +521,9 @@ export default function EventSettings({
             htmlType="submit"
             loading={loading}
             size="large"
+            variant="outlined"
           >
-            Weiter
+            {submitLabel}
           </Button>
         </div>
       </Form.Item>

@@ -13,9 +13,7 @@ export default function MainWrapper({ children }: PropsWithChildren) {
   return (
     <Layout style={{ minHeight: "100vh", background: "transparent" }}>
       <AppHeader />
-      <Layout style={{ padding: "24px", flex: 1 }}>
-        <Content>{children}</Content>
-      </Layout>
+      <Layout className={"mainContainer"}>{children}</Layout>
       <AppFooter />
     </Layout>
   );
