@@ -5,11 +5,16 @@ import { notFound } from "next/navigation";
 import RevealPartner from "@/components/guests/views/RevealPartner";
 import InvitationStatus from "@/components/guests/views/InvitationStatus";
 import GuestAcceptedView from "@/components/guests/views/GuestAcceptedView";
+import GuestDeniedView from "@/components/guests/views/GuestDeniedView";
 
 export default function GuestCard({ guest }: { guest: Guest }) {
   if (!guest) notFound();
 
   const renderView = () => {
+    // Guest denied invitation
+    if (guest.inviteStatus === "denied")
+      return <GuestDeniedView guest={guest} />;
+
     // Invitation pending response
     if (guest.event.status === "invited" && guest.inviteStatus === "opened")
       return <InvitationStatus guest={guest} />;
