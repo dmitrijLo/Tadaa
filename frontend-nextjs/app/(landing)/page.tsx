@@ -1,6 +1,4 @@
-import ImageCarousel, {
-  CarouselItem,
-} from "@/components/images/image-carousel";
+import ImageCarousel from "@/components/images/image-carousel";
 import CallToActionSection from "@/components/landing/call-to-action-section";
 import HeroSection from "@/components/landing/hero-section";
 import { carouselImages } from "@/assets/carousel";
@@ -21,7 +19,6 @@ export default function LandingPage() {
           />
         }
       />
-      {/* </div> */}
     </main>
   );
 }

@@ -1,11 +1,15 @@
 "use client";
 
-import { Button, Card, App, Steps } from "antd";
+import { Button, Card, App, Steps, Flex, Typography } from "antd";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import GuestList from "@/components/guest/GuestList";
 import EventSettings from "@/components/event/EventSettings";
 import { api } from "@/utils/api";
+import { useGuestStore } from "@/stores/useGuestsStore";
+import { useShallow } from "zustand/shallow";
+
+const { Title } = Typography;
 
 type EventFormProps = {
   createEvent: (formData: CreateEventDto) => Promise<{ id: string }>;
@@ -20,7 +24,12 @@ export default function EventForm({
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [createdEventId, setCreatedEventId] = useState<string | null>(null);
-  const [guests, setGuests] = useState<Guest[]>([]);
+  const { guests, setGuests } = useGuestStore(
+    useShallow(({ guests, setGuests }) => ({
+      guests,
+      setGuests,
+    })),
+  );
   const [eventData, setEventData] = useState<CreateEventDto | null>(null);
 
   useEffect(() => {
@@ -39,17 +48,6 @@ export default function EventForm({
 
     fetchGuests();
   }, [currentStep, createdEventId]);
-
-  const handleGuestAdded = () => {
-    if (createdEventId) {
-      api
-        .get<Guest[]>(`/events/${createdEventId}/guests`)
-        .then((response: { data: Guest[] }) => setGuests(response.data))
-        .catch((error: unknown) =>
-          console.error("Fehler beim Laden der Gäste:", error),
-        );
-    }
-  };
 
   const onSubmit = async (values: CreateEventDto) => {
     setEventData(values);
@@ -91,7 +89,8 @@ export default function EventForm({
   ];
 
   return (
-    <Card style={{ width: 800 }}>
+    <Flex gap="middle" vertical>
+      <Title level={1}>Neues Event erstellen</Title>
       <Steps
         current={currentStep}
         titlePlacement="vertical"
@@ -130,6 +129,6 @@ export default function EventForm({
           </div>
         )}
       </div>
-    </Card>
+    </Flex>
   );
 }

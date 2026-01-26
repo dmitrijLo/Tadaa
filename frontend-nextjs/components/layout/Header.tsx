@@ -12,6 +12,16 @@ const headerStyle: React.CSSProperties = {
   alignItems: "center",
   background: "#fff",
   borderBottom: "1px solid #f0f0f0",
+  padding: "0",
+  height: "auto",
+};
+
+const headerInnerStyle: React.CSSProperties = {
+  display: "flex",
+  background: "transparent",
+  flexDirection: "row",
+  alignItems: "center",
+  padding: "0 24px",
 };
 
 export default function AppHeader() {
@@ -47,7 +57,7 @@ export default function AppHeader() {
           key: "login",
           label: (
             <Link href="/login">
-              <Button type="primary" size="large" shape="round">
+              <Button type="primary" size="large">
                 Login
               </Button>
             </Link>
@@ -57,7 +67,7 @@ export default function AppHeader() {
           key: "register",
           label: (
             <Link href="/register">
-              <Button type="primary" size="large" shape="round">
+              <Button type="primary" size="large">
                 Registrieren
               </Button>
             </Link>
@@ -67,26 +77,30 @@ export default function AppHeader() {
 
   return (
     <Header style={headerStyle}>
-      <Link href={currentUser ? "/dashboard" : "/"}>
-        <Image
-          src="/logo.png"
-          alt="Logo Tadaa"
-          width={80}
-          height={80}
-          className={styles.logoImage}
-          priority
-        />
-      </Link>
-      <Menu
-        mode="horizontal"
-        items={menuItems}
-        style={{
-          border: "none",
-          flex: 1,
-          justifyContent: "flex-end",
-          minWidth: 0,
-        }}
-      />
+      <Layout className={"mainContainer"} style={{ padding: "12px 24px" }}>
+        <Layout style={headerInnerStyle}>
+          <Link href={currentUser ? "/dashboard" : "/"}>
+            <Image
+              src="/logo.png"
+              alt="Logo Tadaa"
+              width={100}
+              height={50}
+              className={styles.logoImage}
+              priority
+            />
+          </Link>
+          <Menu
+            mode="horizontal"
+            items={menuItems}
+            style={{
+              border: "none",
+              flex: 1,
+              justifyContent: "flex-end",
+              minWidth: 0,
+            }}
+          />
+        </Layout>
+      </Layout>
     </Header>
   );
 }

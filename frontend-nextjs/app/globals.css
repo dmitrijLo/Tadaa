@@ -4,6 +4,24 @@
   --background: #f5f7fa;
   --foreground: #171717;
   --dot-color: #dbeafe;
+  --colorTextSecondary: rgba(0, 0, 0, 0.65);
+  --colorTextTertiary: rgba(0, 0, 0, 0.45);
+  --colorTextQuaternary: rgba(0, 0, 0, 0.25);
+  --gradientPrimary: linear-gradient(
+    90deg,
+    rgba(88, 14, 159, 1) 0%,
+    rgba(199, 19, 105, 1) 100%
+  );
+  --gradientPrimaryHover: linear-gradient(
+    90deg,
+    rgb(76, 12, 137) 0%,
+    rgb(164, 15, 87) 100%
+  );
+  --gradientPrimaryDisabled: linear-gradient(
+    90deg,
+    rgb(116, 83, 147) 0%,
+    rgb(199, 123, 160) 100%
+  );
 }
 
 @theme inline {
@@ -13,13 +31,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
+/*@media (prefers-color-scheme: dark) {
   :root {
-    /* --background: #0a0a0a; */
+    --background: #0a0a0a;
     --foreground: #ededed;
     --dot-color: #262626;
   }
-}
+}*/
 
 body {
   background: var(--background);
@@ -45,4 +63,71 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.sub-title {
+  font-size: 16px;
+  color: var(--colorTextTertiary);
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.mainContainer {
+  padding: 24px 24px;
+  display: flex;
+  flex-direction: row !important;
+  gap: 24px;
+  justify-content: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: transparent !important;
+}
+
+.contentContainer {
+  display: flex;
+  flex-direction: column;
+  background: transparent !important;
+}
+
+.sidebarMenu {
+  border: none !important;
+}
+
+.sidebarMenu.ant-menu-inline-collapsed {
+  width: 50px !important;
+}
+
+.sidebarMenu a,
+.sidebarMenu a:hover,
+.sidebarMenu .ant-menu-item-selected {
+  color: inherit;
+}
+
+.ant-menu.ant-menu-inline .ant-menu-sub.ant-menu-inline {
+  background: transparent !important;
+}
+
+.ant-btn-primary.ant-btn-variant-solid {
+  background: var(--gradientPrimary) !important;
+  border: none !important;
+}
+
+.ant-btn-primary.ant-btn-variant-solid:hover {
+  background: var(--gradientPrimaryHover) !important;
+}
+
+.ant-btn-primary.ant-btn-variant-solid:active {
+  background: var(--gradientPrimary) !important;
+}
+
+.ant-btn-primary.ant-btn-variant-solid:disabled {
+  background: var(--gradientPrimaryDisabled) !important;
+  color: #fff !important;
+}
+
+.ant-btn-variant-outlined {
+  border-width: 2px !important;
 }
