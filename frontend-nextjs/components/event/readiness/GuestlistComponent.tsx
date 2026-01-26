@@ -31,6 +31,7 @@ export default function GuestListing({ guests }: { guests: Guest[] }) {
     opened: "processing",
     accepted: "success",
     denied: "error",
+    error: "error",
   };
 
   const percentOfAccepted =

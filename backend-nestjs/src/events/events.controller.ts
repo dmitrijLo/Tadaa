@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe, Sse } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -22,8 +22,18 @@ import { EventOwnerGuard } from './guards/event-owner.guard';
 import { EventFromRequest } from 'src/decorators/event-payload.decorator';
 import { Event } from './entities/event.entity';
 import { UpdateGuestDto } from 'src/guests/dto/update-guest.dto';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Observable, fromEvent } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
+import { EventStatus } from 'src/enums';
 
-@ApiTags('Events')
+interface MailSentEvent {
+  eventId: string;
+  status: 'SUCCESS' | 'ERROR' | 'DONE';
+  guestId: string;
+  reason?: string;
+}
+
 @Controller('events')
 @ApiTags('Events')
 @ApiBearerAuth()
@@ -32,6 +42,7 @@ export class EventsController {
   constructor(
     private readonly eventsService: EventsService,
     private readonly guestsService: GuestsService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   @Get(':eventId/guests')
@@ -79,6 +90,25 @@ export class EventsController {
   @ApiResponse({ status: 409, description: 'Guest already invited.' })
   async addGuest(@EventFromRequest() event: Event, @Body() createGuestDto: CreateGuestDto) {
     return this.guestsService.create(event, createGuestDto);
+  }
+
+  @Post(':eventId/guests/invite')
+  @ApiOperation({ description: 'Send invitations to all draft guests.' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiResponse({})
+  @UseGuards(EventOwnerGuard)
+  async inviteGuests(@EventFromRequest() event: Event) {
+    await this.eventsService.markStatusAs(event.id, EventStatus.INVITED);
+    return this.guestsService.inviteGuests(event);
+  }
+
+  @Sse(':eventId/mail-stream')
+  @UseGuards(EventOwnerGuard)
+  mailStream(@Param('eventId') eventId: string): Observable<MessageEvent> {
+    return fromEvent(this.eventEmitter, 'mail.sent').pipe(
+      filter((payload: MailSentEvent) => payload.eventId === eventId),
+      map((payload) => ({ data: payload }) as MessageEvent),
+    );
   }
 
   // get all guests for event with status:
