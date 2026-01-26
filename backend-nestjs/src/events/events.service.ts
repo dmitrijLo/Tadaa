@@ -108,6 +108,10 @@ export class EventsService implements OnApplicationBootstrap {
     await this.eventRepository.remove(event);
   }
 
+  async markStatusAs(eventId: string, nextStatus: EventStatus): Promise<void> {
+    await this.eventRepository.update(eventId, { status: nextStatus });
+  }
+
   /*
    * Helper Methods
    */
@@ -115,13 +119,14 @@ export class EventsService implements OnApplicationBootstrap {
     const event = await this.eventRepository.findOne({ where: { id: eventId } });
 
     if (!event) throw new NotFoundException(`Event with ID "${eventId}" not found`);
+
     return event;
   }
 
   async verifyEventOwner(eventId: string, userId: string): Promise<Event> {
     const event = await this.verifyEventExists(eventId);
-
     if (event.hostId !== userId) throw new ForbiddenException('You are not allowed to access the guest list.');
+
     return event;
   }
 }

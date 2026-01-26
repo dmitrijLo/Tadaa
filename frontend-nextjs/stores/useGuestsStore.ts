@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { api } from "utils/api";
+import { InviteStatus } from "@/types/enums";
 
 interface GuestStore {
   guests: Guest[];
@@ -14,6 +15,7 @@ interface GuestStore {
     eventId: string,
     guestId: string,
   ) => Promise<unknown | undefined>;
+  markInviteStatusAs: (guestId: string, status: InviteStatus) => void;
 }
 
 export const useGuestStore = create<GuestStore>((set, get) => ({
@@ -50,5 +52,13 @@ export const useGuestStore = create<GuestStore>((set, get) => ({
       set({ guests: guestsSnapshot });
       return err;
     }
+  },
+
+  markInviteStatusAs: (guestId: string, status: InviteStatus) => {
+    set((state) => ({
+      guests: state.guests.map((guest) =>
+        guest.id === guestId ? { ...guest, inviteStatus: status } : guest,
+      ),
+    }));
   },
 }));
