@@ -6,26 +6,38 @@ import RevealPartner from "@/components/guests/views/RevealPartner";
 import InvitationStatus from "@/components/guests/views/InvitationStatus";
 import GuestAcceptedView from "@/components/guests/views/GuestAcceptedView";
 import GuestDeniedView from "@/components/guests/views/GuestDeniedView";
+import GuestDeniedDoneView from "@/components/guests/views/GuestDeniedDoneView";
+import GuestDeniedAssignedView from "@/components/guests/views/GuestDeniedAssignedView";
 
 export default function GuestCard({ guest }: { guest: Guest }) {
   if (!guest) notFound();
 
   const renderView = () => {
-    // Guest denied invitation
-    if (guest.inviteStatus === "denied")
-      return <GuestDeniedView guest={guest} />;
+    if (guest.inviteStatus === "denied") {
+      if (guest.event.status === "done")
+        return <GuestDeniedDoneView guest={guest} />;
 
-    // Invitation pending response
-    if (guest.event.status === "invited" && guest.inviteStatus === "opened")
-      return <InvitationStatus guest={guest} />;
+      if (guest.event.status === "assigned")
+        return <GuestDeniedAssignedView guest={guest} />;
 
-    // Guest accepted - show interest selection
-    if (guest.event.status === "invited" && guest.inviteStatus === "accepted")
-      return <GuestAcceptedView guest={guest} />;
-
+      if (guest.event.status === "invited")
+        return <GuestDeniedView guest={guest} />;
+    }
+    
     // Assignment done - reveal partner
-    if (guest.event.status === "assigned")
+    if (guest.event.status === "assigned" && guest.inviteStatus === "accepted")
       return <RevealPartner guest={guest} />;
+
+    if (guest.event.status === "invited") {
+      // Invitation pending response
+      if (guest.inviteStatus === "opened")
+        return <InvitationStatus guest={guest} />;
+
+      // Guest accepted - show interest selection
+      if (guest.inviteStatus === "accepted")
+        return <GuestAcceptedView guest={guest} />;
+    }
+
 
     return notFound();
   };

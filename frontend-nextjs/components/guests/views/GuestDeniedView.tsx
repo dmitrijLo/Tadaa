@@ -2,36 +2,6 @@ import { Card, Space, Typography } from "antd";
 
 const { Text, Paragraph, Title } = Typography;
 export default function GuestDeniedView({ guest }: { guest: Guest }) {
-  const { event } = guest;
-
-  const isEventOver = new Date(event.eventDate) < new Date();
- 
-
-  //   Event ist abgelaufen
-  if (event.status === "done" || isEventOver) {
-    return (
-      <Card>
-        <Paragraph>
-          Schade, dass du nicht teilnehmen konntest. Das Event hat bereits
-          stattgefunden.
-        </Paragraph>
-      </Card>
-    );
-  }
-
-  //   Auslosung ist abgeschlossen
-  if (event.status === "assigned") {
-    return (
-      <Card>
-        <Paragraph>
-          Schade, dass du nicht teilnehmen konntest. Die Auslosung ist bereits
-          abgeschlossen und die Wichtelpartner wurden verteilt.
-        </Paragraph>
-      </Card>
-    );
-  }
-
-  //   Einladung abgelehnt, Event steht noch bevor, Host kann kontaktiert werden
   return (
     <Card>
       <Paragraph>
