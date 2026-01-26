@@ -1,4 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, ParseUUIDPipe, Sse } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  ParseUUIDPipe,
+  Sse,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -9,6 +22,9 @@ import {
   ApiResponse,
   ApiTags,
   ApiOkResponse,
+  ApiForbiddenResponse,
+  ApiNotFoundResponse,
+  ApiNoContentResponse,
 } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -142,8 +158,16 @@ export class EventsController {
     return this.eventsService.update(id, updateEventDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.eventsService.remove(id);
+  @Delete(':eventId')
+  @UseGuards(EventOwnerGuard)
+  @ApiOperation({ summary: 'Delete an event.' })
+  @ApiNoContentResponse({ description: 'Event successfully deleted.' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in.' })
+  @ApiBadRequestResponse({ description: 'Validation failed.' })
+  @ApiForbiddenResponse({ description: 'You are not allowed to delete this event.' })
+  @ApiNotFoundResponse({ description: 'Event was not found.' })
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remove(@EventFromRequest() event: Event) {
+    return this.eventsService.remove(event);
   }
 }
