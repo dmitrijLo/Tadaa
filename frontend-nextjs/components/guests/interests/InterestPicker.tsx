@@ -80,26 +80,26 @@ export default function InterestPicker({
     <Card
       title={
         <Flex align="center" justify="space-between" wrap="wrap" gap={8}>
-          <span>Choose your interests</span>
+          <span>Wähle hier deine Interessen aus:</span>
           <Flex gap={8}>
             <Input
               value={newInterest}
               onChange={(e) => setNewInterest(e.target.value)}
               onPressEnter={handleAddInterest}
-              placeholder="Add an option"
+              placeholder="Option hinzufügen"
               style={{ width: "200px" }}
             />
-            <Button onClick={handleAddInterest}>Add</Button>
+            <Button onClick={handleAddInterest}>Hinzufügen</Button>
           </Flex>
         </Flex>
       }
       size="small"
       style={{ maxWidth: 600, margin: "0 auto" }}
     >
-      <Spin spinning={isLoading} tip="Loading interests...">
+      <Spin spinning={isLoading} tip="Interessen werden geladen...">
         <Form layout="vertical">
           <Form.Item
-            label="What I like"
+            label="Was ich mag"
             labelCol={{ style: { width: "100%", textAlign: "center" } }}
           >
             {renderTags("like", interests)}
@@ -108,7 +108,7 @@ export default function InterestPicker({
           <Divider />
 
           <Form.Item
-            label="What I don't like"
+            label="Was ich nicht mag"
             labelCol={{ style: { width: "100%", textAlign: "center" } }}
           >
             {renderTags("dislike", noInterest)}

@@ -26,7 +26,10 @@ export default function GuestCard({ guest }: { guest: Guest }) {
   };
 
   return (
-    <Card title={`Welcome, ${guest.name} to ${guest.event.name}`}>
+    <Card
+      title={`Willkommen, ${guest.name} zu ${guest.event.name}!`}
+      styles={{ header: { textAlign: "center" } }}
+    >
       {renderView()}
     </Card>
   );

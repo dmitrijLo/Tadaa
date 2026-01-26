@@ -43,7 +43,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
                       </Tag>
                     ),
                   )
-                : "No interests listed"}
+                : "Keine Interessen angegeben"}
             </Space>
           </div>
           <div>
@@ -64,7 +64,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
                       </Tag>
                     ),
                   )
-                : "No no interests listed"}
+                : "Keine Abneigungen angegeben"}
             </Space>
           </div>
         </div>
