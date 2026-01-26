@@ -103,8 +103,7 @@ export class EventsService implements OnApplicationBootstrap {
     return (await this.eventRepository.findOne({ where: { id } })) as Event;
   }
 
-  async remove(id: string): Promise<void> {
-    const event = await this.findOne(id);
+  async remove(event: Event): Promise<void> {
     await this.eventRepository.remove(event);
   }
 
@@ -117,7 +116,6 @@ export class EventsService implements OnApplicationBootstrap {
    */
   async verifyEventExists(eventId: string): Promise<Event> {
     const event = await this.eventRepository.findOne({ where: { id: eventId } });
-
     if (!event) throw new NotFoundException(`Event with ID "${eventId}" not found`);
 
     return event;
@@ -125,7 +123,7 @@ export class EventsService implements OnApplicationBootstrap {
 
   async verifyEventOwner(eventId: string, userId: string): Promise<Event> {
     const event = await this.verifyEventExists(eventId);
-    if (event.hostId !== userId) throw new ForbiddenException('You are not allowed to access the guest list.');
+    if (event.hostId !== userId) throw new ForbiddenException('You do not have permission to modify this event.');
 
     return event;
   }
