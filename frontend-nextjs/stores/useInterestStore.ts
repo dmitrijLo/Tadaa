@@ -7,6 +7,7 @@ type InterestStore = {
   interests: InterestOption[];
   noInterest: InterestOption[];
   isLoading: boolean;
+  isSuggestionsLoading: boolean;
   noteForGiver: string;
   error: string | null;
   addInterest: (
@@ -26,6 +27,8 @@ type InterestStore = {
   ) => void;
   addInterestOption: (newOption: string) => Promise<void>;
   submitNoteForGiver: (guestId: string, noteForGiVer: string) => Promise<void>;
+  getSuggestions: (guestId: string) => Promise<void>;
+  suggestions: GiftSuggestion[];
 };
 
 interface GuestInterestDto {
@@ -41,7 +44,9 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
   noInterest: [],
   noteForGiver: "",
   isLoading: false,
+  isSuggestionsLoading: false,
   error: null,
+  suggestions: [],
 
   submitNoteForGiver: async (guestId: string, noteForGiver: string) => {
     set({ noteForGiver });
@@ -170,6 +175,25 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
     } catch (error) {
       console.error(error);
       set({ error: "Fehler beim Entfernen", isLoading: false });
+    }
+  },
+
+  getSuggestions: async (guestId: string) => {
+    set({ isSuggestionsLoading: true, error: null });
+    try {
+      const result = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/interests/${guestId}/suggestions`,
+      );
+
+      if (!result.ok) throw new Error("Could not fetch suggestions");
+
+      const suggestions: GiftSuggestion[] = await result.json();
+      set({ isSuggestionsLoading: false, suggestions });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : "An error occurred",
+        isSuggestionsLoading: false,
+      });
     }
   },
 }));

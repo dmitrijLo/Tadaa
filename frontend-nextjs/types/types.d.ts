@@ -68,3 +68,10 @@ type CreateEventDto = Pick<
   | "invitationDate"
   | "draftDate"
 >;
+
+interface GiftSuggestion {
+  name: string;
+  description: string;
+  estimatedPrice: string;
+  category: string;
+}

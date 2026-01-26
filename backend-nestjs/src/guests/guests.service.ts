@@ -69,19 +69,6 @@ export class GuestsService {
     const guests = await this.findAllInvitableGuests(event.id);
     if (guests.length === 0) return { message: 'Keine Gäste zum Einladen gefunden.', queueCount: 0 };
 
-    // for (let guest of guests) guest.inviteStatus = InviteStatus.INVITED;
-    // await this.guestRepository.save(guests);
-
-    // const results = await Promise.allSettled(
-    //   guests.map((guest) => this.mailService.sendGuestInvitation(guest, event.name)),
-    // );
-
-    // for (let [idx, result] of results.entries()) {
-    //   if (result.status === 'rejected') {
-    //     console.error(`Fehler beim Senden an ${guests[idx].email}:`, result.reason);
-    //   }
-    // }
-    //
     const jobs = guests.map((guest) => ({
       name: 'send-invitation',
       data: {
