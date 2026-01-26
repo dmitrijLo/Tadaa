@@ -51,7 +51,7 @@ export const getAuthHeader = () => {
   return headers;
 };
 
-export const makeApiRequest = async (url: string) => {
+export const makeApiRequest = async <T = unknown>(url: string): Promise<T> => {
   const response = await fetch(url, {
     cache: "no-store",
     headers: getAuthHeader(),

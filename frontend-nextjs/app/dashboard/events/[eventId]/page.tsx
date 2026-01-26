@@ -12,8 +12,8 @@ export default async function EventDetailPage({ params }: PageProps) {
 
   try {
     [initialEvent, initialGuests] = await Promise.all([
-      makeApiRequest(`${BACKEND_URL}/events/${eventId}`),
-      makeApiRequest(`${BACKEND_URL}/events/${eventId}/guests`),
+      makeApiRequest<Event>(`${BACKEND_URL}/events/${eventId}`),
+      makeApiRequest<Guest[]>(`${BACKEND_URL}/events/${eventId}/guests`),
     ]);
   } catch {
     return <div>Fehler beim Laden der Daten</div>;
