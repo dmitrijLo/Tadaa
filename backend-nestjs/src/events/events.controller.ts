@@ -11,6 +11,7 @@ import {
   Sse,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,6 +26,7 @@ import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiNoContentResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -42,6 +44,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Observable, fromEvent } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { EventStatus } from 'src/enums';
+import { BaseUserDto } from 'src/users/dto/create-user.dto';
+import { PaginatedEventsResponse, PaginationQueryDto } from './dto/event-response.dto';
 
 interface MailSentEvent {
   eventId: string;
@@ -142,10 +146,14 @@ export class EventsController {
     return this.eventsService.create(createEventDto, user.id);
   }
 
-  // generic routes
   @Get()
-  findAll() {
-    return this.eventsService.findAll();
+  @ApiOperation({ summary: 'Get all events of an Event-Host (user).' })
+  @ApiOkResponse({ type: PaginatedEventsResponse, description: 'Receive a list of events.' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in.' })
+  @ApiBadRequestResponse({ description: 'Validation failed (e.g. invalid page or limit).' })
+  getAllEventsWithPagination(@UserFromRequest() user: BaseUserDto, @Query() query: PaginationQueryDto) {
+    const { limit, page } = query;
+    return this.eventsService.findAllEventsByHost(user.id, limit, page);
   }
 
   @Get(':id')

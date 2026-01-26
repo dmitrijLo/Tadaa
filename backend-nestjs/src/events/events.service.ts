@@ -7,6 +7,8 @@ import { Event } from './entities/event.entity';
 import { DrawRule, EventMode, EventStatus } from '../enums';
 import { GuestsService } from 'src/guests/guests.service';
 import { UsersService } from 'src/users/users.service';
+import { EventResponseDto, PaginatedEventsResponse } from './dto/event-response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class EventsService implements OnApplicationBootstrap {
@@ -80,8 +82,21 @@ export class EventsService implements OnApplicationBootstrap {
     return savedEvent;
   }
 
-  findAll(): Promise<Event[]> {
-    return this.eventRepository.find();
+  async findAllEventsByHost(userId: string, limit: number, page: number): Promise<PaginatedEventsResponse> {
+    const [events, total] = await this.eventRepository.findAndCount({
+      where: { hostId: userId },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    return {
+      data: plainToInstance(EventResponseDto, events, { excludeExtraneousValues: true }),
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / limit),
+      },
+    };
   }
 
   async findOne(id: string): Promise<Event> {
