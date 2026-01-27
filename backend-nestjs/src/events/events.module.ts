@@ -10,6 +10,6 @@ import { UsersModule } from 'src/users/users.module';
   imports: [TypeOrmModule.forFeature([Event]), GuestsModule, UsersModule],
   controllers: [EventsController],
   providers: [EventsService],
-  exports: [TypeOrmModule],
+  exports: [TypeOrmModule, EventsService],
 })
 export class EventsModule {}
