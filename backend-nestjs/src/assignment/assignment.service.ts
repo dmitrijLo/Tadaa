@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from 'src/guests/entities/guest.entity';
 import { Event } from 'src/events/entities/event.entity';
 import { Repository } from 'typeorm';
+import { EventStatus } from 'src/enums/enums';
 
 @Injectable()
 export class AssignmentService {
@@ -41,6 +42,10 @@ export class AssignmentService {
 
       await this.GuestRepository.save(findguest);
     }
+
+    event.status = EventStatus.ASSIGNED;
+
+    await this.EventRepository.save(event);
   }
 
   //
