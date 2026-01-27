@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 import { IsInt, IsOptional, Max, Min } from 'class-validator';
-import { DrawRule, EventMode } from 'src/enums';
+import { DrawRule, EventMode, EventStatus } from 'src/enums';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class PaginationQueryDto {
@@ -41,6 +41,8 @@ export class EventResponseDto {
   invitationDate: Date;
   @Expose()
   draftDate: Date;
+  @Expose()
+  status: EventStatus;
 }
 
 class PaginationMetaDto {
@@ -57,4 +59,15 @@ export class PaginatedEventsResponse {
   data: EventResponseDto[];
   @ApiProperty({ type: PaginationMetaDto })
   meta: PaginationMetaDto;
+}
+
+export class EventStatisticsReponse {
+  @ApiProperty()
+  totalGuests: number;
+  @ApiProperty()
+  accepted: number;
+  @ApiProperty()
+  denied: number;
+  @ApiProperty()
+  open: number;
 }

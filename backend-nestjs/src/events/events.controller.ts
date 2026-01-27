@@ -35,7 +35,7 @@ import { JwtDevGuard } from '../auth/guards/jwt-dev.guard';
 import { GuestsService } from 'src/guests/guests.service';
 import { CreateGuestDto } from 'src/guests/dto/create-guest.dto';
 import { UserFromRequest } from 'src/decorators/user-payload.decorator';
-import { GuestResponseDto } from 'src/guests/dto/guest-response.dto';
+import { GuestResponseDto, GuestsInvitationStats } from 'src/guests/dto/guest-response.dto';
 import { EventOwnerGuard } from './guards/event-owner.guard';
 import { EventFromRequest } from 'src/decorators/event-payload.decorator';
 import { Event } from './entities/event.entity';
@@ -64,6 +64,19 @@ export class EventsController {
     private readonly guestsService: GuestsService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  @Get(':eventId/stats')
+  @UseGuards(EventOwnerGuard)
+  @ApiOperation({ summary: 'Receive event related statistics.' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiOkResponse({ type: GuestsInvitationStats, description: 'Receive some statistics on specific event.' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in.' })
+  @ApiBadRequestResponse({ description: 'Validation failed.' })
+  @ApiForbiddenResponse({ description: 'You are not allowed to query this event.' })
+  @ApiNotFoundResponse({ description: 'Event was not found.' })
+  getGuestsStats(@Param('eventId', ParseUUIDPipe) eventId: string) {
+    return this.guestsService.getConfirmationStats(eventId);
+  }
 
   @Get(':eventId/guests')
   @UseGuards(EventOwnerGuard)

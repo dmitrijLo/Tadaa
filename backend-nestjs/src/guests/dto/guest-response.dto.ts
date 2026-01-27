@@ -32,3 +32,14 @@ export class GuestResponseDto extends BaseGuestDto {
   @ApiProperty()
   createdAt: Date;
 }
+
+export class GuestsInvitationStats {
+  @ApiProperty()
+  totalGuests: number;
+  @ApiProperty()
+  accepted: number;
+  @ApiProperty()
+  denied: number;
+  @ApiProperty()
+  open: number;
+}
