@@ -168,7 +168,10 @@ export default function EventDetailTabs({
             color: "var(--colorTextTertiary)",
           }}
         >
-          <span>{formattedDate}</span>
+          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <ClockCircleOutlined />
+            {formattedDate}
+          </span>
           <span>|</span>
           <span>
             {initialGuests.length} <TeamOutlined />
