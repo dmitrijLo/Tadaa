@@ -194,7 +194,7 @@ export default function EventSettings({
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     setValue,
   } = useForm<FormData>({
     defaultValues: initialData || {
@@ -522,6 +522,7 @@ export default function EventSettings({
             loading={loading}
             size="large"
             variant="outlined"
+            disabled={!!initialData && !isDirty}
           >
             {submitLabel}
           </Button>
