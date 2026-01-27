@@ -6,12 +6,14 @@ import { Public } from 'src/auth/decorators/public.decorator';
 import { GuestInterestReqDto } from './dto/guest-interst.dto';
 import { GuestInterestsService } from './guestInterests.service';
 import { NoteForGiverDto } from './dto/interest-note.dto';
+import { GiftRecommendationService } from './giftRecommendation.service';
 
 @Controller('interests')
 export class InterestsController {
   constructor(
     private readonly interestsService: InterestsService,
     private readonly guestInterestService: GuestInterestsService,
+    private readonly giftRecommondationService: GiftRecommendationService,
   ) {}
 
   // get all interest
@@ -43,5 +45,11 @@ export class InterestsController {
   @Post(':guestId/note')
   addNoteForGiver(@Param('guestId', ParseUUIDPipe) guestId: string, @Body() noteDto: NoteForGiverDto) {
     return this.guestInterestService.submitNoteForGiver(guestId, noteDto.noteForGiver);
+  }
+
+  //get ai gift suggestions
+  @Get(':guestId/suggestions')
+  getGiftSuggestions(@Param('guestId', ParseUUIDPipe) guestId: string) {
+    return this.giftRecommondationService.generateRecommendation(guestId);
   }
 }
