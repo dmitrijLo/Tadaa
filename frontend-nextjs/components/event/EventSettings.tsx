@@ -181,12 +181,14 @@ interface EventSettingsProps {
   onSubmit: (data: CreateEventDto) => Promise<void>;
   initialData?: CreateEventDto | null;
   submitLabel?: string;
+  onDelete?: () => void;
 }
 
 export default function EventSettings({
   onSubmit,
   initialData,
   submitLabel = "Weiter",
+  onDelete,
 }: EventSettingsProps) {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
@@ -515,7 +517,9 @@ export default function EventSettings({
       </div>
 
       <Form.Item>
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}
+        >
           <Button
             type="primary"
             htmlType="submit"
@@ -526,6 +530,14 @@ export default function EventSettings({
           >
             {submitLabel}
           </Button>
+          {!!initialData && (
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              size="large"
+              onClick={onDelete}
+            ></Button>
+          )}
         </div>
       </Form.Item>
     </Form>
