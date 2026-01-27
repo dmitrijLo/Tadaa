@@ -70,3 +70,10 @@ type CreateEventDto = Pick<
 >;
 
 type UpdateEventDto = Partial<CreateEventDto>;
+
+interface GiftSuggestion {
+  name: string;
+  description: string;
+  estimatedPrice: string;
+  category: string;
+}
