@@ -28,7 +28,7 @@ export default function InterestNoteComponent({
   return (
     <>
       <Paragraph>
-        <Text type="secondary">Leave a note for your wichtel:</Text>
+        <Text type="secondary">Hinterlasse eine Notiz für deinen Wichtel:</Text>
       </Paragraph>
       <Form layout="inline" onFinish={handleSubmit}>
         <Form.Item style={{ flex: 1, marginRight: "8px" }}>
@@ -40,7 +40,7 @@ export default function InterestNoteComponent({
         </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit">
-            Submit
+            Notiz speichern
           </Button>
         </Form.Item>
       </Form>
