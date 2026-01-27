@@ -1,6 +1,6 @@
 "use client";
 
-import { Tabs, App, Modal, Divider, Button } from "antd";
+import { Tabs, App, Modal, Divider, Button, Tag } from "antd";
 import type { TabsProps } from "antd";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import { EventSettings, GuestList } from "@/components";
 import { api } from "@/utils/api";
 import { Typography } from "antd";
 import { formatGermanDateTime } from "@/utils/formatters";
+import { eventModeByModus } from "@/constants/eventStates";
 import {
   ClockCircleOutlined,
   GiftOutlined,
@@ -113,9 +114,17 @@ export default function EventDetailTabs({
         <Title level={1} style={{ marginBottom: 5 }}>
           {eventData.name}
         </Title>
-        <div className={"sub-title"}>
-          <ClockCircleOutlined />
-          <span suppressHydrationWarning>{formattedDate}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className={"sub-title"}>
+            <ClockCircleOutlined />
+            <span suppressHydrationWarning>{formattedDate}</span>
+          </div>
+          <Tag
+            color={eventModeByModus[eventData.status]?.color || "default"}
+            variant="outlined"
+          >
+            {eventModeByModus[eventData.status]?.label || eventData.status}
+          </Tag>
         </div>
       </div>
       <Tabs activeKey={activeTab} items={items} onChange={onChange} />
