@@ -2,19 +2,15 @@
 import { Card, Typography, Collapse, Tag, Divider, Space } from "antd";
 import { HeartOutlined, StopOutlined } from "@ant-design/icons";
 import { notFound } from "next/navigation";
-import { useEffect, useState } from "react";
+import GiftSuggestions from "../interests/GiftSuggestions";
 
 const { Text, Paragraph } = Typography;
 
 export default function RevealPartner({ guest }: { guest: Guest }) {
   const { assignedRecipient } = guest;
-  const [formattedDate, setFormattedDate] = useState<string>("");
-
-  useEffect(() => {
-    setFormattedDate(
-      new Date(guest.event.eventDate).toLocaleDateString("de-DE"),
-    );
-  }, [guest.event.eventDate]);
+  const formattedDate = new Date(guest.event.eventDate).toLocaleDateString(
+    "de-DE",
+  );
 
   if (!assignedRecipient) notFound();
 
@@ -114,6 +110,11 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
               items={collapseItems}
               className="mt-4"
             />
+          </div>
+
+          {/* AI Gift Suggestions */}
+          <div className="mt-4">
+            <GiftSuggestions recipientId={assignedRecipient.id} />
           </div>
         </Card>
 
