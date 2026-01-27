@@ -13,6 +13,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { MailModule } from './mail/mail.module';
 import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { AssignmentModule } from './assignment/assignment.module';
 
 @Module({
   imports: [
@@ -74,6 +75,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     InterestsModule,
     AuthModule,
     MailModule,
+    AssignmentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
