@@ -1,33 +1,56 @@
-import { BACKEND_URL, getAuthHeader } from "@/utils/api";
-import DashboardEvents, {
-  EventSummary,
-} from "@/components/dashboard/DashboardEvents";
+import { BACKEND_URL, makeApiRequest } from "@/utils/api";
+import DashboardEvents from "@/components/dashboard/DashboardEvents";
+
+interface PaginatedEventResponse {
+  data: EventResponse[];
+  meta: {
+    total: number;
+    page: number;
+    lastPage: number;
+  };
+}
 
 export default async function DashboardPage() {
-  let events: EventSummary[] = [];
+  const { data: eventsData, error: eventsErr } =
+    await makeApiRequest<PaginatedEventResponse>(`${BACKEND_URL}/events`);
 
-  try {
-    const res = await fetch(`${BACKEND_URL}/events`, {
-      cache: "no-store",
-      headers: getAuthHeader(),
-    });
-    if (res.ok) events = await res.json();
-  } catch (e) {
-    console.error("Fetch Error", e);
+  if (eventsErr || !eventsData) {
+    return <DashboardEvents />;
   }
 
-  console.log(events);
-  // // MOCK DATA
-  // if (events.length === 0) {
-  //   events = [
-  //     { id: "e77b9a3f-911d-41d4-807b-8f4e315c6f31", title: "Test Geburtstag" },
-  //     { id: "demo-id-2", title: "Weihnachtsfeier 2024" },
-  //   ];
-  // }
+  const now = new Date();
+  const { data: allEvents, ..._ } = eventsData;
+  const sortedEvents = [...allEvents].sort(
+    ({ eventDate: aDate }, { eventDate: bDate }) =>
+      new Date(bDate).getTime() - new Date(aDate).getTime(),
+  );
+
+  const futureEvents = sortedEvents
+    .filter(({ eventDate }) => new Date(eventDate) >= now)
+    .sort(
+      ({ eventDate: aDate }, { eventDate: bDate }) =>
+        new Date(aDate).getTime() - new Date(bDate).getTime(),
+    );
+
+  const pastEvents = allEvents
+    .filter(({ eventDate }) => new Date(eventDate) < now)
+    .sort(
+      ({ eventDate: aDate }, { eventDate: bDate }) =>
+        new Date(bDate).getTime() - new Date(aDate).getTime(),
+    );
+
+  const [featuredEvent, ...upcomingEvents] = futureEvents;
+  const { data: statsData, error: statsErr } =
+    await makeApiRequest<GuestStatsResponse>(
+      `${BACKEND_URL}/events/${featuredEvent.id}/stats`,
+    );
 
   return (
-    <>
-      <DashboardEvents events={events} />
-    </>
+    <DashboardEvents
+      featuredEvent={featuredEvent}
+      eventStats={statsData || undefined}
+      upcomingEvents={upcomingEvents}
+      pastEvents={pastEvents}
+    />
   );
 }
