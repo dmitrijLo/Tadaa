@@ -19,30 +19,6 @@ import {
 
 const { Title } = Typography;
 
-const items: TabsProps["items"] = [
-  {
-    key: "1",
-    label: "Übersicht",
-    icon: <PieChartOutlined />,
-  },
-  {
-    key: "2",
-    label: "Einstellungen",
-    icon: <SettingOutlined />,
-  },
-  {
-    key: "3",
-    label: "Gäste",
-    icon: <TeamOutlined />,
-  },
-  {
-    key: "4",
-    label: "Ergebnis",
-    icon: <GiftOutlined />,
-    disabled: true,
-  },
-];
-
 type EventDetailTabsProps = {
   eventId: string;
   initialEvent: Event;
@@ -58,6 +34,30 @@ export default function EventDetailTabs({
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("1");
   const [eventData, setEventData] = useState<Event>(initialEvent);
+
+  const items: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "Übersicht",
+      icon: <PieChartOutlined />,
+    },
+    {
+      key: "2",
+      label: "Einstellungen",
+      icon: <SettingOutlined />,
+    },
+    {
+      key: "3",
+      label: "Gäste",
+      icon: <TeamOutlined />,
+    },
+    {
+      key: "4",
+      label: "Ergebnis",
+      icon: <GiftOutlined />,
+      disabled: eventData.status !== "assigned" && eventData.status !== "done",
+    },
+  ];
 
   const formattedDate = useMemo(
     () => formatGermanDateTime(eventData.eventDate),
