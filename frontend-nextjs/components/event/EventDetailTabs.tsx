@@ -1,12 +1,14 @@
 "use client";
 
-import { Tabs, App } from "antd";
+import { Tabs, App, Modal, Divider, Button, Tag } from "antd";
 import type { TabsProps } from "antd";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { EventSettings, GuestList } from "@/components";
 import { api } from "@/utils/api";
 import { Typography } from "antd";
 import { formatGermanDateTime } from "@/utils/formatters";
+import { eventModeByModus } from "@/constants/eventStates";
 import {
   ClockCircleOutlined,
   GiftOutlined,
@@ -16,30 +18,6 @@ import {
 } from "@ant-design/icons";
 
 const { Title } = Typography;
-
-const items: TabsProps["items"] = [
-  {
-    key: "1",
-    label: "Übersicht",
-    icon: <PieChartOutlined />,
-  },
-  {
-    key: "2",
-    label: "Einstellungen",
-    icon: <SettingOutlined />,
-  },
-  {
-    key: "3",
-    label: "Gäste",
-    icon: <TeamOutlined />,
-  },
-  {
-    key: "4",
-    label: "Ergebnis",
-    icon: <GiftOutlined />,
-    disabled: true,
-  },
-];
 
 type EventDetailTabsProps = {
   eventId: string;
@@ -53,8 +31,33 @@ export default function EventDetailTabs({
   initialGuests,
 }: EventDetailTabsProps) {
   const { message } = App.useApp();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<string>("1");
   const [eventData, setEventData] = useState<Event>(initialEvent);
+
+  const items: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "Übersicht",
+      icon: <PieChartOutlined />,
+    },
+    {
+      key: "2",
+      label: "Einstellungen",
+      icon: <SettingOutlined />,
+    },
+    {
+      key: "3",
+      label: "Gäste",
+      icon: <TeamOutlined />,
+    },
+    {
+      key: "4",
+      label: "Ergebnis",
+      icon: <GiftOutlined />,
+      disabled: eventData.status !== "assigned" && eventData.status !== "done",
+    },
+  ];
 
   const formattedDate = useMemo(
     () => formatGermanDateTime(eventData.eventDate),
@@ -87,15 +90,41 @@ export default function EventDetailTabs({
     }
   };
 
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
+  const handleOk = async () => {
+    try {
+      setConfirmLoading(true);
+      await api.delete(`/events/${eventId}`);
+      message.success("Event wurde gelöscht");
+      setDeleteModalOpen(false);
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("Fehler beim Löschen des Events:", error);
+      message.error("Event konnte nicht gelöscht werden");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
         <Title level={1} style={{ marginBottom: 5 }}>
           {eventData.name}
         </Title>
-        <div className={"sub-title"}>
-          <ClockCircleOutlined />
-          <span suppressHydrationWarning>{formattedDate}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div className={"sub-title"}>
+            <ClockCircleOutlined />
+            <span suppressHydrationWarning>{formattedDate}</span>
+          </div>
+          <Tag
+            color={eventModeByModus[eventData.status]?.color || "default"}
+            variant="outlined"
+          >
+            {eventModeByModus[eventData.status]?.label || eventData.status}
+          </Tag>
         </div>
       </div>
       <Tabs activeKey={activeTab} items={items} onChange={onChange} />
@@ -106,12 +135,54 @@ export default function EventDetailTabs({
             onSubmit={handleUpdateEvent}
             initialData={eventData}
             submitLabel={"Speichern"}
+            onDelete={() => setDeleteModalOpen(true)}
           />
         )}
         {activeTab === "3" && (
           <GuestList eventId={eventId} initialGuests={initialGuests} />
         )}
       </div>
+      <Modal
+        title={`Event "${eventData.name}" wirklich löschen?`}
+        centered
+        open={deleteModalOpen}
+        onOk={handleOk}
+        confirmLoading={confirmLoading}
+        onCancel={() => setDeleteModalOpen(false)}
+        footer={[
+          <Button
+            key="submit"
+            type="primary"
+            loading={confirmLoading}
+            onClick={handleOk}
+          >
+            Löschen
+          </Button>,
+        ]}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+            marginBottom: "16px",
+            color: "var(--colorTextTertiary)",
+          }}
+        >
+          <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <ClockCircleOutlined />
+            {formattedDate}
+          </span>
+          <span>|</span>
+          <span>
+            {initialGuests.length} <TeamOutlined />
+          </span>
+        </div>
+        <Divider />
+        <p>
+          Wenn du dieses Event löschst, gehen alle Inhalte und Gäste verloren.
+        </p>
+        <p>Dies kann nicht rückgängig gemacht werden.</p>
+      </Modal>
     </div>
   );
 }

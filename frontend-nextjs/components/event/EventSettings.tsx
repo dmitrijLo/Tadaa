@@ -181,12 +181,14 @@ interface EventSettingsProps {
   onSubmit: (data: CreateEventDto) => Promise<void>;
   initialData?: CreateEventDto | null;
   submitLabel?: string;
+  onDelete?: () => void;
 }
 
 export default function EventSettings({
   onSubmit,
   initialData,
   submitLabel = "Weiter",
+  onDelete,
 }: EventSettingsProps) {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
@@ -194,7 +196,7 @@ export default function EventSettings({
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     setValue,
   } = useForm<FormData>({
     defaultValues: initialData || {
@@ -515,16 +517,27 @@ export default function EventSettings({
       </div>
 
       <Form.Item>
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}
+        >
           <Button
             type="primary"
             htmlType="submit"
             loading={loading}
             size="large"
             variant="outlined"
+            disabled={!!initialData && !isDirty}
           >
             {submitLabel}
           </Button>
+          {!!initialData && (
+            <Button
+              danger
+              icon={<DeleteOutlined />}
+              size="large"
+              onClick={onDelete}
+            ></Button>
+          )}
         </div>
       </Form.Item>
     </Form>
