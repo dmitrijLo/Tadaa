@@ -8,7 +8,7 @@ import {
   MenuProps,
   theme,
 } from "antd";
-import { PropsWithChildren, useMemo, useState } from "react";
+import { PropsWithChildren, useMemo } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,6 +18,7 @@ import {
   GiftOutlined,
   HomeOutlined,
 } from "@ant-design/icons";
+import { useSidebarStore } from "@/stores/useSidebarStore";
 
 const { Content, Sider } = Layout;
 
@@ -52,6 +53,7 @@ const items: MenuItem[] = [
 export default function DashboardPageLayout({ children }: PropsWithChildren) {
   const { token } = theme.useToken();
   const pathname = usePathname();
+  const { collapsed, toggleCollapsed } = useSidebarStore();
 
   const breadcrumbItems = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
@@ -71,11 +73,6 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
     });
   }, [pathname]);
 
-  const [collapsed, setCollapsed] = useState(false);
-
-  const toggleCollapsed = () => {
-    setCollapsed(!collapsed);
-  };
   return (
     <>
       {showSidebar && (
