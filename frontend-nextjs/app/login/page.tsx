@@ -2,13 +2,14 @@
 
 import LoginForm from "@/components/auth/LoginForm";
 import { Typography } from "antd";
+import styles from "./login.module.css";
 
 const { Title } = Typography;
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="max-w-md w-full bg-white p-8 rounded shadow">
+    <div className={styles.container}>
+      <div className={styles.card}>
         <Title className="text-2xl font-bold mb-6 text-center">Login</Title>
         <LoginForm />
       </div>

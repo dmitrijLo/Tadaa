@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 
 import { useForm, Controller } from "react-hook-form";
-import { Button, Input, Form, message } from "antd";
+import { Button, Input, Form, App } from "antd";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 type FormData = {
@@ -14,6 +14,7 @@ type FormData = {
 };
 
 export default function RegisterForm() {
+  const { message } = App.useApp();
   const router = useRouter();
   const registerUser = useAuthStore((state) => state.register);
   const loading = useAuthStore((state) => state.loading);
@@ -31,11 +32,12 @@ export default function RegisterForm() {
   const onSubmit = async (data: FormData) => {
     try {
       await registerUser(data.email, data.name, data.password);
-      message.success("Registration successful!");
+      message.success("Registrierung fehlgeschlagen");
       reset();
       setTimeout(() => router.push("/login"), 2000);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Registration failed";
+      const errorMessage =
+        err instanceof Error ? err.message : "Registrierung fehlgeschlagen";
       message.error(errorMessage);
     }
   };
@@ -51,11 +53,11 @@ export default function RegisterForm() {
           name="name"
           control={control}
           rules={{
-            required: "Name is required",
-            minLength: { value: 2, message: "Min 2 chars" },
+            required: "Name ist erforderlich",
+            minLength: { value: 2, message: "Min. 2 Zeichen" },
           }}
           render={({ field }) => (
-            <Input {...field} placeholder="Full Name" size="large" />
+            <Input {...field} placeholder="Vollständiger Name" size="large" />
           )}
         />
       </Form.Item>
@@ -69,8 +71,8 @@ export default function RegisterForm() {
           name="email"
           control={control}
           rules={{
-            required: "Email is required",
-            pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
+            required: "Email ist erforderlich",
+            pattern: { value: /^\S+@\S+$/i, message: "Ungültige Email" },
           }}
           render={({ field }) => (
             <Input {...field} placeholder="Email" size="large" />
@@ -87,11 +89,11 @@ export default function RegisterForm() {
           name="password"
           control={control}
           rules={{
-            required: "Password is required",
-            minLength: { value: 8, message: "Min 8 chars" },
+            required: "Passwort ist erforderlich",
+            minLength: { value: 8, message: "Min. 8 Zeichen" },
           }}
           render={({ field }) => (
-            <Input.Password {...field} placeholder="Password" size="large" />
+            <Input.Password {...field} placeholder="Passwort" size="large" />
           )}
         />
       </Form.Item>
@@ -105,14 +107,15 @@ export default function RegisterForm() {
           name="confirmPassword"
           control={control}
           rules={{
-            required: "Please confirm your password",
+            required: "Bitte bestätige dein Passwort",
             validate: (value) =>
-              value === getValues("password") || "Passwords do not match",
+              value === getValues("password") ||
+              "Passwörter stimmen nicht überein",
           }}
           render={({ field }) => (
             <Input.Password
               {...field}
-              placeholder="Confirm Password"
+              placeholder="Passwort bestätigen"
               size="large"
             />
           )}
@@ -127,7 +130,7 @@ export default function RegisterForm() {
         loading={loading}
         style={{ marginTop: "20px" }}
       >
-        {loading ? "Registering..." : "Register"}
+        {loading ? "Registrieren..." : "Registrieren"}
       </Button>
     </form>
   );
