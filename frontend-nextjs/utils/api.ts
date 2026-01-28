@@ -77,6 +77,32 @@ export const makeApiRequest = async <T>(
 };
 
 /**
+ * Public API call to get event info (no auth required)
+ */
+export const getPublicEventInfo = async (
+  eventId: string,
+): Promise<ApiResponse<{ name: string }>> => {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/guests/event-info/${eventId}`,
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Event nicht gefunden.");
+      }
+      throw new Error("Fehler beim Laden des Events");
+    }
+
+    const data = await response.json();
+    return { data, error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unbekannter Fehler";
+    return { data: null, error: message };
+  }
+};
+
+/**
  * Public API call for guest self-registration (no auth required)
  */
 export const registerGuestForEvent = async (

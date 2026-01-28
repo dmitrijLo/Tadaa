@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Button, Input, Form, Card, App, Result } from "antd";
+import { Button, Input, Form, Card, App, Result, Spin } from "antd";
 import { UserOutlined, MailOutlined } from "@ant-design/icons";
-import { registerGuestForEvent } from "@/utils/api";
+import Link from "next/link";
+import { registerGuestForEvent, getPublicEventInfo } from "@/utils/api";
 
 type FormData = {
   name: string;
@@ -18,16 +19,31 @@ export default function RegisterForEventComponent({
 }) {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
-  const [registered, setRegistered] = useState(false);
+  const [guestId, setGuestId] = useState<string | null>(null);
+  const [eventName, setEventName] = useState<string | null>(null);
+  const [eventError, setEventError] = useState<string | null>(null);
+  const [eventLoading, setEventLoading] = useState(true);
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-    reset,
   } = useForm<FormData>({
     defaultValues: { name: "", email: "" },
   });
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      const result = await getPublicEventInfo(eventId);
+      setEventLoading(false);
+      if (result.error) {
+        setEventError(result.error);
+      } else if (result.data) {
+        setEventName(result.data.name);
+      }
+    };
+    fetchEvent();
+  }, [eventId]);
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
@@ -36,27 +52,49 @@ export default function RegisterForEventComponent({
 
     if (result.error) {
       message.error(result.error);
-    } else {
+    } else if (result.data) {
       message.success("Erfolgreich registriert!");
-      setRegistered(true);
-      reset();
+      setGuestId(result.data.id);
     }
   };
 
-  if (registered) {
+  if (eventLoading) {
+    return (
+      <Card>
+        <Spin />
+      </Card>
+    );
+  }
+
+  if (eventError) {
+    return (
+      <Card>
+        <Result status="error" title="Event nicht gefunden" />
+      </Card>
+    );
+  }
+
+  if (guestId) {
     return (
       <Card>
         <Result
           status="success"
           title="Erfolgreich registriert!"
           subTitle="Du wirst per E-Mail informiert, sobald es losgeht."
+          extra={
+            <Link href={`/guests/${guestId}`}>
+              <Button type="primary" size="large">
+                Zu deiner Seite
+              </Button>
+            </Link>
+          }
         />
       </Card>
     );
   }
 
   return (
-    <Card title="Für Event registrieren">
+    <Card title={`Registrierung: ${eventName}`}>
       <form onSubmit={handleSubmit(onSubmit)}>
         <Form.Item
           validateStatus={errors.name ? "error" : ""}

@@ -6,6 +6,11 @@ import { CreateGuestDto } from './dto/create-guest.dto';
 export class GuestsController {
   constructor(private readonly guestsService: GuestsService) {}
 
+  @Get('event-info/:eventId')
+  getEventInfo(@Param('eventId', ParseUUIDPipe) eventId: string) {
+    return this.guestsService.getEventInfo(eventId);
+  }
+
   // get guest by invite token
   @Get(':guestId')
   findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "antd";
+import { Card, Result } from "antd";
 import { notFound } from "next/navigation";
 import RevealPartner from "@/components/guests/views/RevealPartner";
 import InvitationStatus from "@/components/guests/views/InvitationStatus";
@@ -38,6 +38,16 @@ export default function GuestCard({ guest }: { guest: Guest }) {
         return <GuestAcceptedView guest={guest} />;
     }
 
+    // Newly registered guest (draft status)
+    if (guest.inviteStatus === "draft") {
+      return (
+        <Result
+          status="success"
+          title="Du bist registriert!"
+          subTitle="Du wirst benachrichtigt, sobald die Einladung verschickt wird."
+        />
+      );
+    }
 
     return notFound();
   };
