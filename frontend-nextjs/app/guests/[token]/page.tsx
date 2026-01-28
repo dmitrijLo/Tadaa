@@ -1,33 +1,24 @@
 import { notFound } from "next/navigation";
 import GuestCard from "./GuestCard";
-
-const fetchGuest = async (token: string): Promise<Guest | undefined> => {
-  try {
-    const response = await fetch(`${process.env.API_URL}/guests/${token}`);
-    if (!response.ok) return undefined;
-    const guest: Guest = await response.json();
-    return guest;
-  } catch (error) {
-    console.error(error);
-    return undefined;
-  }
-};
+import { BACKEND_URL, makeApiRequest } from "@/utils/api";
 
 export default async function Guestpage({
   params,
 }: {
   params: Promise<{ token: string }>;
 }) {
-  const guestId = (await params).token;
+  const { token: guestId } = await params;
   if (!guestId) {
     notFound();
   }
 
-  const guest = await fetchGuest(guestId);
+  const { data: guestData, error: guestErr } = await makeApiRequest<Guest>(
+    `${BACKEND_URL}/guests/${guestId}`,
+  );
 
-  if (!guest) {
+  if (!guestData) {
     notFound();
   }
 
-  return <GuestCard guest={guest} />;
+  return <GuestCard guest={guestData} />;
 }

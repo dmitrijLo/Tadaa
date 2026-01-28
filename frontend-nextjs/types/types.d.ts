@@ -34,6 +34,13 @@ interface Guest {
   assignedRecipient?: Guest;
 }
 
+interface GuestStatsResponse {
+  totalGuests: number;
+  accepted: number;
+  denied: number;
+  open: number;
+}
+
 interface Event {
   id: string;
   hostId: string;
@@ -51,6 +58,20 @@ interface Event {
   updatedAt: Date;
   host: User;
   guests: Guest[];
+}
+
+interface EventResponse {
+  id: string;
+  name: string;
+  description: string;
+  budget: number;
+  currency: string;
+  eventMode: EventMode;
+  drawRule: DrawRule;
+  eventDate: Date;
+  invitationDate: Date;
+  draftDate: Date;
+  status: EventStatus;
 }
 
 type CreateGuestDto = Pick<Guest, "name" | "email">;
