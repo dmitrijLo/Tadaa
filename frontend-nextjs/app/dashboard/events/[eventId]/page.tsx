@@ -8,14 +8,15 @@ interface PageProps {
 export default async function EventDetailPage({ params }: PageProps) {
   const { eventId } = await params;
 
-  let initialEvent, initialGuests;
+  const [
+    { data: initialEvent, error: eventErr },
+    { data: initialGuests, error: guestsErr },
+  ] = await Promise.all([
+    makeApiRequest<Event>(`${BACKEND_URL}/events/${eventId}`),
+    makeApiRequest<Guest[]>(`${BACKEND_URL}/events/${eventId}/guests`),
+  ]);
 
-  try {
-    [initialEvent, initialGuests] = await Promise.all([
-      makeApiRequest<Event>(`${BACKEND_URL}/events/${eventId}`),
-      makeApiRequest<Guest[]>(`${BACKEND_URL}/events/${eventId}/guests`),
-    ]);
-  } catch {
+  if (!initialEvent || !initialGuests) {
     return <div>Fehler beim Laden der Daten</div>;
   }
 

@@ -3,14 +3,19 @@ import { Card, Typography, Collapse, Tag, Divider, Space } from "antd";
 import { HeartOutlined, StopOutlined } from "@ant-design/icons";
 import { notFound } from "next/navigation";
 import GiftSuggestions from "../interests/GiftSuggestions";
+import { useEffect, useState } from "react";
 
 const { Text, Paragraph } = Typography;
 
 export default function RevealPartner({ guest }: { guest: Guest }) {
   const { assignedRecipient } = guest;
-  const formattedDate = new Date(guest.event.eventDate).toLocaleDateString(
-    "de-DE",
-  );
+  const [formattedDate, setFormattedDate] = useState<string>("");
+
+  useEffect(() => {
+    setFormattedDate(
+      new Date(guest.event.eventDate).toLocaleDateString("de-DE"),
+    );
+  }, [guest.event.eventDate]);
 
   if (!assignedRecipient) notFound();
 
@@ -39,7 +44,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
                       </Tag>
                     ),
                   )
-                : "No interests listed"}
+                : "keine Interessen angegeben"}
             </Space>
           </div>
           <div>
@@ -60,7 +65,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
                       </Tag>
                     ),
                   )
-                : "No no interests listed"}
+                : "kein No-Go angegeben"}
             </Space>
           </div>
         </div>

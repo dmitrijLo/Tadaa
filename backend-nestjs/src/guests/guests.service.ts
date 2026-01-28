@@ -2,10 +2,10 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
-import { Repository } from 'typeorm';
+import { createQueryBuilder, Repository } from 'typeorm';
 import { InviteStatus } from '../enums';
 import { Event } from '../events/entities/event.entity';
-import { GuestResponseDto } from './dto/guest-response.dto';
+import { GuestResponseDto, GuestsInvitationStats } from './dto/guest-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { UpdateGuestDto } from './dto/update-guest.dto';
 import { InjectQueue } from '@nestjs/bullmq';
@@ -80,6 +80,29 @@ export class GuestsService {
     await this.mailQueue.addBulk(jobs);
 
     return { message: 'Einladungen werden im Hintergrund verarbeitet.', queueCount: guests.length };
+  }
+
+  async getConfirmationStats(eventId: string): Promise<GuestsInvitationStats> {
+    const stats: GuestsInvitationStats = { totalGuests: 0, accepted: 0, denied: 0, open: 0 };
+    const rawResults: { status: string; count: string }[] = await this.guestRepository
+      .createQueryBuilder('guest')
+      .select('guest.inviteStatus', 'status')
+      .addSelect('COUNT(guest.id)', 'count')
+      .where('guest.eventId = :eventId', { eventId })
+      .groupBy('guest.inviteStatus')
+      .getRawMany();
+
+    for (const r of rawResults) {
+      const count = parseInt(r.count, 10);
+      stats.totalGuests += count;
+      r.status === InviteStatus.ACCEPTED
+        ? (stats.accepted += count)
+        : r.status === InviteStatus.DENIED
+          ? (stats.denied += count)
+          : (stats.open += count);
+    }
+
+    return stats;
   }
 
   // get guestpage by token

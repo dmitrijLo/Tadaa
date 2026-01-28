@@ -110,20 +110,20 @@ body {
   background: transparent !important;
 }
 
-.ant-btn-primary.ant-btn-variant-solid {
+.ant-btn-color-primary.ant-btn-variant-solid {
   background: var(--gradientPrimary) !important;
   border: none !important;
 }
 
-.ant-btn-primary.ant-btn-variant-solid:hover {
+.ant-btn-color-primary.ant-btn-variant-solid:hover {
   background: var(--gradientPrimaryHover) !important;
 }
 
-.ant-btn-primary.ant-btn-variant-solid:active {
+.ant-btn-color-primary.ant-btn-variant-solid:active {
   background: var(--gradientPrimary) !important;
 }
 
-.ant-btn-primary.ant-btn-variant-solid:disabled {
+.ant-btn-color-primary.ant-btn-variant-solid:disabled {
   background: var(--gradientPrimaryDisabled) !important;
   color: #fff !important;
 }

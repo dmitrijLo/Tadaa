@@ -1,13 +1,21 @@
 "use client";
 
-import { Card, Typography, Button, Input, Space, message } from "antd";
+import {
+  Card,
+  Typography,
+  Button,
+  Input,
+  Space,
+  message,
+  Popconfirm,
+} from "antd";
 import { notFound } from "next/navigation";
 
 import { useEffect, useState } from "react";
 import { api } from "@/utils/api";
 
 const { TextArea } = Input;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const handleResponse = async (
   guestId: string,
@@ -52,16 +60,29 @@ export default function InvitationStatus({ guest }: { guest: Guest }) {
           Teilnehmen
         </Button>
 
-        <TextArea
-          placeholder="Optional: Grund für Ablehnung"
-          value={declineMessage}
-          onChange={(e) => setDeclineMessage(e.target.value)}
-          rows={3}
-        />
-
-        <Button danger size="large" block onClick={() => handleSubmit(false)}>
-          Ablehnen
-        </Button>
+        <Popconfirm
+          title="Möchtest du die Einladung wirklich ablehnen?"
+          description={
+            <div>
+              <Text>
+                Optional: Du kannst hier einen Grund für die Ablehnung angeben:
+              </Text>
+              <TextArea
+                placeholder="Ich bin leider verhindert..."
+                value={declineMessage}
+                onChange={(e) => setDeclineMessage(e.target.value)}
+                rows={3}
+              />
+            </div>
+          }
+          onConfirm={() => handleSubmit(false)}
+          okText="Absage senden"
+          cancelText="Abbrechen"
+        >
+          <Button danger size="large" block>
+            Ablehnen
+          </Button>
+        </Popconfirm>
       </Space>
     </Card>
   );

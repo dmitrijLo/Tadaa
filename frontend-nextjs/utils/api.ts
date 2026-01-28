@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useAuthStore } from "../stores/useAuthStore";
 
 const isClient = typeof window !== "undefined";
 
@@ -51,15 +50,28 @@ export const getAuthHeader = () => {
   return headers;
 };
 
-export const makeApiRequest = async <T = unknown>(url: string): Promise<T> => {
-  const response = await fetch(url, {
-    cache: "no-store",
-    headers: getAuthHeader(),
-  });
+type ApiResponse<T> = {
+  data: T | null;
+  error: string | null;
+};
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch: ${url}`);
+export const makeApiRequest = async <T>(
+  url: string,
+): Promise<ApiResponse<T>> => {
+  try {
+    const response = await fetch(url, {
+      cache: "no-store",
+      headers: getAuthHeader(),
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return { data, error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown Error";
+    return { data: null, error: message };
   }
-
-  return response.json();
 };

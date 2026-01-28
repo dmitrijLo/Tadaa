@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 
 import { useForm, Controller } from "react-hook-form";
-import { Button, Input, Form, message } from "antd";
+import { Button, Input, Form, App } from "antd";
 import { useAuthStore } from "@/stores/useAuthStore";
 
 type FormData = {
@@ -12,6 +12,7 @@ type FormData = {
 };
 
 export default function LoginForm() {
+  const { message } = App.useApp();
   const router = useRouter();
   const loginUser = useAuthStore((state) => state.login);
   const loading = useAuthStore((state) => state.loading);
@@ -29,11 +30,11 @@ export default function LoginForm() {
   const onSubmit = async (data: FormData) => {
     try {
       await loginUser(data.email, data.password);
-      message.success("Login successful!");
+      message.success("Login erfolgreich!");
       reset();
       setTimeout(() => router.push("/dashboard"), 2000);
     } catch (err: any) {
-      message.error(err.message || "Login failed");
+      message.error(err.message || "Login fehlgeschlagen");
     }
   };
 
@@ -48,8 +49,8 @@ export default function LoginForm() {
           name="email"
           control={control}
           rules={{
-            required: "Email is required",
-            pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
+            required: "Email ist erforderlich",
+            pattern: { value: /^\S+@\S+$/i, message: "Ungültige Email" },
           }}
           render={({ field }) => (
             <Input {...field} placeholder="Email" size="large" />
@@ -66,11 +67,11 @@ export default function LoginForm() {
           name="password"
           control={control}
           rules={{
-            required: "Password is required",
-            minLength: { value: 8, message: "Min 8 chars" },
+            required: "Passwort ist erforderlich",
+            minLength: { value: 8, message: "Mindestens 8 Zeichen" },
           }}
           render={({ field }) => (
-            <Input.Password {...field} placeholder="Password" size="large" />
+            <Input.Password {...field} placeholder="Passwort" size="large" />
           )}
         />
       </Form.Item>
@@ -83,7 +84,7 @@ export default function LoginForm() {
         loading={loading}
         style={{ marginTop: "20px" }}
       >
-        {loading ? "Logging in..." : "Login"}
+        {loading ? "Anmeldung läuft..." : "Anmelden"}
       </Button>
     </form>
   );

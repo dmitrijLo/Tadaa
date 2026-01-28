@@ -11,6 +11,7 @@ import {
   Sse,
   HttpCode,
   HttpStatus,
+  Query,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -25,6 +26,7 @@ import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiNoContentResponse,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -33,7 +35,7 @@ import { JwtDevGuard } from '../auth/guards/jwt-dev.guard';
 import { GuestsService } from 'src/guests/guests.service';
 import { CreateGuestDto } from 'src/guests/dto/create-guest.dto';
 import { UserFromRequest } from 'src/decorators/user-payload.decorator';
-import { GuestResponseDto } from 'src/guests/dto/guest-response.dto';
+import { GuestResponseDto, GuestsInvitationStats } from 'src/guests/dto/guest-response.dto';
 import { EventOwnerGuard } from './guards/event-owner.guard';
 import { EventFromRequest } from 'src/decorators/event-payload.decorator';
 import { Event } from './entities/event.entity';
@@ -42,6 +44,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Observable, fromEvent } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { EventStatus } from 'src/enums';
+import { BaseUserDto } from 'src/users/dto/create-user.dto';
+import { PaginatedEventsResponse, PaginationQueryDto } from './dto/event-response.dto';
 
 interface MailSentEvent {
   eventId: string;
@@ -60,6 +64,19 @@ export class EventsController {
     private readonly guestsService: GuestsService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
+
+  @Get(':eventId/stats')
+  @UseGuards(EventOwnerGuard)
+  @ApiOperation({ summary: 'Receive event related statistics.' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiOkResponse({ type: GuestsInvitationStats, description: 'Receive some statistics on specific event.' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in.' })
+  @ApiBadRequestResponse({ description: 'Validation failed.' })
+  @ApiForbiddenResponse({ description: 'You are not allowed to query this event.' })
+  @ApiNotFoundResponse({ description: 'Event was not found.' })
+  getGuestsStats(@Param('eventId', ParseUUIDPipe) eventId: string) {
+    return this.guestsService.getConfirmationStats(eventId);
+  }
 
   @Get(':eventId/guests')
   @UseGuards(EventOwnerGuard)
@@ -142,10 +159,14 @@ export class EventsController {
     return this.eventsService.create(createEventDto, user.id);
   }
 
-  // generic routes
   @Get()
-  findAll() {
-    return this.eventsService.findAll();
+  @ApiOperation({ summary: 'Get all events of an Event-Host (user).' })
+  @ApiOkResponse({ type: PaginatedEventsResponse, description: 'Receive a list of events.' })
+  @ApiUnauthorizedResponse({ description: 'User not logged in.' })
+  @ApiBadRequestResponse({ description: 'Validation failed (e.g. invalid page or limit).' })
+  getAllEventsWithPagination(@UserFromRequest() user: BaseUserDto, @Query() query: PaginationQueryDto) {
+    const { limit, page } = query;
+    return this.eventsService.findAllEventsByHost(user.id, limit, page);
   }
 
   @Get(':id')

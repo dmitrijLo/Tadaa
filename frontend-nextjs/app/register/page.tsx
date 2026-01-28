@@ -12,13 +12,13 @@ export default function RegisterPage() {
     <div className={styles.container}>
       <div className={styles.card}>
         <Title level={2} style={{ textAlign: "center", marginBottom: "30px" }}>
-          Create Account
+          Account erstellen
         </Title>
 
         <RegisterForm />
 
         <Text style={{ marginBottom: "0" }}>
-          Already have an account? <Link href="/login">Sign in</Link>
+          Hast du bereits einen Account? <Link href="/login">Anmelden</Link>
         </Text>
       </div>
     </div>
