@@ -16,6 +16,7 @@ import { Tag, Button, Input, message, Popconfirm } from "antd";
 import { AxiosError } from "axios";
 import { useGuestStore } from "@/stores/useGuestsStore";
 import { InviteStatus } from "@/types/enums";
+import { useShallow } from "zustand/shallow";
 
 const STATUS_TAG: Record<string, string> = {
   [InviteStatus.DRAFT]: "cyan",
@@ -34,9 +35,14 @@ export default function GuestRow({ eventId, guest }: GuestRowProps) {
   const isExistent = !!guest;
   const [inEditMode, setInEditMode] = useState(!guest);
   const [isSaving, setIsSaving] = useState(false);
-  const { addGuest } = useGuestStore();
-  const { updateGuest } = useGuestStore();
-  const { removeGuest } = useGuestStore();
+
+  const { addGuest, updateGuest, removeGuest } = useGuestStore(
+    useShallow(({ addGuest, updateGuest, removeGuest }) => ({
+      addGuest,
+      updateGuest,
+      removeGuest,
+    })),
+  );
 
   const {
     control,

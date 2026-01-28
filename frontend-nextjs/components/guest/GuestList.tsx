@@ -5,9 +5,9 @@ import styles from "./Guest.module.css";
 import GuestRow from "./GuestRow";
 import { Typography, Divider, Button } from "antd";
 import { useGuestStore } from "@/stores/useGuestsStore";
-import { useShallow } from "zustand/shallow";
 import { useGuestInvitations } from "@/hooks/useGuestInvitations";
 import { InviteStatus } from "@/types/enums";
+import { useGuestList } from "@/hooks/useGuestList";
 
 const { Title } = Typography;
 
@@ -18,12 +18,8 @@ interface GuestListProps {
 
 export default function GuestList({ eventId, initialGuests }: GuestListProps) {
   const { sendInvitations, isSending } = useGuestInvitations(eventId);
-  const { guests, setGuests } = useGuestStore(
-    useShallow(({ guests, setGuests }) => ({
-      guests,
-      setGuests,
-    })),
-  );
+  const guests = useGuestList();
+  const { init } = useGuestStore();
 
   const hasGuestsToInvite = true;
   // guests.some(
@@ -33,8 +29,8 @@ export default function GuestList({ eventId, initialGuests }: GuestListProps) {
   // );
 
   useEffect(() => {
-    setGuests(initialGuests);
-  }, [initialGuests, setGuests]);
+    init(initialGuests);
+  }, [eventId]);
 
   return (
     <div className={styles.container}>
