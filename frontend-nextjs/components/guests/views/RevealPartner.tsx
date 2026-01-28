@@ -4,11 +4,12 @@ import { HeartOutlined, StopOutlined } from "@ant-design/icons";
 import { notFound } from "next/navigation";
 import GiftSuggestions from "../interests/GiftSuggestions";
 import { useEffect, useState } from "react";
+import { DrawRule } from "@/types/enums";
 
 const { Text, Paragraph } = Typography;
 
 export default function RevealPartner({ guest }: { guest: Guest }) {
-  const { assignedRecipient } = guest;
+  const { assignedRecipient, pickOrder } = guest;
   const [formattedDate, setFormattedDate] = useState<string>("");
 
   useEffect(() => {
@@ -17,8 +18,117 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
     );
   }, [guest.event.eventDate]);
 
+  const introParagraph = (
+    <Paragraph>
+      Die Auslosung des Events <Text strong>{guest.event.name}</Text> wurde
+      erfolgreich beendet. Das Event findet am{" "}
+      <Text strong>{formattedDate}</Text> statt. Kaufe nun dein Geschenk im Wert
+      von{" "}
+      <Text strong>
+        {guest.event.budget} {guest.event.currency}{" "}
+      </Text>
+      .
+    </Paragraph>
+  );
+
+  const outroParagraph = (
+    <Paragraph type="secondary" className="italic">
+      Der Geschenkeaustausch wird offline organisiert. Viel Spaß beim
+      Verschenken!
+    </Paragraph>
+  );
+
+  // If pick order is used, show pick order view
+  if (guest.event.drawRule === DrawRule.PICK_ORDER) {
+    const sortedGuests = guest.event.guests
+      ? [...guest.event.guests].sort(
+          (a, b) => (a.pickOrder ?? 0) - (b.pickOrder ?? 0),
+        )
+      : [];
+
+    return (
+      <Card
+        className="max-w-md w-full shadow-2xl animate-in fade-in duration-700"
+        title={
+          <span
+            className="font-bold uppercase flex justify-center"
+            style={{
+              background: "var(--gradientPrimary)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+              color: "transparent", 
+            }}
+          >
+            Deine Wichtel-Reihenfolge
+          </span>
+        }
+      >
+        <div className="space-y-4">
+          {introParagraph}
+
+          <Card>
+            <Paragraph className="mb-0">
+              Du bist an Position <Text strong>{pickOrder}</Text>.
+            </Paragraph>
+            <Paragraph type="secondary" className="text-sm">
+              Die Geschenke werden nacheinander gewählt. Wenn du dran bist,
+              suchst du dir eins aus.
+            </Paragraph>{" "}
+            <Divider className="my-2" />
+            <Text strong className="block mb-3">
+              Alle Teilnehmer:
+            </Text>
+            {sortedGuests.map((g, index) => {
+              const isCurrentGuest = g.id === guest.id;
+              return (
+                <div
+                  key={g.id}
+                  className="flex items-center p-3 rounded-lg border mb-2"
+                  style={
+                    isCurrentGuest
+                      ? {
+                          backgroundImage:
+                            "linear-gradient(white, white), var(--gradientPrimary)",
+                          backgroundOrigin: "border-box",
+                          backgroundClip: "padding-box, border-box",
+                          border: "2px solid transparent",
+                        }
+                      : {
+                          border: "1px solid #f0f0f0",
+                        }
+                  }
+                >
+                  <span
+                    className="flex items-center justify-center w-7 h-7 rounded-full mr-3 text-xs font-bold"
+                    style={{
+                      background: isCurrentGuest
+                        ? "var(--gradientPrimary)"
+                        : "#f3f4f6",
+                      color: isCurrentGuest ? "#ffffff" : "black",
+                    }}
+                  >
+                    {index + 1}.
+                  </span>
+                  <Text strong={isCurrentGuest}>{g.name}</Text>
+                  {isCurrentGuest && (
+                    <Text italic className="ml-auto text-gray-400 text-xs">
+                      (Du)
+                    </Text>
+                  )}
+                </div>
+              );
+            })}
+          </Card>
+          {outroParagraph}
+        </div>
+      </Card>
+    );
+  }
+
   if (!assignedRecipient) notFound();
 
+  // Standard view showing assigned recipient details, when chain or exchange
   const collapseItems = [
     {
       key: "1",
@@ -76,18 +186,22 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
     <Card
       className="max-w-md w-full shadow-2xl animate-in fade-in duration-700"
       title={
-        <span className="text-red-600 font-bold uppercase tracking-widest flex justify-center">
+        <span
+          className="font-bold uppercase flex justify-center"
+          style={{
+            background: "var(--gradientPrimary)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            color: "transparent", 
+          }}
+        >
           Dein Wichtel-Los
         </span>
       }
     >
       <div className="space-y-4">
-        {/* Haupttext */}
-        <Paragraph>
-          Die Auslosung des Events <Text strong>{guest.event.name}</Text> wurde
-          erfolgreich beendet. Das Event findet am{" "}
-          <Text strong>{formattedDate}</Text> statt.
-        </Paragraph>
+        {introParagraph}
 
         <Card>
           <Paragraph className="mb-0">
@@ -136,10 +250,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
           </div>
         )}
 
-        <Paragraph type="secondary" className="italic">
-          Der Geschenkeaustausch wird offline organisiert. Viel Spaß beim
-          Verschenken!
-        </Paragraph>
+        {outroParagraph}
       </div>
     </Card>
   );

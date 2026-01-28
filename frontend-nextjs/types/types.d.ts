@@ -25,6 +25,7 @@ interface Guest {
   inviteToken: string;
   inviteStatus: InviteStatus;
   receivedAt: Date | null;
+  pickOrder?: number | null;
   openedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
