@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { GuestsService } from './guests.service';
+import { CreateGuestDto } from './dto/create-guest.dto';
 
 @Controller('guests')
 export class GuestsController {
@@ -17,5 +18,13 @@ export class GuestsController {
     @Body() updateData: { accept: boolean; declineMessage: string },
   ) {
     return this.guestsService.updateGuestStatus(guestId, updateData.accept, updateData.declineMessage);
+  }
+
+  @Post('register/:eventId')
+  registerForEvent(
+    @Param('eventId', ParseUUIDPipe) eventId: string,
+    @Body() createGuestDto: CreateGuestDto,
+  ) {
+    return this.guestsService.registerForEvent(eventId, createGuestDto);
   }
 }

@@ -24,8 +24,19 @@ export class GuestsService {
   constructor(
     @InjectRepository(Guest)
     private guestRepository: Repository<Guest>,
+    @InjectRepository(Event)
+    private eventRepository: Repository<Event>,
     @InjectQueue('mail-queue') private readonly mailQueue: Queue,
   ) {}
+
+  // register guest for event (public endpoint)
+  async registerForEvent(eventId: string, createGuestDto: CreateGuestDto): Promise<GuestResponseDto> {
+    const event = await this.eventRepository.findOneBy({ id: eventId });
+    if (!event) {
+      throw new NotFoundException(`Event with ID "${eventId}" not found`);
+    }
+    return this.create(event, createGuestDto);
+  }
 
   // create a new guest
   async create(event: Event, createGuestDto: CreateGuestDto): Promise<GuestResponseDto> {
