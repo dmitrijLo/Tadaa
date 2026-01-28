@@ -33,12 +33,11 @@ type GuestActions = {
     targetId: string,
     pos: "top" | "middle" | "bottom",
   ) => void;
-  // detachGuest: () => void;
 };
 
 export const useGuestStore = create<GuestState & GuestActions>()(
   immer((set, get) => ({
-    excludeCouples: true,
+    excludeCouples: false,
     guestsById: {},
     guestOrder: [],
     secondaryLink: {},
