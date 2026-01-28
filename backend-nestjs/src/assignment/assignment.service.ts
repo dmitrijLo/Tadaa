@@ -9,8 +9,8 @@ import { DrawRule, EventStatus } from 'src/enums/enums';
 export class AssignmentService {
   constructor(
     @InjectRepository(Guest)
-    @InjectRepository(Event)
     private readonly GuestRepository: Repository<Guest>,
+    @InjectRepository(Event)
     private readonly EventRepository: Repository<Event>,
   ) {}
 
