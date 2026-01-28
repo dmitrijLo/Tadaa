@@ -43,6 +43,9 @@ export class Guest {
   @Column({ name: 'opened_at', type: 'timestamp', nullable: true })
   openedAt: Date;
 
+  @Column({ name: 'pick_order', type: 'int', nullable: true })
+  pickOrder: number;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
