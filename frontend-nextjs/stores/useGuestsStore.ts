@@ -14,6 +14,7 @@ type GuestState = {
   primaryLink: Record<GuestId, ParentId | null>;
   // Wen habe ich als Child? secondaryLink[guestId] -> childId
   secondaryLink: Record<ParentId, GuestId | null>;
+  draggedGuestId: GuestId;
 };
 
 type GuestActions = {
@@ -26,6 +27,7 @@ type GuestActions = {
   ) => Promise<CreateGuestDto>;
   removeGuest: (eventId: string, guestId: string) => Promise<unknown>;
   markInviteStatusAs: (guestId: string, status: InviteStatus) => void;
+  setDraggedGuestId: (guestId: string) => void;
 };
 
 export const useGuestStore = create<GuestState & GuestActions>()(
@@ -35,6 +37,7 @@ export const useGuestStore = create<GuestState & GuestActions>()(
     guestOrder: [],
     secondaryLink: {},
     primaryLink: {},
+    draggedGuestId: "",
 
     init: (guests) =>
       set((state) => {
@@ -104,7 +107,14 @@ export const useGuestStore = create<GuestState & GuestActions>()(
       }
     },
 
-    markInviteStatusAs: (guestId: string, status: InviteStatus) =>
-      set((state) => (state.guestsById[guestId].inviteStatus = status)),
+    markInviteStatusAs: (guestId, status) =>
+      set((state) => {
+        state.guestsById[guestId].inviteStatus = status;
+      }),
+
+    setDraggedGuestId: (guestId) =>
+      set((state) => {
+        state.draggedGuestId = guestId;
+      }),
   })),
 );
