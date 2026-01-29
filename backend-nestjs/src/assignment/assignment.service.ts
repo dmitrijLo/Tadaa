@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from 'src/guests/entities/guest.entity';
 import { Event } from 'src/events/entities/event.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { DrawRule, EventStatus } from 'src/enums/enums';
 
 @Injectable()
@@ -12,37 +12,32 @@ export class AssignmentService {
     private readonly GuestRepository: Repository<Guest>,
     @InjectRepository(Event)
     private readonly EventRepository: Repository<Event>,
+    private readonly dataSource: DataSource,
   ) {}
 
-  // TODO: add functionality to algorithm that ensures that selected people can not gift each other
   // Main draw method - orchestrates the flow
-
+  // Note: CHAIN creates a directed cycle (no circular pairs), EXCHANGE creates mutual pairs by design
   async draw(eventId: string) {
-    // fetch event with relations
     const fullEvent = await this.EventRepository.findOne({
       where: { id: eventId },
       relations: ['guests', 'host'],
     });
     if (!fullEvent || !fullEvent.guests) throw new NotFoundException();
 
-    //  mapping drawrule to assignment algorithm
     const drawMethods: Record<DrawRule, Guest[]> = {
       [DrawRule.CHAIN]: this.chainAssign(fullEvent),
       [DrawRule.EXCHANGE]: this.exchangeAssign(fullEvent),
       [DrawRule.PICK_ORDER]: this.pickOrderAssign(fullEvent),
     };
 
-    // execute draw returns array of updated guests
     const assignedGuests = drawMethods[fullEvent.drawRule];
 
-    // save all guests
-    for (const guest of assignedGuests) {
-      await this.GuestRepository.save(guest);
-    }
-
-    // update status
-    fullEvent.status = EventStatus.ASSIGNED;
-    await this.EventRepository.save(fullEvent);
+    // Save all assignments atomically
+    await this.dataSource.transaction(async (manager) => {
+      await manager.save(Guest, assignedGuests);
+      fullEvent.status = EventStatus.ASSIGNED;
+      await manager.save(Event, fullEvent);
+    });
   }
 
   // DRAWMODES
