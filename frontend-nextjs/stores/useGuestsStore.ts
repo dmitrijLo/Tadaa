@@ -28,11 +28,17 @@ type GuestActions = {
   removeGuest: (eventId: string, guestId: string) => Promise<unknown>;
   markInviteStatusAs: (guestId: string, status: InviteStatus) => void;
   setDraggedGuestId: (guestId: string) => void;
+  moveGuest: (
+    draggedId: string,
+    targetId: string,
+    pos: "top" | "middle" | "bottom",
+  ) => void;
+  // detachGuest: () => void;
 };
 
 export const useGuestStore = create<GuestState & GuestActions>()(
   immer((set, get) => ({
-    excludeCouples: false,
+    excludeCouples: true,
     guestsById: {},
     guestOrder: [],
     secondaryLink: {},
@@ -115,6 +121,50 @@ export const useGuestStore = create<GuestState & GuestActions>()(
     setDraggedGuestId: (guestId) =>
       set((state) => {
         state.draggedGuestId = guestId;
+      }),
+
+    moveGuest: (draggedId, targetId, pos) =>
+      set((state) => {
+        if (draggedId === targetId) return;
+        const oldParentId = state.primaryLink[draggedId];
+        const oldIndex = state.guestOrder.indexOf(draggedId);
+        if (oldIndex !== -1) state.guestOrder.splice(oldIndex, 1);
+
+        if (oldParentId) {
+          delete state.primaryLink[draggedId];
+          if (state.secondaryLink[oldParentId] === draggedId) {
+            delete state.secondaryLink[oldParentId];
+          }
+        }
+
+        if (pos === "middle") {
+          if (state.primaryLink[targetId]) {
+            state.guestOrder.push(draggedId);
+            return;
+          }
+
+          const existingChild = state.secondaryLink[targetId];
+          if (existingChild) {
+            delete state.primaryLink[existingChild];
+            state.guestOrder.push(existingChild);
+          }
+          state.primaryLink[draggedId] = targetId;
+          state.secondaryLink[targetId] = draggedId;
+        } else {
+          let currTargetId = targetId;
+
+          if (state.primaryLink[targetId])
+            currTargetId = state.primaryLink[targetId];
+
+          const targetIdx = state.guestOrder.indexOf(currTargetId);
+          if (targetIdx === -1) {
+            state.guestOrder.push(draggedId);
+            return;
+          }
+
+          const insertIdx = pos === "top" ? targetIdx : targetIdx + 1;
+          state.guestOrder.splice(insertIdx, 0, draggedId);
+        }
       }),
   })),
 );

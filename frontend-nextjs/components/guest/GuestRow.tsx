@@ -11,9 +11,15 @@ interface GuestRowProps {
   eventId: string;
   guest?: Guest; // EditMode wenn vorhanden, ansonsten CreateMode
   isChild: boolean;
+  hasChild: boolean;
 }
 
-export default function GuestRow({ eventId, guest, isChild }: GuestRowProps) {
+export default function GuestRow({
+  eventId,
+  guest,
+  isChild,
+  hasChild,
+}: GuestRowProps) {
   const { message } = App.useApp();
   const hasGuestData = !!guest;
   const [inEditMode, setInEditMode] = useState(!hasGuestData);
@@ -71,6 +77,7 @@ export default function GuestRow({ eventId, guest, isChild }: GuestRowProps) {
     <GuestRowCard
       guest={guest!}
       isChild={isChild}
+      hasChild={hasChild}
       onEdit={handleOnEditClick}
       onDelete={handleDelete}
     />

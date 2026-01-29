@@ -13,20 +13,24 @@ export const useGuestList = () => {
   );
 
   const guestList = useMemo(() => {
-    const list: (Guest & { isChild: boolean })[] = [];
+    const list: (Guest & { isChild: boolean; hasChild: boolean })[] = [];
 
     for (const id of guestOrder) {
       if (primaryLink[id] || !guestsById[id]) continue;
-
-      list.push({ ...guestsById[id], isChild: false });
 
       const [childId, hasChild] = secondaryLink[id]
         ? [secondaryLink[id], true]
         : ["", false];
 
+      list.push({
+        ...guestsById[id],
+        isChild: false,
+        hasChild: !!(childId && guestsById[childId]),
+      });
+
       const childGuest = hasChild ? guestsById[childId] : undefined;
       if (childGuest) {
-        list.push({ ...childGuest, isChild: true });
+        list.push({ ...childGuest, isChild: true, hasChild: false });
       }
     }
 

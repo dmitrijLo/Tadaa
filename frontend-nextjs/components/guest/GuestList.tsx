@@ -43,10 +43,16 @@ export default function GuestList({ eventId, initialGuests }: GuestListProps) {
 
       <div className={styles.container}>
         {guests.map((guest) => (
-          <GuestRow key={guest.id} eventId={eventId} guest={guest} />
+          <GuestRow
+            key={guest.id}
+            eventId={eventId}
+            guest={guest}
+            isChild={guest.isChild}
+            hasChild={guest.hasChild}
+          />
         ))}
         {guests.length > 0 && <Divider plain>Add Guest</Divider>}
-        <GuestRow eventId={eventId} />
+        <GuestRow eventId={eventId} isChild={false} hasChild={false} />
       </div>
 
       <Button

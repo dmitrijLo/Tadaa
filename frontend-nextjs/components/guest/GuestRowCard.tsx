@@ -4,6 +4,7 @@ import {
   EditOutlined,
   HolderOutlined,
   LinkOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import { Button, message, Popconfirm, Tag } from "antd";
 import styles from "./Guest.module.css";
@@ -33,6 +34,7 @@ const getDropPosition = (e: React.DragEvent, element: HTMLElement) => {
 interface GuestRowCardProps {
   guest: Guest;
   isChild: boolean;
+  hasChild: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
@@ -40,15 +42,21 @@ interface GuestRowCardProps {
 export default function GuestRow({
   guest,
   isChild,
+  hasChild,
   onEdit,
   onDelete,
 }: GuestRowCardProps) {
-  const { draggedGuestId, setDraggedGuestId } = useGuestStore(
-    useShallow(({ draggedGuestId, setDraggedGuestId }) => ({
-      draggedGuestId,
-      setDraggedGuestId,
-    })),
-  );
+  const { excludeCouples, draggedGuestId, setDraggedGuestId, moveGuest } =
+    useGuestStore(
+      useShallow(
+        ({ excludeCouples, draggedGuestId, setDraggedGuestId, moveGuest }) => ({
+          excludeCouples,
+          draggedGuestId,
+          setDraggedGuestId,
+          moveGuest,
+        }),
+      ),
+    );
   const [dropPosition, setDropPosition] = useState<
     "top" | "middle" | "bottom" | null
   >(null);
@@ -57,6 +65,11 @@ export default function GuestRow({
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.effectAllowed = "move";
     setDraggedGuestId(guest.id);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedGuestId("");
+    setDropPosition(null);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -70,9 +83,11 @@ export default function GuestRow({
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setDropPosition(null);
-    if (!rowRef.current || draggedGuestId === guest.id) return;
+    if (!rowRef.current || !draggedGuestId || draggedGuestId === guest.id)
+      return;
+
     const position = getDropPosition(e, rowRef.current);
-    console.log(`Dropped at ${guest.name}: Position ${position}`);
+    moveGuest(draggedGuestId, guest.id, position);
     setDraggedGuestId("");
   };
 
@@ -96,21 +111,36 @@ export default function GuestRow({
       }
     : {};
 
+  const showConnector = isChild && draggedGuestId !== guest.id;
+  let spacingClass = "";
+  if (hasChild) spacingClass = styles.parentOfCouple;
+  if (isChild) {
+    spacingClass = styles.childOfCouple;
+    if (showConnector) spacingClass += ` ${styles.connector}`;
+  }
   return (
     <div
       ref={rowRef}
-      className={`${styles.card} ${dropClass}`}
+      className={`${styles.card} ${dropClass} ${spacingClass}`}
       style={indentStyle}
       onDragOver={handleDragOver}
       onDragLeave={() => setDropPosition(null)}
       onDrop={handleDrop}
       onDragStart={handleDragStart}
-      draggable="true"
+      onDragEnd={handleDragEnd}
+      draggable={excludeCouples}
     >
-      <div className={styles.formGrid}>
-        <div className={`${styles.areaHandle} ${styles.dragHandle}`}>
-          <HolderOutlined />
+      {isChild && !(draggedGuestId === guest.id) && (
+        <div className={styles.connectionBadge}>
+          <TeamOutlined />
         </div>
+      )}
+      <div className={styles.formGrid}>
+        {excludeCouples && (
+          <div className={`${styles.areaHandle} ${styles.dragHandle}`}>
+            <HolderOutlined />
+          </div>
+        )}
         {/* Name Input -  */}
         <div className={`${styles.areaName} ${styles.inputWrapper}`}>
           <div className={styles.textDispplay}>{guest.name}</div>
