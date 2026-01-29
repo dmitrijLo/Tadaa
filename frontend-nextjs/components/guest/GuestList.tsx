@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import styles from "./Guest.module.css";
 import GuestRow from "./GuestRow";
+import ShareRegistration from "./ShareRegistration";
 import { Typography, Divider, Button } from "antd";
 import { useGuestStore } from "@/stores/useGuestsStore";
 import { useGuestInvitations } from "@/hooks/useGuestInvitations";
@@ -13,10 +14,11 @@ const { Title } = Typography;
 
 interface GuestListProps {
   eventId: string;
+  eventName: string;
   initialGuests: Guest[];
 }
 
-export default function GuestList({ eventId, initialGuests }: GuestListProps) {
+export default function GuestList({ eventId, eventName, initialGuests }: GuestListProps) {
   const { sendInvitations, isSending } = useGuestInvitations(eventId);
   const guests = useGuestList();
   const { init } = useGuestStore();
@@ -35,9 +37,14 @@ export default function GuestList({ eventId, initialGuests }: GuestListProps) {
   return (
     <div className={styles.container}>
       <div style={{ marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>
-          Guests ({guests.length})
-        </Title>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Title level={4} style={{ margin: 0 }}>
+            Guests ({guests.length})
+          </Title>
+          <div style={{ display: "flex", gap: 4 }}>
+            <ShareRegistration eventId={eventId} eventName={eventName} />
+          </div>
+        </div>
         <span className="text-pink-500 text-sm">Verwalte hier Einladungen</span>
       </div>
 
