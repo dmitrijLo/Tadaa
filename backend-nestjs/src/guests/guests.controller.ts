@@ -1,7 +1,6 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { GuestsService } from './guests.service';
-import { Public } from 'src/auth/decorators/public.decorator';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
 
