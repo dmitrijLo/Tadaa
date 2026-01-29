@@ -52,6 +52,11 @@ export class Guest {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
+  @Column({ name: 'parent_id', type: 'uuid', nullable: true })
+  parentId: string | null;
+  @Column({ name: 'order_index', type: 'int', nullable: true })
+  orderIndex: number | null;
+
   // ReLations
   // the event this gues belongs to
 

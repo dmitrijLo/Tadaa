@@ -21,6 +21,14 @@ export class GuestResponseDto extends BaseGuestDto {
   inviteStatus: InviteStatus;
 
   @Expose()
+  @ApiProperty()
+  parentId: string | null;
+
+  @Expose()
+  @ApiProperty()
+  orderIndex: number | null;
+
+  @Expose()
   @ApiProperty({ required: false, nullable: true })
   receivedAt: Date | null;
 

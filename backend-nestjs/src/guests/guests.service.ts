@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
-import { createQueryBuilder, Repository } from 'typeorm';
+import { createQueryBuilder, EntityManager, Repository } from 'typeorm';
 import { InviteStatus } from '../enums';
 import { Event } from '../events/entities/event.entity';
 import { GuestResponseDto, GuestsInvitationStats } from './dto/guest-response.dto';
@@ -78,11 +78,93 @@ export class GuestsService {
 
   async updateGuest(event: Event, guestId: string, guestUpdate: UpdateGuestDto): Promise<GuestResponseDto> {
     const guest = await this.guestRepository.findOneBy({ id: guestId, eventId: event.id });
-    this.verifyGuestIsEditable(guest);
-    Object.assign(guest, guestUpdate);
-    const savedGuest = await this.guestRepository.save(guest);
+    if (!guest) throw new NotFoundException('Guest not found for this event.');
 
-    return plainToInstance(GuestResponseDto, savedGuest, { excludeExtraneousValues: true });
+    if (this.isContentUpdate(guestUpdate)) this.verifyGuestIsEditable(guest);
+
+    // Einfaches Update (kein Drag&Drop) -> Sofort speichern
+    if (guestUpdate.orderIndex === undefined && guestUpdate.parentId === undefined) {
+      Object.assign(guest, guestUpdate);
+
+      return plainToInstance(GuestResponseDto, await this.guestRepository.save(guest), {
+        excludeExtraneousValues: true,
+      });
+    }
+
+    // Update durch Drag&Drop, Transaktion sorgt dafür, dass nur in die DB geschrieben wird
+    // wenn alle aktionen erfolgreich sind.
+    return await this.guestRepository.manager.transaction(async (entityManager) => {
+      await this.reorderGuests(entityManager, event.id, guest, guestUpdate);
+      const { orderIndex, parentId, ...simpleUpdates } = guestUpdate;
+      Object.assign(guest, simpleUpdates);
+
+      return plainToInstance(GuestResponseDto, await entityManager.save(guest), { excludeExtraneousValues: true });
+    });
+  }
+
+  /**
+   * Organisiert die Reihenfolge der Gäste
+   */
+  private async reorderGuests(manager: EntityManager, eventId: string, guest: Guest, dto: UpdateGuestDto) {
+    // Gast wird zum Kind
+    if (dto.parentId) {
+      // Lücke schließen, falls es voher Root war
+      if (guest.parentId === null && guest.orderIndex !== null) {
+        await this.shiftGuests(manager, eventId, guest.orderIndex, null, -1);
+      }
+      guest.parentId = dto.parentId;
+      guest.orderIndex = null;
+    } // Gast wird verschoben
+    else if (typeof dto.orderIndex === 'number') {
+      await this.moveGuestInRootList(manager, eventId, guest, dto.orderIndex);
+      guest.parentId = null;
+      guest.orderIndex = dto.orderIndex;
+    }
+  }
+  /**
+   * Berechnet wie viel Platz gemacht werden muss
+   */
+  private async moveGuestInRootList(manager: EntityManager, eventId: string, guest: Guest, newIndex: number) {
+    const oldIndex = guest.orderIndex;
+    // War vorher Kind, wird jetztt Root
+    if (oldIndex === null) {
+      await this.shiftGuests(manager, eventId, newIndex, null, +1);
+      return;
+    }
+
+    //Verschieben innerhalb der Liste
+    if (oldIndex < newIndex) {
+      // Bewegung nach unten z.b. 1->2
+      await this.shiftGuests(manager, eventId, oldIndex + 1, newIndex, -1);
+    } else if (oldIndex > newIndex) {
+      // Bewegung nach oben z.b. 3->1
+      await this.shiftGuests(manager, eventId, newIndex, oldIndex - 1, 1);
+    }
+  }
+
+  /**
+   * Verschiebt die Indizes der Gäster
+   * min: Start des Bereichs (inklusive)
+   * max: Ende des Bereichs (inklusive oder null)
+   * delta_ Änderung (+1 oder -1)
+   */
+  private async shiftGuests(manager: EntityManager, eventId: string, min: number, max: number | null, delta: number) {
+    const query = manager
+      .createQueryBuilder()
+      .update(Guest)
+      .set({ orderIndex: () => `order_index + (${delta})` })
+      .where('eventId = :eventId', { eventId })
+      .andWhere('parentId IS NULL');
+
+    if (max !== null) {
+      // Bereichs Update z.B. Index 2 bis 5
+      query.andWhere('orderIndex >= :min AND orderIndex <= :max', { min, max });
+    } else {
+      // Open-End Update z.B alles ab Index 2
+      query.andWhere('orderIndex >= :min', { min });
+    }
+
+    await query.execute();
   }
 
   async inviteGuests(event: Event) {
@@ -198,6 +280,17 @@ export class GuestsService {
 
     if (guest.inviteStatus !== InviteStatus.DRAFT)
       throw new BadRequestException('Cannot update or remove guest. Invitation already sent.');
+  }
+
+  isContentUpdate(dto: UpdateGuestDto) {
+    return (
+      dto.name !== undefined ||
+      dto.email !== undefined ||
+      dto.noteForGiver !== undefined ||
+      dto.declineMessage !== undefined ||
+      dto.interests !== undefined ||
+      dto.noInterest !== undefined
+    );
   }
 
   // create host as guest
