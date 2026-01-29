@@ -3,6 +3,7 @@ import { Throttle } from '@nestjs/throttler';
 import { GuestsService } from './guests.service';
 import { Public } from 'src/auth/decorators/public.decorator';
 import { CreateGuestDto } from './dto/create-guest.dto';
+import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('guests')
 export class GuestsController {
@@ -16,7 +17,8 @@ export class GuestsController {
     return this.guestsService.getEventInfo(eventId);
   }
 
-  // get guest by invite token
+  // get guest by invite token (public - UUID acts as access token)
+  @Public()
   @Get(':guestId')
   findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
     return this.guestsService.findOneById(guestId);
