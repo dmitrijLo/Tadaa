@@ -108,6 +108,7 @@ export default function EventForm({
             <GuestList
               key={`${createdEventId}-${guests.length}`}
               eventId={createdEventId}
+              eventName={eventData?.name || ""}
               initialGuests={guests}
             />
             <div
