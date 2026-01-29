@@ -41,7 +41,7 @@ type GuestActions = {
 
 export const useGuestStore = create<GuestState & GuestActions>()(
   immer((set, get) => ({
-    excludeCouples: true,
+    excludeCouples: false,
     guestsById: {},
     guestOrder: [],
     secondaryLink: {},
