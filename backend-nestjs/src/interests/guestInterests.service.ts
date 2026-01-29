@@ -15,29 +15,33 @@ export class GuestInterestsService {
   ) {}
 
   // add interest to either relationship of guest interest or no_interest
-  // find guest by id, like: true =interest | false = no_interest,
-  //
-  // TODO imlplement logic so that interest can not be submitted to both
-
+  // find guest by id, like: true = interest | false = no_interest
+  // auto-removes from opposite list if present (toggle behavior)
   async addGuestInterest(guestId: string, guestInterestDto: GuestInterestReqDto) {
     const { like, interestId } = guestInterestDto;
     const relationship = like ? 'interests' : 'no_interests';
+    const oppositeRelationship = like ? 'no_interests' : 'interests';
 
     const guest = await this.GuestRepository.findOne({
       where: { id: guestId },
-      relations: [relationship],
+      relations: ['interests', 'no_interests'],
     });
     if (!guest) throw new NotFoundException('Guest not found');
 
     const interest = await this.InterestOptionRepository.findOne({ where: { id: interestId } });
     if (!interest) throw new NotFoundException('Interest option not found');
 
+    guest[oppositeRelationship] = guest[oppositeRelationship].filter((i) => i.id !== interestId);
+
     if (!guest[relationship].some((i) => i.id === interestId)) {
       guest[relationship].push(interest);
       await this.GuestRepository.save(guest);
     } else throw new ConflictException('Interest already added');
 
-    return guest[relationship];
+    return {
+      interests: guest.interests,
+      noInterest: guest.no_interests,
+    };
   }
   // romve an interst from guest
   async removeGuestInterest(guestId: string, guestInterestDto: GuestInterestReqDto) {

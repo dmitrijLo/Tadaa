@@ -114,7 +114,7 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
       }
       const interests: InterestOption[] = await response.json();
       set({ interestOptions: interests, isLoading: false });
-    } catch (error) {
+    } catch {
       set({ error: "Fehler beim Laden der Interessen", isLoading: false });
     }
   },
@@ -135,13 +135,17 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
 
       if (!result.ok) throw new Error("Could not submit new interest");
 
-      const data: InterestOption[] = await result.json();
+      const data: {
+        interests: InterestOption[];
+        noInterest: InterestOption[];
+      } = await result.json();
 
       set({
-        [like ? "interests" : "noInterest"]: data,
+        interests: data.interests,
+        noInterest: data.noInterest,
         isLoading: false,
       });
-    } catch (error) {
+    } catch {
       set({ error: "Fehler beim Hinzufügen", isLoading: false });
     }
   },
