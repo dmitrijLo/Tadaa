@@ -1,6 +1,5 @@
 import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -44,10 +43,6 @@ export class UsersService implements OnApplicationBootstrap {
     return this.usersRepository.save(user);
   }
 
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
-  }
-
   async findbyId(id: string): Promise<User | null> {
     const user = await this.usersRepository.findOne({ where: { id } });
     return user;
@@ -56,21 +51,5 @@ export class UsersService implements OnApplicationBootstrap {
   async findByEmail(email: string): Promise<User | null> {
     const user = await this.usersRepository.findOne({ where: { email } });
     return user;
-  }
-
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findbyId(id);
-    if (!user) {
-      throw new Error('User not found');
-    }
-    Object.assign(user, updateUserDto);
-    return this.usersRepository.save(user);
-  }
-
-  async remove(id: string): Promise<void> {
-    const usertoDelete = await this.usersRepository.delete(id);
-    if (usertoDelete.affected === 0) {
-      throw new Error('User not found');
-    }
   }
 }
