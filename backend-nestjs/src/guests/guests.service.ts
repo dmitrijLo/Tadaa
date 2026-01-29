@@ -131,6 +131,7 @@ export class GuestsService {
       where: { id: guestId },
       relations: [
         'event',
+        'event.guests',
         'interests',
         'no_interests',
         'assignedRecipient',
