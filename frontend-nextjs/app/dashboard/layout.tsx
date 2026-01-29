@@ -6,10 +6,11 @@ import {
   Layout,
   Menu,
   MenuProps,
+  Spin,
   theme,
 } from "antd";
-import { PropsWithChildren, useMemo } from "react";
-import { usePathname } from "next/navigation";
+import { PropsWithChildren, useEffect, useMemo } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   MenuFoldOutlined,
@@ -19,6 +20,7 @@ import {
   HomeOutlined,
 } from "@ant-design/icons";
 import { useSidebarStore } from "@/stores/useSidebarStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 
 const { Content, Sider } = Layout;
 
@@ -53,7 +55,9 @@ const items: MenuItem[] = [
 export default function DashboardPageLayout({ children }: PropsWithChildren) {
   const { token } = theme.useToken();
   const pathname = usePathname();
+  const router = useRouter();
   const { collapsed, toggleCollapsed } = useSidebarStore();
+  const { hasHydrated, token: authToken } = useAuthStore();
 
   const breadcrumbItems = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
@@ -72,6 +76,20 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
       };
     });
   }, [pathname]);
+
+  useEffect(() => {
+    if (hasHydrated && !authToken) {
+      router.push("/login");
+    }
+  }, [hasHydrated, authToken, router]);
+
+  if (!hasHydrated || !authToken) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
 
   return (
     <>

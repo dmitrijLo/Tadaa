@@ -1,4 +1,5 @@
-import axios from "axios";
+import { useAuthStore } from "@/stores/useAuthStore";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 const isClient = typeof window !== "undefined";
 
@@ -15,38 +16,52 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-api.interceptors.request.use((cfg) => {
-  const isDev = process.env.NODE_ENV === "development";
-  if (isDev) {
-    cfg.headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
-  } else {
-    // const token = useAuthStore.getState().token;
-    // if (token) {
-    //   cfg.headers["Authorization"] = `Bearer ${token}`;
-    // }
+api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
+  if (!isClient) return cfg;
+
+  const token = useAuthStore.getState().token;
+  if (token) {
+    cfg.headers["Authorization"] = `Bearer ${token}`;
   }
 
-  //if token
-  // cfg.headers ....
+  // Dev fallback disabled - keeping for reference
+  // if (!token && process.env.NODE_ENV === "development") {
+  //   cfg.headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+  // }
 
   return cfg;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (isClient && error.response?.status === 401) {
+      const authStore = useAuthStore.getState();
+      authStore.logout();
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
+);
 
 export const getAuthHeader = () => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
+  if (!isClient) return headers;
 
-  if (process.env.NODE_ENV === "development") {
-    headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+  try {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    // Dev fallback disabled - keeping for reference
+    // if (!token && process.env.NODE_ENV === "development") {
+    //   headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+    // }
+  } catch (error) {
+    console.error("Error getting auth header:", error);
   }
-  // }else {
-  //   const token = useAuthStore.getState().token;
-  //   if (token) {
-  //     headers["Authorization"] = `Bearer ${token}`;
-  //   }
-  // }
-
   return headers;
 };
 
