@@ -25,7 +25,7 @@ type GuestActions = {
     eventId: string,
     guestId: string,
     updateData: UpdateGuestDto,
-    optimistic: boolean,
+    optimistic?: boolean,
   ) => Promise<CreateGuestDto>;
   removeGuest: (eventId: string, guestId: string) => Promise<unknown>;
   markInviteStatusAs: (guestId: string, status: InviteStatus) => void;
