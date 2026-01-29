@@ -1,19 +1,18 @@
 import { notFound } from "next/navigation";
 import GuestListing from "./readiness/GuestlistComponent";
+import { makeApiRequest, BACKEND_URL } from "@/utils/api";
 
 const fetchEventUsers = async (eventid: string) => {
-  try {
-    const response = await fetch(
-      `${process.env.API_URL}/events/${eventid}/readiness`,
-    );
+  const { data, error } = await makeApiRequest<Guest[]>(
+    `${BACKEND_URL}/events/${eventid}/readiness`,
+  );
 
-    if (!response.ok) return undefined;
-
-    const users: Guest[] = await response.json();
-    return users;
-  } catch (error) {
+  if (error) {
     console.error(error);
+    return undefined;
   }
+
+  return data;
 };
 
 export default async function ReadinessComponent({
