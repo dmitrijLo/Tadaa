@@ -139,7 +139,7 @@ export default function EventDetailTabs({
           />
         )}
         {activeTab === "3" && (
-          <GuestList eventId={eventId} initialGuests={initialGuests} />
+          <GuestList eventId={eventId} eventName={eventData.name} initialGuests={initialGuests} />
         )}
       </div>
       <Modal
