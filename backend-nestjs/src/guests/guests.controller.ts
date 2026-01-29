@@ -8,6 +8,7 @@ import { Public } from 'src/auth/decorators/public.decorator';
 export class GuestsController {
   constructor(private readonly guestsService: GuestsService) {}
 
+  // get guest by invite token (public - UUID acts as access token)
   @Public()
   @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Get('event-info/:eventId')
