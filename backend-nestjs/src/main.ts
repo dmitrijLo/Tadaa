@@ -5,8 +5,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const frontendUrls = process.env.FRONTEND_URLS
+    ? process.env.FRONTEND_URLS.split(',').map((url) => url.trim())
+    : ['http://localhost:3000'];
+
   app.enableCors({
-    origin: 'http://localhost:3000',
+    origin: frontendUrls,
     methods: 'GET,PATCH,POST,DELETE',
     credentials: true,
   });

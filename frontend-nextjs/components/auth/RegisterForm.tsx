@@ -32,7 +32,7 @@ export default function RegisterForm() {
   const onSubmit = async (data: FormData) => {
     try {
       await registerUser(data.email, data.name, data.password);
-      message.success("Registrierung fehlgeschlagen");
+      message.success("Registrierung erfolgreich! Weiterleitung zum Login...");
       reset();
       setTimeout(() => router.push("/login"), 2000);
     } catch (err: unknown) {

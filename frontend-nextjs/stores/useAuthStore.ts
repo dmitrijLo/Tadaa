@@ -47,13 +47,8 @@ export const useAuthStore = create<AuthState>()(
             throw new Error(errorData.message || "Registration failed");
           }
 
-          const data = await res.json();
+          await res.json();
           set({
-            currentUser: {
-              id: data.user.id,
-              name: data.user.name,
-              email: data.user.email,
-            },
             loading: false,
           });
         } catch (error) {
@@ -61,8 +56,6 @@ export const useAuthStore = create<AuthState>()(
           set({
             error: message,
             loading: false,
-            currentUser: null,
-            token: null,
           });
           throw error;
         }
