@@ -90,3 +90,64 @@ export const makeApiRequest = async <T>(
     return { data: null, error: message };
   }
 };
+
+/**
+ * Public API call to get event info (no auth required)
+ */
+export const getPublicEventInfo = async (
+  eventId: string,
+): Promise<ApiResponse<{ name: string }>> => {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/guests/event-info/${eventId}`,
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Event nicht gefunden.");
+      }
+      throw new Error("Fehler beim Laden des Events");
+    }
+
+    const data = await response.json();
+    return { data, error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unbekannter Fehler";
+    return { data: null, error: message };
+  }
+};
+
+/**
+ * Public API call for guest self-registration (no auth required)
+ */
+export const registerGuestForEvent = async (
+  eventId: string,
+  guestData: { name: string; email: string },
+): Promise<ApiResponse<Guest>> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/guests/register/${eventId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(guestData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      if (response.status === 409) {
+        throw new Error(
+          "Diese E-Mail-Adresse ist bereits für dieses Event registriert.",
+        );
+      }
+      if (response.status === 404) {
+        throw new Error("Event nicht gefunden.");
+      }
+      throw new Error(errorData.message || "Registrierung fehlgeschlagen");
+    }
+
+    const data = await response.json();
+    return { data, error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unbekannter Fehler";
+    return { data: null, error: message };
+  }
+};
