@@ -28,26 +28,29 @@ export class InterestsController {
     return this.interestsService.create(createInterestDto);
   }
 
-  // add interst/no interest to guest:
-  // body should have interstId and like:bool indicating if this is an interest or a nointerest
+  // add interest/no interest to guest (public - UUID acts as access token)
+  @Public()
   @Post(':guestId')
   addGuestInterest(@Param('guestId', ParseUUIDPipe) guestId: string, @Body() guestInterestDto: GuestInterestReqDto) {
     return this.guestInterestService.addGuestInterest(guestId, guestInterestDto);
   }
 
-  // remove interest from guest
-  // same body as add above
+  // remove interest from guest (public - UUID acts as access token)
+  @Public()
   @Delete(':guestId')
   removeGustInterest(@Param('guestId', ParseUUIDPipe) guestId: string, @Body() guestInterestDto: GuestInterestReqDto) {
     return this.guestInterestService.removeGuestInterest(guestId, guestInterestDto);
   }
 
+  // guest adds note for gift giver (public - UUID acts as access token)
+  @Public()
   @Post(':guestId/note')
   addNoteForGiver(@Param('guestId', ParseUUIDPipe) guestId: string, @Body() noteDto: NoteForGiverDto) {
     return this.guestInterestService.submitNoteForGiver(guestId, noteDto.noteForGiver);
   }
 
-  //get ai gift suggestions
+  // get AI gift suggestions (public - UUID acts as access token)
+  @Public()
   @Get(':guestId/suggestions')
   getGiftSuggestions(@Param('guestId', ParseUUIDPipe) guestId: string) {
     return this.giftRecommondationService.generateRecommendation(guestId);
