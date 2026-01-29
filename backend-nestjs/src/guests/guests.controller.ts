@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { GuestsService } from './guests.service';
-import { CreateGuestDto } from './dto/create-guest.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { CreateGuestDto } from './dto/create-guest.dto';
 
 @Controller('guests')
 export class GuestsController {
@@ -16,8 +16,7 @@ export class GuestsController {
     return this.guestsService.getEventInfo(eventId);
   }
 
-  // get guest by invite token (public - UUID acts as access token)
-  @Public()
+  // get guest by invite token
   @Get(':guestId')
   findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
     return this.guestsService.findOneById(guestId);
