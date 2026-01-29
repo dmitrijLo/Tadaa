@@ -19,6 +19,7 @@ export class GuestsController {
 
   // get guest by invite token (public - UUID acts as access token)
   @Public()
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Get('event-info/:eventId')
   getEventInfo(@Param('eventId', ParseUUIDPipe) eventId: string) {
     return this.guestsService.getEventInfo(eventId);
