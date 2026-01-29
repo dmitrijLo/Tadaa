@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/stores/useAuthStore";
 import axios from "axios";
 
 const isClient = typeof window !== "undefined";
@@ -16,18 +17,15 @@ export const api = axios.create({
 });
 
 api.interceptors.request.use((cfg) => {
+  if (!isClient) return cfg;
   const isDev = process.env.NODE_ENV === "development";
-  if (isDev) {
-    cfg.headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
-  } else {
-    // const token = useAuthStore.getState().token;
-    // if (token) {
-    //   cfg.headers["Authorization"] = `Bearer ${token}`;
-    // }
-  }
+  const token = useAuthStore.getState().token;
 
-  //if token
-  // cfg.headers ....
+  if (token) {
+    cfg.headers["Authorization"] = `Bearer ${token}`;
+  } else if (isDev) {
+    cfg.headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+  }
 
   return cfg;
 });
@@ -36,17 +34,17 @@ export const getAuthHeader = () => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
-
-  if (process.env.NODE_ENV === "development") {
-    headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+  if (!isClient) return headers;
+  try {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    } else if (process.env.NODE_ENV === "development") {
+      headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+    }
+  } catch (error) {
+    console.error("Error getting auth header:", error);
   }
-  // }else {
-  //   const token = useAuthStore.getState().token;
-  //   if (token) {
-  //     headers["Authorization"] = `Bearer ${token}`;
-  //   }
-  // }
-
   return headers;
 };
 
