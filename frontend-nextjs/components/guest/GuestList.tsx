@@ -6,9 +6,9 @@ import GuestRow from "./GuestRow";
 import ShareRegistration from "./ShareRegistration";
 import { Typography, Divider, Button } from "antd";
 import { useGuestStore } from "@/stores/useGuestsStore";
-import { useShallow } from "zustand/shallow";
 import { useGuestInvitations } from "@/hooks/useGuestInvitations";
 import { InviteStatus } from "@/types/enums";
+import { useGuestList } from "@/hooks/useGuestList";
 
 const { Title } = Typography;
 
@@ -20,12 +20,8 @@ interface GuestListProps {
 
 export default function GuestList({ eventId, eventName, initialGuests }: GuestListProps) {
   const { sendInvitations, isSending } = useGuestInvitations(eventId);
-  const { guests, setGuests } = useGuestStore(
-    useShallow(({ guests, setGuests }) => ({
-      guests,
-      setGuests,
-    })),
-  );
+  const guests = useGuestList();
+  const { init } = useGuestStore();
 
   const hasGuestsToInvite = true;
   // guests.some(
@@ -35,8 +31,8 @@ export default function GuestList({ eventId, eventName, initialGuests }: GuestLi
   // );
 
   useEffect(() => {
-    setGuests(initialGuests);
-  }, [initialGuests, setGuests]);
+    init(initialGuests);
+  }, [eventId]);
 
   return (
     <div className={styles.container}>
@@ -54,10 +50,16 @@ export default function GuestList({ eventId, eventName, initialGuests }: GuestLi
 
       <div className={styles.container}>
         {guests.map((guest) => (
-          <GuestRow key={guest.id} eventId={eventId} guest={guest} />
+          <GuestRow
+            key={guest.id}
+            eventId={eventId}
+            guest={guest}
+            isChild={guest.isChild}
+            hasChild={guest.hasChild}
+          />
         ))}
         {guests.length > 0 && <Divider plain>Add Guest</Divider>}
-        <GuestRow eventId={eventId} />
+        <GuestRow eventId={eventId} isChild={false} hasChild={false} />
       </div>
 
       <Button

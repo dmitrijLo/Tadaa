@@ -33,6 +33,8 @@ interface Guest {
   interests: InterestOption[];
   noInterest: InterestOption[];
   assignedRecipient?: Guest;
+  parentId: string | null;
+  orderIndex: number | null;
 }
 
 interface GuestStatsResponse {
@@ -77,7 +79,16 @@ interface EventResponse {
 
 type CreateGuestDto = Pick<Guest, "name" | "email">;
 
-type UpdateGuestDto = Partial<Guest>;
+type UpdateGuestDto = Partial<{
+  name: string;
+  email: string;
+  noteForGiver: string | null;
+  declineMessage: string | null;
+  noInterest: InterestOption[];
+  interests: InterestOption[];
+  parentId: string | null;
+  orderIndex: number | null;
+}>;
 
 type CreateEventDto = Pick<
   Event,
