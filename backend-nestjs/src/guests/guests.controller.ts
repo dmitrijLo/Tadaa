@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { GuestsService } from './guests.service';
 import { CreateGuestDto } from './dto/create-guest.dto';
 
@@ -6,6 +7,7 @@ import { CreateGuestDto } from './dto/create-guest.dto';
 export class GuestsController {
   constructor(private readonly guestsService: GuestsService) {}
 
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Get('event-info/:eventId')
   getEventInfo(@Param('eventId', ParseUUIDPipe) eventId: string) {
     return this.guestsService.getEventInfo(eventId);
@@ -25,11 +27,9 @@ export class GuestsController {
     return this.guestsService.updateGuestStatus(guestId, updateData.accept, updateData.declineMessage);
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('register/:eventId')
-  registerForEvent(
-    @Param('eventId', ParseUUIDPipe) eventId: string,
-    @Body() createGuestDto: CreateGuestDto,
-  ) {
+  registerForEvent(@Param('eventId', ParseUUIDPipe) eventId: string, @Body() createGuestDto: CreateGuestDto) {
     return this.guestsService.registerForEvent(eventId, createGuestDto);
   }
 }
