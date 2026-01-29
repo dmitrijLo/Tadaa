@@ -16,7 +16,8 @@ export class GuestsController {
     return this.guestsService.getEventInfo(eventId);
   }
 
-  // get guest by invite token
+  // get guest by invite token (public - UUID acts as access token)
+  @Public()
   @Get(':guestId')
   findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
     return this.guestsService.findOneById(guestId);
