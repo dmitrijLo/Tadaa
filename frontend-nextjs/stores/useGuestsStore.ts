@@ -5,6 +5,7 @@ import { immer } from "zustand/middleware/immer";
 
 type GuestId = string;
 type ParentId = string;
+type GuestPosition = "top" | "middle" | "bottom";
 
 type GuestState = {
   excludeCouples: boolean;
@@ -24,20 +25,23 @@ type GuestActions = {
     eventId: string,
     guestId: string,
     updateData: UpdateGuestDto,
+    optimistic: boolean,
   ) => Promise<CreateGuestDto>;
   removeGuest: (eventId: string, guestId: string) => Promise<unknown>;
   markInviteStatusAs: (guestId: string, status: InviteStatus) => void;
   setDraggedGuestId: (guestId: string) => void;
-  moveGuest: (
+  moveGuest: (draggedId: string, targetId: string, pos: GuestPosition) => void;
+  handleGuestDrop: (
+    eventId: string,
     draggedId: string,
     targetId: string,
-    pos: "top" | "middle" | "bottom",
-  ) => void;
+    pos: GuestPosition,
+  ) => Promise<void>;
 };
 
 export const useGuestStore = create<GuestState & GuestActions>()(
   immer((set, get) => ({
-    excludeCouples: false,
+    excludeCouples: true,
     guestsById: {},
     guestOrder: [],
     secondaryLink: {},
@@ -61,17 +65,34 @@ export const useGuestStore = create<GuestState & GuestActions>()(
       });
     },
 
-    updateGuest: async (eventId, guestId, updateData) => {
-      const { name, email } = updateData;
-      const response = await api.patch(`/events/${eventId}/guests/${guestId}`, {
-        name,
-        email,
-      });
-      const updatedGuest = response.data;
-      set((state) => {
-        state.guestsById[updatedGuest.id] = updatedGuest;
-      });
-      return updatedGuest;
+    updateGuest: async (eventId, guestId, updateData, optimistic = true) => {
+      const guestSnapshot = { ...get().guestsById[guestId] };
+      if (optimistic) {
+        set((state) => {
+          if (state.guestsById[guestId])
+            Object.assign(state.guestsById[guestId], updateData);
+        });
+      }
+
+      try {
+        const response = await api.patch(
+          `/events/${eventId}/guests/${guestId}`,
+          updateData,
+        );
+        const updatedGuest = response.data;
+        set((state) => {
+          state.guestsById[updatedGuest.id] = updatedGuest;
+        });
+        return updatedGuest;
+      } catch (error) {
+        console.error("Update failed", error);
+        if (optimistic) {
+          set((state) => {
+            if (guestSnapshot) state.guestsById[guestId] = guestSnapshot;
+          });
+        }
+        throw error;
+      }
     },
 
     removeGuest: async (eventId, guestId) => {
@@ -165,5 +186,37 @@ export const useGuestStore = create<GuestState & GuestActions>()(
           state.guestOrder.splice(insertIdx, 0, draggedId);
         }
       }),
+
+    handleGuestDrop: async (eventId, draggedId, targetId, pos) => {
+      const state = get();
+      const guestOrderSnap = [...state.guestOrder];
+      const primaryLinkSnap = { ...state.primaryLink };
+      const secondaryLinkSnap = { ...state.secondaryLink };
+
+      const { moveGuest, updateGuest } = get();
+      moveGuest(draggedId, targetId, pos);
+      const newState = get();
+      const newParentId = newState.primaryLink[draggedId] || null;
+      const newOrderIndex = newState.guestOrder.indexOf(draggedId) || null;
+
+      try {
+        await updateGuest(
+          eventId,
+          draggedId,
+          {
+            parentId: newParentId,
+            orderIndex: newOrderIndex,
+          },
+          false,
+        );
+      } catch (error) {
+        console.error("Move failed on server, rolling back UI...", error);
+        set((state) => {
+          state.guestOrder = guestOrderSnap;
+          state.primaryLink = primaryLinkSnap;
+          state.secondaryLink = secondaryLinkSnap;
+        });
+      }
+    },
   })),
 );

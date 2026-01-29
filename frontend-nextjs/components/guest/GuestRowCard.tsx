@@ -46,14 +46,19 @@ export default function GuestRow({
   onEdit,
   onDelete,
 }: GuestRowCardProps) {
-  const { excludeCouples, draggedGuestId, setDraggedGuestId, moveGuest } =
+  const { excludeCouples, draggedGuestId, setDraggedGuestId, handleGuestDrop } =
     useGuestStore(
       useShallow(
-        ({ excludeCouples, draggedGuestId, setDraggedGuestId, moveGuest }) => ({
+        ({
           excludeCouples,
           draggedGuestId,
           setDraggedGuestId,
-          moveGuest,
+          handleGuestDrop,
+        }) => ({
+          excludeCouples,
+          draggedGuestId,
+          setDraggedGuestId,
+          handleGuestDrop,
         }),
       ),
     );
@@ -87,7 +92,7 @@ export default function GuestRow({
       return;
 
     const position = getDropPosition(e, rowRef.current);
-    moveGuest(draggedGuestId, guest.id, position);
+    handleGuestDrop(guest.eventId, draggedGuestId, guest.id, position);
     setDraggedGuestId("");
   };
 
