@@ -48,13 +48,35 @@ export const useGuestStore = create<GuestState & GuestActions>()(
     primaryLink: {},
     draggedGuestId: "",
 
-    init: (guests) =>
-      set((state) => {
-        for (const guest of guests) {
-          state.guestsById[guest.id] = guest;
+    init: (guests) => {
+      const guestsById: Record<string, Guest> = {};
+      const primaryLink: Record<string, string> = {};
+      const secondaryLink: Record<string, string> = {};
+      const rootGuests: Guest[] = [];
+
+      for (const guest of guests) {
+        guestsById[guest.id] = guest;
+        if (guest.parentId) {
+          primaryLink[guest.id] = guest.parentId;
+          secondaryLink[guest.parentId] = guest.id;
+        } else {
+          rootGuests.push(guest);
         }
-        state.guestOrder = guests.map(({ id }) => id);
-      }),
+      }
+
+      rootGuests.sort((a, b) => {
+        const indexA = a.orderIndex ?? Number.MAX_SAFE_INTEGER;
+        const indexB = b.orderIndex ?? Number.MAX_SAFE_INTEGER;
+        return indexA - indexB;
+      });
+
+      set({
+        guestsById,
+        primaryLink,
+        secondaryLink,
+        guestOrder: rootGuests.map((g) => g.id),
+      });
+    },
 
     addGuest: async (eventId, guest) => {
       const response = await api.post(`/events/${eventId}/guests`, guest);
@@ -79,9 +101,14 @@ export const useGuestStore = create<GuestState & GuestActions>()(
           `/events/${eventId}/guests/${guestId}`,
           updateData,
         );
+
         const updatedGuest = response.data;
         set((state) => {
-          state.guestsById[updatedGuest.id] = updatedGuest;
+          const currentGuest = state.guestsById[updatedGuest.id];
+          state.guestsById[updatedGuest.id] = {
+            ...currentGuest,
+            ...updatedGuest,
+          };
         });
         return updatedGuest;
       } catch (error) {

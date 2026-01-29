@@ -92,6 +92,9 @@ export default function GuestRow({
       return;
 
     const position = getDropPosition(e, rowRef.current);
+
+    if (position === "middle" && guest.inviteStatus !== InviteStatus.DRAFT)
+      return;
     handleGuestDrop(guest.eventId, draggedGuestId, guest.id, position);
     setDraggedGuestId("");
   };
@@ -133,7 +136,7 @@ export default function GuestRow({
       onDrop={handleDrop}
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
-      draggable={excludeCouples}
+      draggable={excludeCouples && guest.inviteStatus === InviteStatus.DRAFT}
     >
       {isChild && !(draggedGuestId === guest.id) && (
         <div className={styles.connectionBadge}>
