@@ -3,20 +3,10 @@ import { Throttle } from '@nestjs/throttler';
 import { GuestsService } from './guests.service';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
-import { CreateGuestDto } from './dto/create-guest.dto';
-import { Public } from 'src/auth/decorators/public.decorator';
 
 @Controller('guests')
 export class GuestsController {
   constructor(private readonly guestsService: GuestsService) {}
-
-  // get guest by invite token (public - UUID acts as access token)
-  @Public()
-  @Throttle({ default: { limit: 30, ttl: 60000 } })
-  @Get('event-info/:eventId')
-  getEventInfo(@Param('eventId', ParseUUIDPipe) eventId: string) {
-    return this.guestsService.getEventInfo(eventId);
-  }
 
   // get guest by invite token (public - UUID acts as access token)
   @Public()
