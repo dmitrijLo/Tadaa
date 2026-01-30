@@ -9,6 +9,7 @@ import {
   InputNumber,
   InputNumberProps,
   App,
+  Switch,
 } from "antd";
 import locale from "antd/locale/de_DE";
 import dayjs from "dayjs";
@@ -117,11 +118,20 @@ const getInvitationDateDisabledTime = (
 const getDraftDateDisabledDate = (
   current: dayjs.Dayjs | null,
   invitationDate: Date | null,
-  eventDate: Date | null,
+  eventEnd: dayjs.Dayjs | null,
+  useInvitationDate: boolean,
 ): boolean => {
   if (!current) return false;
+  const now = dayjs();
+
+  if (!useInvitationDate) {
+    return (
+      current.isBefore(now, "day") ||
+      (eventEnd ? current.isAfter(eventEnd, "day") : false)
+    );
+  }
+
   const invitationStart = invitationDate ? dayjs(invitationDate) : null;
-  const eventEnd = eventDate ? dayjs(eventDate) : null;
   return (
     (invitationStart ? current.isBefore(invitationStart, "day") : false) ||
     (eventEnd ? current.isAfter(eventEnd, "day") : false)
@@ -131,11 +141,48 @@ const getDraftDateDisabledDate = (
 const getDraftDateDisabledTime = (
   current: dayjs.Dayjs | null,
   invitationDate: Date | null,
-  eventDate: Date | null,
+  eventEnd: dayjs.Dayjs | null,
+  useInvitationDate: boolean,
 ) => {
   if (!current) return {};
+  const now = dayjs();
+
+  if (!useInvitationDate) {
+    // block times before now on current day
+    if (current.isSame(now, "day")) {
+      return {
+        disabledHours: () => Array.from({ length: now.hour() }, (_, i) => i),
+        disabledMinutes: (selectedHour: number) => {
+          if (selectedHour === now.hour()) {
+            return Array.from({ length: now.minute() + 1 }, (_, i) => i);
+          }
+          return [];
+        },
+      };
+    }
+
+    // block times after event on event day
+    if (eventEnd && current.isSame(eventEnd, "day")) {
+      return {
+        disabledHours: () =>
+          Array.from({ length: 24 }, (_, i) => i).filter(
+            (h) => h >= eventEnd.hour(),
+          ),
+        disabledMinutes: (selectedHour: number) => {
+          if (selectedHour === eventEnd.hour()) {
+            return Array.from({ length: 60 }, (_, i) => i).filter(
+              (m) => m >= eventEnd.minute(),
+            );
+          }
+          return [];
+        },
+      };
+    }
+
+    return {};
+  }
+
   const invitationStart = invitationDate ? dayjs(invitationDate) : null;
-  const eventEnd = eventDate ? dayjs(eventDate) : null;
 
   // block times before invitation on invitation day
   if (invitationStart && current.isSame(invitationStart, "day")) {
@@ -192,12 +239,19 @@ export default function EventSettings({
 }: EventSettingsProps) {
   const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
+  const [useInvitationDate, toggleInvitationDate] = useState(
+    initialData ? !!initialData.invitationDate : true,
+  );
+  const [useDraftDate, toggleDraftDate] = useState(
+    initialData ? !!initialData.draftDate : true,
+  );
 
   const {
     control,
     handleSubmit,
     formState: { errors, isDirty },
     setValue,
+    clearErrors,
   } = useForm<FormData>({
     defaultValues: initialData || {
       name: "",
@@ -211,6 +265,24 @@ export default function EventSettings({
   const eventDate = useWatch({ control, name: "eventDate" });
   const invitationDate = useWatch({ control, name: "invitationDate" });
   const draftDate = useWatch({ control, name: "draftDate" });
+
+  // Clear invitationDate when toggle is turned off
+  useEffect(() => {
+    if (!useInvitationDate) {
+      setValue("invitationDate", null as unknown as Date, {
+        shouldDirty: true,
+      });
+      clearErrors("invitationDate");
+    }
+  }, [useInvitationDate, setValue, clearErrors]);
+
+  // Clear draftDate when toggle is turned off
+  useEffect(() => {
+    if (!useDraftDate) {
+      setValue("draftDate", null as unknown as Date, { shouldDirty: true });
+      clearErrors("draftDate");
+    }
+  }, [useDraftDate, setValue, clearErrors]);
 
   // Clear invitationDate if eventDate becomes earlier than invitationDate
   useEffect(() => {
@@ -282,7 +354,30 @@ export default function EventSettings({
   const handleFormSubmit = async (data: FormData) => {
     try {
       setLoading(true);
-      await onSubmit(data);
+      const submitData: Partial<CreateEventDto> = {
+        name: data.name,
+        description: data.description,
+        budget: data.budget,
+        eventMode: data.eventMode,
+        drawRule: data.drawRule,
+        eventDate: data.eventDate,
+      };
+
+      // Only include invitationDate if toggle is active and date is valid
+      if (
+        useInvitationDate &&
+        data.invitationDate &&
+        dayjs(data.invitationDate).isValid()
+      ) {
+        submitData.invitationDate = data.invitationDate;
+      }
+
+      // Only include draftDate if toggle is active and date is valid
+      if (useDraftDate && data.draftDate && dayjs(data.draftDate).isValid()) {
+        submitData.draftDate = data.draftDate;
+      }
+
+      await onSubmit(submitData as CreateEventDto);
     } catch (error) {
       console.error("Fehler beim Speichern des Events:", error);
       message.error("Event konnte nicht gespeichert werden");
@@ -363,7 +458,13 @@ export default function EventSettings({
         />
       </Form.Item>
       <Divider />
-      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "16px",
+          flexWrap: "wrap",
+        }}
+      >
         <div style={{ flex: "1 1 200px" }}>
           <Form.Item
             label="Event-Datum"
@@ -398,83 +499,139 @@ export default function EventSettings({
             />
           </Form.Item>
         </div>
+        <div style={{ flex: "1 1 200px" }}></div>
+      </div>
+
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 200px" }}>
           <Form.Item
-            label="Einladung versenden"
-            required
+            label={
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Switch
+                    defaultChecked={useInvitationDate}
+                    onChange={toggleInvitationDate}
+                  />
+                  <p>Einladungen automatisch versenden</p>
+                </div>
+              </>
+            }
             validateStatus={errors.invitationDate ? "error" : ""}
             help={errors.invitationDate?.message}
             tooltip={{
               title:
-                "Wann sollen die Einladungen an die Teilnehmer versendet werden?",
+                "Wann sollen die Einladungen automatisch an die Teilnehmer versendet werden?",
               icon: <InfoCircleOutlined />,
             }}
           >
-            <Controller
-              name="invitationDate"
-              control={control}
-              rules={{
-                required: "Bitte Einladungs-Datum auswählen",
-              }}
-              render={({ field }) => (
-                <DatePicker
-                  showTime={{ format: "HH:mm" }}
-                  style={{ width: "100%" }}
-                  format="DD.MM.YYYY HH:mm"
-                  locale={locale.DatePicker}
-                  disabledDate={(current) =>
-                    getInvitationDateDisabledDate(current, eventDate)
-                  }
-                  disabledTime={(current) =>
-                    getInvitationDateDisabledTime(current, eventDate)
-                  }
-                  value={field.value ? dayjs(field.value) : null}
-                  onChange={(date) => field.onChange(date?.toDate() || null)}
-                  disabled={!eventDate}
-                  size="large"
-                  status={errors.invitationDate ? "error" : ""}
-                />
-              )}
-            />
+            <div className={useInvitationDate ? "" : "disabledArea"}>
+              <Controller
+                name="invitationDate"
+                control={control}
+                rules={{
+                  required: useInvitationDate
+                    ? "Bitte Einladungs-Datum auswählen"
+                    : false,
+                }}
+                render={({ field }) => (
+                  <DatePicker
+                    showTime={{ format: "HH:mm" }}
+                    style={{ width: "100%" }}
+                    format="DD.MM.YYYY HH:mm"
+                    locale={locale.DatePicker}
+                    disabledDate={(current) =>
+                      getInvitationDateDisabledDate(current, eventDate)
+                    }
+                    disabledTime={(current) =>
+                      getInvitationDateDisabledTime(current, eventDate)
+                    }
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date) => field.onChange(date?.toDate() || null)}
+                    disabled={!eventDate}
+                    size="large"
+                    status={errors.invitationDate ? "error" : ""}
+                  />
+                )}
+              />
+            </div>
           </Form.Item>
         </div>
+
         <div style={{ flex: "1 1 200px" }}>
           <Form.Item
-            label="Auslosung"
-            required
+            label={
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "8px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Switch
+                    defaultChecked={useDraftDate}
+                    onChange={toggleDraftDate}
+                  />
+                  <p>Auslosung automatisch starten</p>
+                </div>
+              </>
+            }
             validateStatus={errors.draftDate ? "error" : ""}
             help={errors.draftDate?.message}
             tooltip={{
-              title: "Wann soll die Auslosung der Wichtel-Partner stattfinden?",
+              title:
+                "Wann soll die Auslosung der Wichtel-Partner automatisch stattfinden?",
               icon: <InfoCircleOutlined />,
             }}
           >
-            <Controller
-              name="draftDate"
-              control={control}
-              rules={{
-                required: "Bitte Auslosungs-Datum auswählen",
-              }}
-              render={({ field }) => (
-                <DatePicker
-                  showTime={{ format: "HH:mm" }}
-                  style={{ width: "100%" }}
-                  format="DD.MM.YYYY HH:mm"
-                  locale={locale.DatePicker}
-                  disabledDate={(current) =>
-                    getDraftDateDisabledDate(current, invitationDate, eventDate)
-                  }
-                  disabledTime={(current) =>
-                    getDraftDateDisabledTime(current, invitationDate, eventDate)
-                  }
-                  value={field.value ? dayjs(field.value) : null}
-                  onChange={(date) => field.onChange(date?.toDate() || null)}
-                  disabled={!invitationDate}
-                  size="large"
-                  status={errors.draftDate ? "error" : ""}
-                />
-              )}
-            />
+            <div className={useDraftDate ? "" : "disabledArea"}>
+              <Controller
+                name="draftDate"
+                control={control}
+                rules={{
+                  required: useDraftDate
+                    ? "Bitte Auslosungs-Datum auswählen"
+                    : false,
+                }}
+                render={({ field }) => (
+                  <DatePicker
+                    showTime={{ format: "HH:mm" }}
+                    style={{ width: "100%" }}
+                    format="DD.MM.YYYY HH:mm"
+                    locale={locale.DatePicker}
+                    disabledDate={(current) =>
+                      getDraftDateDisabledDate(
+                        current,
+                        invitationDate,
+                        eventDate ? dayjs(eventDate) : null,
+                        useInvitationDate,
+                      )
+                    }
+                    disabledTime={(current) =>
+                      getDraftDateDisabledTime(
+                        current,
+                        invitationDate,
+                        eventDate ? dayjs(eventDate) : null,
+                        useInvitationDate,
+                      )
+                    }
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date) => field.onChange(date?.toDate() || null)}
+                    disabled={
+                      (!invitationDate && useInvitationDate) || !eventDate
+                    }
+                    size="large"
+                    status={errors.draftDate ? "error" : ""}
+                  />
+                )}
+              />
+            </div>
           </Form.Item>
         </div>
       </div>

@@ -8,7 +8,7 @@ export default function NewEventPage() {
     "use server";
 
     try {
-      const payload = {
+      const payload: Record<string, string | number> = {
         name: formData.name,
         description: formData.description || "",
         budget: formData.budget,
@@ -16,9 +16,17 @@ export default function NewEventPage() {
         eventMode: formData.eventMode,
         drawRule: formData.drawRule,
         eventDate: new Date(formData.eventDate).toISOString(),
-        invitationDate: new Date(formData.invitationDate).toISOString(),
-        draftDate: new Date(formData.draftDate).toISOString(),
       };
+
+      if (formData.invitationDate) {
+        payload.invitationDate = new Date(
+          formData.invitationDate,
+        ).toISOString();
+      }
+
+      if (formData.draftDate) {
+        payload.draftDate = new Date(formData.draftDate).toISOString();
+      }
 
       console.log(
         "Sending payload to backend:",
@@ -46,7 +54,7 @@ export default function NewEventPage() {
     "use server";
 
     try {
-      const payload = {
+      const payload: Record<string, string | number> = {
         name: formData.name,
         description: formData.description || "",
         budget: formData.budget,
@@ -54,9 +62,17 @@ export default function NewEventPage() {
         eventMode: formData.eventMode,
         drawRule: formData.drawRule,
         eventDate: new Date(formData.eventDate).toISOString(),
-        invitationDate: new Date(formData.invitationDate).toISOString(),
-        draftDate: new Date(formData.draftDate).toISOString(),
       };
+
+      if (formData.invitationDate) {
+        payload.invitationDate = new Date(
+          formData.invitationDate,
+        ).toISOString();
+      }
+
+      if (formData.draftDate) {
+        payload.draftDate = new Date(formData.draftDate).toISOString();
+      }
 
       await api.patch(`/events/${eventId}`, payload);
     } catch (error) {

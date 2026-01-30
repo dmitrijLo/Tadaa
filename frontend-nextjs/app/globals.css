@@ -155,3 +155,8 @@ body {
 .progressSteps .ant-steps-item:first-child {
   border-inline-start: none !important;
 }
+
+.disabledArea {
+  pointer-events: none !important;
+  opacity: 0.2 !important;
+}
