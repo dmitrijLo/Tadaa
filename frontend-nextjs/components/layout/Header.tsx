@@ -4,8 +4,9 @@ import styles from "./app-header.module.css";
 import Image from "next/image";
 import { Layout, Menu, Button } from "antd";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useEffect, useState } from "react";
-import LogoutButton from "@/components/auth/LogoutButton";
+import { usePathname, useRouter } from "next/navigation";
+
+const { Header } = Layout;
 
 const headerStyle: React.CSSProperties = {
   display: "flex",
@@ -25,39 +26,40 @@ const headerInnerStyle: React.CSSProperties = {
 };
 
 export default function AppHeader() {
-  const { currentUser } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const { currentUser, logout } = useAuthStore();
+  const pathname = usePathname();
+  const router = useRouter();
 
-  const { Header } = Layout;
+  const isHomePage = pathname === "/";
+  const isLoginPage = pathname === "/login";
+  const isRegisterPage = pathname === "/register";
 
-  // useEffect(() => {
-  //   setMounted(true);
-  // }, []);
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
 
-  // if (!mounted) {
-  //   return (
-  //     <header className={styles.header}>
-  //       <div
-  //         className={styles.logoPlaceholder}
-  //         style={{ width: 80, height: 80 }}
-  //       />
-  //     </header>
-  //   );
-  // }
-
-  const menuItems = currentUser
-    ? [
+  const getMenuItems = () => {
+    if (currentUser) {
+      return [
         {
           key: "logout",
-          label: <LogoutButton />,
+          label: (
+            <Button type="default" size="large" onClick={handleLogout}>
+              Logout
+            </Button>
+          ),
         },
-      ]
-    : [
+      ];
+    }
+
+    if (isHomePage) {
+      return [
         {
           key: "login",
           label: (
             <Link href="/login">
-              <Button type="primary" size="large">
+              <Button type="default" size="large">
                 Login
               </Button>
             </Link>
@@ -74,6 +76,40 @@ export default function AppHeader() {
           ),
         },
       ];
+    }
+
+    if (isLoginPage) {
+      return [
+        {
+          key: "register",
+          label: (
+            <Link href="/register">
+              <Button type="primary" size="large">
+                Registrieren
+              </Button>
+            </Link>
+          ),
+        },
+      ];
+    }
+
+    if (isRegisterPage) {
+      return [
+        {
+          key: "login",
+          label: (
+            <Link href="/login">
+              <Button type="primary" size="large">
+                Login
+              </Button>
+            </Link>
+          ),
+        },
+      ];
+    }
+
+    return [];
+  };
 
   return (
     <Header style={headerStyle}>
@@ -83,15 +119,16 @@ export default function AppHeader() {
             <Image
               src="/logo.png"
               alt="Logo Tadaa"
-              width={100}
-              height={50}
+              width={80}
+              height={40}
               className={styles.logoImage}
               priority
             />
           </Link>
           <Menu
             mode="horizontal"
-            items={menuItems}
+            items={getMenuItems()}
+            selectable={false}
             style={{
               border: "none",
               flex: 1,
