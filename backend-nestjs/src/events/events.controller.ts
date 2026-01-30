@@ -40,7 +40,7 @@ import { EventFromRequest } from 'src/decorators/event-payload.decorator';
 import { Event } from './entities/event.entity';
 import { UpdateGuestDto } from 'src/guests/dto/update-guest.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Observable, fromEvent } from 'rxjs';
+import { Observable, fromEvent, merge } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { EventStatus } from 'src/enums';
 import { BaseUserDto } from 'src/users/dto/create-user.dto';
@@ -137,10 +137,16 @@ export class EventsController {
   @Sse(':eventId/mail-stream')
   @UseGuards(EventOwnerGuard)
   mailStream(@Param('eventId') eventId: string): Observable<MessageEvent> {
-    return fromEvent(this.eventEmitter, 'mail.sent').pipe(
+    const mailStatusUpdates$ = fromEvent(this.eventEmitter, 'mail.sent').pipe(
       filter((payload: MailSentEvent) => payload.eventId === eventId),
       map((payload) => ({ data: payload }) as MessageEvent),
     );
+
+    const queueDrained$ = fromEvent(this.eventEmitter, 'queue.drained').pipe(
+      map(() => ({ type: 'QUEUE_DRAINED', data: { status: 'IDLE' } }) as MessageEvent),
+    );
+
+    return merge(mailStatusUpdates$, queueDrained$);
   }
 
   @Post()
