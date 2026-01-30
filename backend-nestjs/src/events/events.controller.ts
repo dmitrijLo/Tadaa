@@ -30,7 +30,8 @@ import {
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { JwtDevGuard } from '../auth/guards/jwt-dev.guard';
+import { DevAwareAuthGuard } from '../auth/guards/jwt-dev.guard';
+import { DevBypass } from '../auth/decorators/dev-bypass.decorator';
 import { GuestsService } from 'src/guests/guests.service';
 import { CreateGuestDto } from 'src/guests/dto/create-guest.dto';
 import { UserFromRequest } from 'src/decorators/user-payload.decorator';
@@ -56,7 +57,8 @@ interface MailSentEvent {
 @Controller('events')
 @ApiTags('Events')
 @ApiBearerAuth()
-@UseGuards(JwtDevGuard)
+@UseGuards(DevAwareAuthGuard)
+@DevBypass()
 export class EventsController {
   constructor(
     private readonly eventsService: EventsService,
@@ -142,12 +144,6 @@ export class EventsController {
       map((payload) => ({ data: payload }) as MessageEvent),
     );
   }
-
-  // get all guests for event with status:
-  // @Get(':id/readiness')
-  // findAllGuests(@Param('id', ParseUUIDPipe) id: string) {
-  //   return this.eventsService.findAllEventGuests(id);
-  // }
 
   @Post()
   @ApiOperation({ summary: 'Create a new event.' })

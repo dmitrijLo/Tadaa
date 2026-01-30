@@ -15,7 +15,7 @@ export class UsersService implements OnApplicationBootstrap {
   }
 
   private async seedDevUser() {
-    if (process.env.JWT_DEV_MODE !== 'true') {
+    if (process.env.NODE_ENV === 'production') {
       return;
     }
 
@@ -43,7 +43,7 @@ export class UsersService implements OnApplicationBootstrap {
     return this.usersRepository.save(user);
   }
 
-  async findbyId(id: string): Promise<User | null> {
+  async findById(id: string): Promise<User | null> {
     const user = await this.usersRepository.findOne({ where: { id } });
     return user;
   }

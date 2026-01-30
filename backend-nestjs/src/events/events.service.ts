@@ -29,7 +29,7 @@ export class EventsService implements OnApplicationBootstrap {
   }
 
   private async seedDevEvent() {
-    if (process.env.JWT_DEV_MODE !== 'true') return;
+    if (process.env.NODE_ENV === 'production') return;
 
     const eventExists = await this.eventRepository.findOneBy({ id: this.EVENT_ID });
 
@@ -69,7 +69,7 @@ export class EventsService implements OnApplicationBootstrap {
     const savedEvent = await this.eventRepository.save(event);
 
     // get host user to extract email and name
-    const hostUser = await this.usersService.findbyId(hostId);
+    const hostUser = await this.usersService.findById(hostId);
     if (hostUser && hostUser.email) {
       const hostGuest = await this.guestService.createHostGuest({
         email: hostUser.email,
@@ -126,9 +126,6 @@ export class EventsService implements OnApplicationBootstrap {
     await this.eventRepository.update(eventId, { status: nextStatus });
   }
 
-  /*
-   * Helper Methods
-   */
   async verifyEventExists(eventId: string): Promise<Event> {
     const event = await this.eventRepository.findOne({ where: { id: eventId } });
     if (!event) throw new NotFoundException(`Event with ID "${eventId}" not found`);
