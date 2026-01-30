@@ -2,13 +2,14 @@
 
 import { Tabs, App, Modal, Divider, Button, Tag } from "antd";
 import type { TabsProps } from "antd";
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { EventSettings, GuestList } from "@/components";
 import { api } from "@/utils/api";
 import { Typography } from "antd";
 import { formatGermanDateTime } from "@/utils/formatters";
 import { eventModeByModus } from "@/constants/eventStates";
+import { useBreadcrumbStore } from "@/stores/useBreadcrumbStore";
 import {
   ClockCircleOutlined,
   GiftOutlined,
@@ -16,6 +17,7 @@ import {
   SettingOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
+import EventDetails from "./EventDetails";
 
 const { Title } = Typography;
 
@@ -32,8 +34,15 @@ export default function EventDetailTabs({
 }: EventDetailTabsProps) {
   const { message } = App.useApp();
   const router = useRouter();
+  const pathname = usePathname();
   const [activeTab, setActiveTab] = useState<string>("1");
   const [eventData, setEventData] = useState<Event>(initialEvent);
+  const { setOverride, clearOverride } = useBreadcrumbStore();
+
+  useEffect(() => {
+    setOverride(pathname, eventData.name);
+    return () => clearOverride(pathname);
+  }, [pathname, eventData.name, setOverride, clearOverride]);
 
   const items: TabsProps["items"] = [
     {
@@ -129,7 +138,9 @@ export default function EventDetailTabs({
       </div>
       <Tabs activeKey={activeTab} items={items} onChange={onChange} />
       <div style={{ marginTop: 12 }}>
-        {activeTab === "1" && <div>Details</div>}
+        {activeTab === "1" && (
+          <EventDetails event={eventData} guests={initialGuests} />
+        )}
         {activeTab === "2" && (
           <EventSettings
             onSubmit={handleUpdateEvent}

@@ -1,16 +1,7 @@
 "use client";
-import {
-  Breadcrumb,
-  Button,
-  Divider,
-  Layout,
-  Menu,
-  MenuProps,
-  Spin,
-  theme,
-} from "antd";
-import { PropsWithChildren, useEffect, useMemo } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { Button, Divider, Layout, Menu, MenuProps, Spin, theme } from "antd";
+import { PropsWithChildren, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   MenuFoldOutlined,
@@ -21,6 +12,7 @@ import {
 } from "@ant-design/icons";
 import { useSidebarStore } from "@/stores/useSidebarStore";
 import { useAuthStore } from "@/stores/useAuthStore";
+import DashboardBreadcrumb from "@/components/layout/DashboardBreadcrumb";
 
 const { Content, Sider } = Layout;
 
@@ -54,28 +46,9 @@ const items: MenuItem[] = [
 
 export default function DashboardPageLayout({ children }: PropsWithChildren) {
   const { token } = theme.useToken();
-  const pathname = usePathname();
   const router = useRouter();
   const { collapsed, toggleCollapsed } = useSidebarStore();
   const { hasHydrated, currentUser } = useAuthStore();
-
-  const breadcrumbItems = useMemo(() => {
-    const segments = pathname.split("/").filter(Boolean);
-
-    return segments.map((segment, index) => {
-      const path = `/${segments.slice(0, index + 1).join("/")}`;
-      const label = segment.charAt(0).toUpperCase() + segment.slice(1);
-
-      return {
-        title:
-          index === segments.length - 1 ? (
-            label
-          ) : (
-            <Link href={path}>{label}</Link>
-          ),
-      };
-    });
-  }, [pathname]);
 
   useEffect(() => {
     if (hasHydrated && !currentUser) {
@@ -85,7 +58,14 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
 
   if (!hasHydrated || !currentUser) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <Spin size="large" />
       </div>
     );
@@ -142,7 +122,7 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
                 {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               </Button>
             )}
-            <Breadcrumb items={breadcrumbItems} style={{ margin: "0 0 0 0" }} />
+            <DashboardBreadcrumb />
           </div>
           <Divider />
           {children}

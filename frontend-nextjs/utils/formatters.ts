@@ -28,12 +28,14 @@ export function formatGermanDateTime(
   if (isNaN(dateObj.getTime())) return "";
 
   const datePart = new Intl.DateTimeFormat("de-DE", {
+    timeZone: "Europe/Berlin",
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(dateObj);
 
   const timePart = new Intl.DateTimeFormat("de-DE", {
+    timeZone: "Europe/Berlin",
     hour: "numeric",
     minute: "2-digit",
   }).format(dateObj);
