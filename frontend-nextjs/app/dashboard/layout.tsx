@@ -41,7 +41,7 @@ const items: MenuItem[] = [
   },
   {
     key: "sub1",
-    label: <Link href="/dashboard/events">Events</Link>,
+    label: "Events",
     icon: <GiftOutlined />,
     children: [
       {
