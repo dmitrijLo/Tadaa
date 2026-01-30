@@ -7,10 +7,12 @@
   --colorTextSecondary: rgba(0, 0, 0, 0.65);
   --colorTextTertiary: rgba(0, 0, 0, 0.45);
   --colorTextQuaternary: rgba(0, 0, 0, 0.25);
+  --colorHighlightPrimary: rgba(88, 14, 159, 1);
+  --colorHighlightSecondary: rgba(199, 19, 105, 1);
   --gradientPrimary: linear-gradient(
     90deg,
-    rgba(88, 14, 159, 1) 0%,
-    rgba(199, 19, 105, 1) 100%
+    var(--colorHighlightPrimary) 0%,
+    var(--colorHighlightSecondary) 100%
   );
   --gradientPrimaryHover: linear-gradient(
     90deg,
@@ -130,4 +132,26 @@ body {
 
 .ant-btn-variant-outlined {
   border-width: 2px !important;
+}
+
+.ant-steps-panel .ant-steps-item-active {
+  background: var(--gradientPrimary) !important;
+}
+
+.ant-steps-panel .ant-steps-item-active .ant-steps-panel-arrow path {
+  fill: rgba(199, 19, 105, 1) !important;
+}
+
+.accentContainer {
+  background: var(--color-gray-50);
+  border-radius: 8px;
+  padding: 12px !important;
+}
+
+.progressSteps .ant-steps-item {
+  border-inline-end: none !important;
+}
+
+.progressSteps .ant-steps-item:first-child {
+  border-inline-start: none !important;
 }
