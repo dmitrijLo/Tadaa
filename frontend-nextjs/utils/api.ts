@@ -1,4 +1,5 @@
-import axios from "axios";
+import { useAuthStore } from "@/stores/useAuthStore";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
 const isClient = typeof window !== "undefined";
 
@@ -15,38 +16,52 @@ export const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-api.interceptors.request.use((cfg) => {
-  const isDev = process.env.NODE_ENV === "development";
-  if (isDev) {
-    cfg.headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
-  } else {
-    // const token = useAuthStore.getState().token;
-    // if (token) {
-    //   cfg.headers["Authorization"] = `Bearer ${token}`;
-    // }
+api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
+  if (!isClient) return cfg;
+
+  const token = useAuthStore.getState().token;
+  if (token) {
+    cfg.headers["Authorization"] = `Bearer ${token}`;
   }
 
-  //if token
-  // cfg.headers ....
+  // Dev fallback disabled - keeping for reference
+  // if (!token && process.env.NODE_ENV === "development") {
+  //   cfg.headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+  // }
 
   return cfg;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (isClient && error.response?.status === 401) {
+      const authStore = useAuthStore.getState();
+      authStore.logout();
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
+);
 
 export const getAuthHeader = () => {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
+  if (!isClient) return headers;
 
-  if (process.env.NODE_ENV === "development") {
-    headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+  try {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    // Dev fallback disabled - keeping for reference
+    // if (!token && process.env.NODE_ENV === "development") {
+    //   headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
+    // }
+  } catch (error) {
+    console.error("Error getting auth header:", error);
   }
-  // }else {
-  //   const token = useAuthStore.getState().token;
-  //   if (token) {
-  //     headers["Authorization"] = `Bearer ${token}`;
-  //   }
-  // }
-
   return headers;
 };
 
@@ -72,6 +87,67 @@ export const makeApiRequest = async <T>(
     return { data, error: null };
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown Error";
+    return { data: null, error: message };
+  }
+};
+
+/**
+ * Public API call to get event info (no auth required)
+ */
+export const getPublicEventInfo = async (
+  eventId: string,
+): Promise<ApiResponse<{ name: string }>> => {
+  try {
+    const response = await fetch(
+      `${BACKEND_URL}/guests/event-info/${eventId}`,
+    );
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error("Event nicht gefunden.");
+      }
+      throw new Error("Fehler beim Laden des Events");
+    }
+
+    const data = await response.json();
+    return { data, error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unbekannter Fehler";
+    return { data: null, error: message };
+  }
+};
+
+/**
+ * Public API call for guest self-registration (no auth required)
+ */
+export const registerGuestForEvent = async (
+  eventId: string,
+  guestData: { name: string; email: string },
+): Promise<ApiResponse<Guest>> => {
+  try {
+    const response = await fetch(`${BACKEND_URL}/guests/register/${eventId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(guestData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      if (response.status === 409) {
+        throw new Error(
+          "Diese E-Mail-Adresse ist bereits für dieses Event registriert.",
+        );
+      }
+      if (response.status === 404) {
+        throw new Error("Event nicht gefunden.");
+      }
+      throw new Error(errorData.message || "Registrierung fehlgeschlagen");
+    }
+
+    const data = await response.json();
+    return { data, error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unbekannter Fehler";
     return { data: null, error: message };
   }
 };

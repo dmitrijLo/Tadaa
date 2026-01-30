@@ -40,10 +40,14 @@ export default async function DashboardPage() {
     );
 
   const [featuredEvent, ...upcomingEvents] = futureEvents;
-  const { data: statsData, error: statsErr } =
-    await makeApiRequest<GuestStatsResponse>(
+
+  let statsData: GuestStatsResponse | null = null;
+  if (featuredEvent) {
+    const { data } = await makeApiRequest<GuestStatsResponse>(
       `${BACKEND_URL}/events/${featuredEvent.id}/stats`,
     );
+    statsData = data;
+  }
 
   return (
     <DashboardEvents

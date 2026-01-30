@@ -18,8 +18,8 @@ docker compose up
 
 Das war's! Die Anwendung ist jetzt unter folgenden URLs erreichbar:
 
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:3001
+- **Frontend**: <http://localhost:3000>
+- **Backend API**: <http://localhost:3001>
 - **Datenbank**: localhost:5432
 
 ### Nützliche Docker-Befehle
@@ -70,9 +70,9 @@ For development purposes, you can bypass the regular JWT authentication to test 
 
 **Usage:**
 
-1.  Enable the dev mode in your `.env` file: `JWT_DEV_MODE=true`
-2.  Restart the backend container to apply the environment variable change: `docker compose restart backend`
-3.  Access protected routes directly. A default development user will be automatically injected: `curl http://localhost:3001/events`
+1. Enable the dev mode in your `.env` file: `JWT_DEV_MODE=true`
+2. Restart the backend container to apply the environment variable change: `docker compose restart backend`
+3. Access protected routes directly. A default development user will be automatically injected: `curl http://localhost:3001/events`
 
 _Optional:_ To specify a custom user ID, you can still use the `X-Dev-User-Id` header:
 
@@ -117,7 +117,7 @@ docker compose exec db psql -U tadaa_user -d tadaa_db
 
 For easy database management during development, an **Adminer** service is included. It provides a simple web interface to view and edit your PostgreSQL database.
 
-- **URL**: http://localhost:8080
+- **URL**: <http://localhost:8080>
 - **System**: `PostgreSQL`
 - **Server**: `db`
 - **Username**: `tadaa_user`
@@ -148,6 +148,7 @@ Das Projekt verwendet eine zentrale `.env`-Datei im Root-Verzeichnis. Wichtige V
 | `DATABASE_URL`        | PostgreSQL Verbindungs-URL         | `postgresql://user:pass@host:5432/db` |
 | `JWT_SECRET`          | Secret für JWT-Token-Signierung    | `your-secret-key`                     |
 | `JWT_DEV_MODE`        | Development Auth Bypass aktivieren | `true`                                |
+| `FRONTEND_URLS`       | Erlaubte CORS Origins (komma-separiert) | `http://localhost:3000`          |
 | `NEXT_PUBLIC_API_URL` | Backend API URL für Frontend       | `http://localhost:3001`               |
 | `OPENAI_API_KEY`      | OpenAI API Key (optional)          | `sk-...`                              |
 

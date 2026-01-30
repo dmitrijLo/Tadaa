@@ -1,6 +1,7 @@
 "use client";
 
 import { create } from "zustand";
+import { api } from "@/utils/api";
 
 type InterestStore = {
   interestOptions: InterestOption[];
@@ -36,7 +37,7 @@ interface GuestInterestDto {
   like: boolean;
 }
 
-const URL = `${process.env.NEXT_PUBLIC_API_URL}/interests`;
+const INTERESTS_PATH = "/interests";
 
 export const useInterestStore = create<InterestStore>((set, get) => ({
   interestOptions: [],
@@ -52,18 +53,10 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
     set({ noteForGiver });
 
     try {
-      const response = await fetch(`${URL}/${guestId}/note`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ noteForGiver }),
+      const response = await api.post(`${INTERESTS_PATH}/${guestId}/note`, {
+        noteForGiver,
       });
-
-      if (!response.ok) {
-        throw new Error("Could not post note for giver");
-      }
-
-      const data = await response.json();
-      set({ noteForGiver: data, error: null, isLoading: false });
+      set({ noteForGiver: response.data, error: null, isLoading: false });
     } catch (error) {
       set({
         error:
@@ -81,20 +74,10 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const response = await fetch(URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newInterest }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Could not add a new interest option");
-      }
-
-      const newOption = await response.json();
+      const response = await api.post(INTERESTS_PATH, { name: newInterest });
 
       set({
-        interestOptions: [...get().interestOptions, newOption],
+        interestOptions: [...get().interestOptions, response.data],
         isLoading: false,
         error: null,
       });
@@ -106,15 +89,9 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
   fetchInterestOptions: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/interests`,
-      );
-      if (!response.ok) {
-        throw new Error("Could not fetch interest options");
-      }
-      const interests: InterestOption[] = await response.json();
-      set({ interestOptions: interests, isLoading: false });
-    } catch {
+      const response = await api.get<InterestOption[]>(INTERESTS_PATH);
+      set({ interestOptions: response.data, isLoading: false });
+    } catch (error) {
       set({ error: "Fehler beim Laden der Interessen", isLoading: false });
     }
   },
@@ -124,25 +101,13 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const result = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/interests/${guestId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(guestInterest),
-        },
+      const result = await api.post<InterestOption[]>(
+        `${INTERESTS_PATH}/${guestId}`,
+        guestInterest,
       );
 
-      if (!result.ok) throw new Error("Could not submit new interest");
-
-      const data: {
-        interests: InterestOption[];
-        noInterest: InterestOption[];
-      } = await result.json();
-
       set({
-        interests: data.interests,
-        noInterest: data.noInterest,
+        [like ? "interests" : "noInterest"]: result.data,
         isLoading: false,
       });
     } catch {
@@ -159,21 +124,13 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const result = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/interests/${guestId}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(guestInterest),
-        },
+      const result = await api.delete<InterestOption[]>(
+        `${INTERESTS_PATH}/${guestId}`,
+        { data: guestInterest },
       );
 
-      if (!result.ok) throw new Error("Could not remove interest");
-
-      const data: InterestOption[] = await result.json();
-
       set({
-        [like ? "interests" : "noInterest"]: data,
+        [like ? "interests" : "noInterest"]: result.data,
         isLoading: false,
       });
     } catch (error) {
@@ -185,14 +142,10 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
   getSuggestions: async (guestId: string) => {
     set({ isSuggestionsLoading: true, error: null });
     try {
-      const result = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/interests/${guestId}/suggestions`,
+      const result = await api.get<GiftSuggestion[]>(
+        `${INTERESTS_PATH}/${guestId}/suggestions`,
       );
-
-      if (!result.ok) throw new Error("Could not fetch suggestions");
-
-      const suggestions: GiftSuggestion[] = await result.json();
-      set({ isSuggestionsLoading: false, suggestions });
+      set({ isSuggestionsLoading: false, suggestions: result.data });
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : "An error occurred",

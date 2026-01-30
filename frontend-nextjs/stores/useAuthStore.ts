@@ -16,6 +16,8 @@ type AuthState = {
   token: string | null;
   loading: boolean;
   error: string | null;
+  hasHydrated: boolean;
+  setHasHydrated: (state: boolean) => void;
   register: (email: string, name: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -28,6 +30,8 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       loading: false,
       error: null,
+      hasHydrated: false,
+      setHasHydrated: (state: boolean) => set({ hasHydrated: state }),
 
       // REGISTER
       async register(email, name, password) {
@@ -47,13 +51,8 @@ export const useAuthStore = create<AuthState>()(
             throw new Error(errorData.message || "Registration failed");
           }
 
-          const data = await res.json();
+          await res.json();
           set({
-            currentUser: {
-              id: data.user.id,
-              name: data.user.name,
-              email: data.user.email,
-            },
             loading: false,
           });
         } catch (error) {
@@ -61,8 +60,6 @@ export const useAuthStore = create<AuthState>()(
           set({
             error: message,
             loading: false,
-            currentUser: null,
-            token: null,
           });
           throw error;
         }
@@ -121,6 +118,9 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         currentUser: state.currentUser,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     },
   ),
 );

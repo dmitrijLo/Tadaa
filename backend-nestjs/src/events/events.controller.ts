@@ -26,7 +26,6 @@ import {
   ApiForbiddenResponse,
   ApiNotFoundResponse,
   ApiNoContentResponse,
-  ApiQuery,
 } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';

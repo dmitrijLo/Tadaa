@@ -8,6 +8,7 @@ import EventSettings from "@/components/event/EventSettings";
 import { api } from "@/utils/api";
 import { useGuestStore } from "@/stores/useGuestsStore";
 import { useShallow } from "zustand/shallow";
+import { useGuestList } from "@/hooks/useGuestList";
 
 const { Title } = Typography;
 
@@ -24,12 +25,8 @@ export default function EventForm({
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [createdEventId, setCreatedEventId] = useState<string | null>(null);
-  const { guests, setGuests } = useGuestStore(
-    useShallow(({ guests, setGuests }) => ({
-      guests,
-      setGuests,
-    })),
-  );
+  const guests = useGuestList();
+  const { init: setGuests } = useGuestStore();
   const [eventData, setEventData] = useState<CreateEventDto | null>(null);
 
   useEffect(() => {
@@ -108,6 +105,7 @@ export default function EventForm({
             <GuestList
               key={`${createdEventId}-${guests.length}`}
               eventId={createdEventId}
+              eventName={eventData?.name || ""}
               initialGuests={guests}
             />
             <div
