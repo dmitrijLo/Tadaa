@@ -1,11 +1,13 @@
-import { Controller, Get, Logger, Post, Query, Res } from '@nestjs/common';
+import { Controller, Get, Logger, Query, Res } from '@nestjs/common';
 import { type Response } from 'express';
 import { createReadStream, existsSync } from 'fs';
 import { join } from 'path';
+import { Public } from 'src/auth/decorators/public.decorator';
 import { InviteStatus } from 'src/enums';
 import { GuestsService } from 'src/guests/guests.service';
 
 @Controller('mail')
+@Public()
 export class MailController {
   private readonly logger = new Logger(MailController.name);
 

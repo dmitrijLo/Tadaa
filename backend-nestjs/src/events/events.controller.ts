@@ -30,7 +30,6 @@ import {
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
-import { DevAwareAuthGuard } from '../auth/guards/jwt-dev.guard';
 import { DevBypass } from '../auth/decorators/dev-bypass.decorator';
 import { GuestsService } from 'src/guests/guests.service';
 import { CreateGuestDto } from 'src/guests/dto/create-guest.dto';
@@ -57,7 +56,6 @@ interface MailSentEvent {
 @Controller('events')
 @ApiTags('Events')
 @ApiBearerAuth()
-@UseGuards(DevAwareAuthGuard)
 @DevBypass()
 export class EventsController {
   constructor(

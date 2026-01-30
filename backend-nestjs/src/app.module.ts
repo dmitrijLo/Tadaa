@@ -16,6 +16,7 @@ import { MailModule } from './mail/mail.module';
 import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AssignmentModule } from './assignment/assignment.module';
+import { DevAwareAuthGuard } from './auth/guards/jwt-dev.guard';
 
 @Module({
   imports: [
@@ -88,6 +89,10 @@ import { AssignmentModule } from './assignment/assignment.module';
   controllers: [AppController],
   providers: [
     AppService,
+    {
+      provide: APP_GUARD,
+      useClass: DevAwareAuthGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
