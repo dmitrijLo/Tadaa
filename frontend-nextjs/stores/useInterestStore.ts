@@ -53,7 +53,9 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
     set({ noteForGiver });
 
     try {
-      const response = await api.post(`${INTERESTS_PATH}/${guestId}/note`, { noteForGiver });
+      const response = await api.post(`${INTERESTS_PATH}/${guestId}/note`, {
+        noteForGiver,
+      });
       set({ noteForGiver: response.data, error: null, isLoading: false });
     } catch (error) {
       set({
@@ -108,7 +110,7 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
         [like ? "interests" : "noInterest"]: result.data,
         isLoading: false,
       });
-    } catch (error) {
+    } catch {
       set({ error: "Fehler beim Hinzufügen", isLoading: false });
     }
   },
