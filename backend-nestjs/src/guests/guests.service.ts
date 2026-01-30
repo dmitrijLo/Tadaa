@@ -186,7 +186,7 @@ export class GuestsService {
 
   async getConfirmationStats(eventId: string): Promise<GuestsInvitationStats> {
     const stats: GuestsInvitationStats = { totalGuests: 0, accepted: 0, denied: 0, open: 0 };
-    const rawResults: { status: string; count: string }[] = await this.guestRepository
+    const rawResults: { status: InviteStatus; count: string }[] = await this.guestRepository
       .createQueryBuilder('guest')
       .select('guest.inviteStatus', 'status')
       .addSelect('COUNT(guest.id)', 'count')
@@ -197,11 +197,13 @@ export class GuestsService {
     for (const r of rawResults) {
       const count = parseInt(r.count, 10);
       stats.totalGuests += count;
-      r.status === InviteStatus.ACCEPTED
-        ? (stats.accepted += count)
-        : r.status === InviteStatus.DENIED
-          ? (stats.denied += count)
-          : (stats.open += count);
+      if (r.status === InviteStatus.ACCEPTED) {
+        stats.accepted += count;
+      } else if (r.status === InviteStatus.DENIED) {
+        stats.denied += count;
+      } else {
+        stats.open += count;
+      }
     }
 
     return stats;
@@ -254,8 +256,9 @@ export class GuestsService {
 
   async markInviteStatusAs(guestId: string, nextInviteStatus: InviteStatus) {
     const guest = await this.guestRepository.findOne({ where: { id: guestId }, select: ['id', 'inviteStatus'] });
+    if (!guest) throw new NotFoundException('Guest not found for this event.');
+
     // nothing to update here
-    if (!guest) return;
     if (nextInviteStatus === guest.inviteStatus) return;
     // eventHost wants (and can) reset inviteStatus
     if (nextInviteStatus === InviteStatus.DRAFT) {
@@ -267,7 +270,10 @@ export class GuestsService {
     const nextRank = this.INVITE_STATUS_SEQUENCE[nextInviteStatus];
     // draft -> invited -> opened -> accepted <-> denied
     if (nextRank >= prevRank) {
-      await this.guestRepository.update(guestId, { inviteStatus: nextInviteStatus });
+      await this.guestRepository.update(
+        { id: guestId, inviteStatus: guest.inviteStatus },
+        { inviteStatus: nextInviteStatus },
+      );
     }
   }
 
