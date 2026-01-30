@@ -1,76 +1,99 @@
+"use client";
 import { useGuestStore } from "@/stores/useGuestsStore";
 import { api, BACKEND_URL } from "@/utils/api";
-import { message } from "antd";
+import { App } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { InviteStatus } from "@/types/enums";
 
 export const useGuestInvitations = (eventId: string) => {
+  const { message } = App.useApp();
   const [isSending, setIsSending] = useState(false);
   const { markInviteStatusAs } = useGuestStore();
 
   const eventSourceRef = useRef<EventSource | null>(null);
+  const progressRef = useRef({ total: 0, current: 0 });
+
   useEffect(() => {
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
+      closeConnection();
     };
   }, []);
 
+  const closeConnection = () => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+    }
+  };
+
+  const checkCompletion = () => {
+    const { total, current } = progressRef.current;
+    if (total > 0 && current >= total) {
+      message.success("Alle Einladungen wurden Verarbeitet.");
+      closeConnection();
+      setIsSending(false);
+    }
+  };
+
   const sendInvitations = async () => {
     if (isSending) return;
-
     setIsSending(true);
 
+    progressRef.current = { total: 0, current: 0 };
+
     try {
-      if (eventSourceRef.current) eventSourceRef.current.close();
-      eventSourceRef.current = new EventSource(
+      closeConnection();
+      const sse = new EventSource(
         `${BACKEND_URL}/events/${eventId}/mail-stream`,
       );
+      eventSourceRef.current = sse;
 
-      eventSourceRef.current.onmessage = (e) => {
-        const { status, guestId, reason } = JSON.parse(e.data);
+      sse.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
 
-        switch (status) {
-          case "SUCCESS":
+          if (!data || !data.status) return;
+
+          const { status, guestId, reason } = data;
+          if (status === "SUCCESS") {
             markInviteStatusAs(guestId, InviteStatus.INVITED);
-            break;
-          case "ERROR":
+            progressRef.current.current++;
+          } else if (status === "ERROR") {
             markInviteStatusAs(guestId, InviteStatus.ERROR);
-            message.error(`Fehler bei einer Mail: ${reason}`);
-            break;
-          case "DONE":
-            eventSourceRef.current?.close();
-            setIsSending(false);
-            message.success("Alle Einladungen wurden erfolgreich verarbeitet.");
-            break;
-          default:
-            break;
+            message.error(`Fehler bei Gast (Mail): ${reason}`);
+            progressRef.current.current++;
+          }
+
+          checkCompletion();
+        } catch (err) {
+          console.error("SSE Parse Error", err);
         }
       };
 
-      eventSourceRef.current.onerror = () => {
-        eventSourceRef.current?.close();
-        setIsSending(false);
-        message.error("Verbindung zum Server verloren.");
+      sse.onerror = () => {
+        console.warn("SSE Connection lost on error");
       };
 
       const response = await api.post(`/events/${eventId}/guests/invite`);
-      console.log("the res:", response);
-      if (response.data.queueCount === 0) {
-        eventSourceRef.current.close();
-        setIsSending(false);
+      const totalCount = response.data.queueCount || 0;
+      progressRef.current.total = totalCount;
+      console.log(`Expecting ${totalCount} updates...`);
+
+      if (totalCount === 0) {
         message.info(
           "Es gibt keine neuen Gäste, die eingeladen werden müssen.",
         );
+        closeConnection();
+        setIsSending(false);
         return;
       }
-    } catch (error) {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
+
+      checkCompletion();
+    } catch (err) {
+      console.error(err);
+      closeConnection();
       setIsSending(false);
-      message.error("Fehler beim Starten der Eiladungen.");
+      message.error("Konnte das Versenden der Eiladungen nicht starten.");
     }
   };
 

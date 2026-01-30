@@ -48,7 +48,7 @@ import { PaginatedEventsResponse, PaginationQueryDto } from './dto/event-respons
 
 interface MailSentEvent {
   eventId: string;
-  status: 'SUCCESS' | 'ERROR' | 'DONE';
+  status: 'SUCCESS' | 'ERROR';
   guestId: string;
   reason?: string;
 }
