@@ -2,7 +2,7 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
-import { createQueryBuilder, EntityManager, Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { InviteStatus } from '../enums';
 import { Event } from '../events/entities/event.entity';
 import { GuestResponseDto, GuestsInvitationStats } from './dto/guest-response.dto';
@@ -10,6 +10,7 @@ import { plainToInstance } from 'class-transformer';
 import { UpdateGuestDto } from './dto/update-guest.dto';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { MailJob, MailType } from 'src/mail/dto/mail.dto';
 
 @Injectable()
 export class GuestsService {
@@ -28,6 +29,30 @@ export class GuestsService {
     private eventRepository: Repository<Event>,
     @InjectQueue('mail-queue') private readonly mailQueue: Queue,
   ) {}
+
+  private async queueMailJobs(guests: Guest[], event: Event, type: MailType) {
+    const jobs = guests.map((guest) => {
+      const jobData: MailJob = {
+        type,
+        guest,
+        event,
+      };
+
+      if (type === 'ASSIGN') {
+        if (guest.assignedRecipient) {
+          jobData.assignmentContext = { assignedId: guest.assignedRecipient };
+        } else if (guest.pickOrder) {
+          jobData.assignmentContext = { pickOrder: guest.pickOrder };
+        }
+      }
+
+      return {
+        name: `send-${type.toLowerCase()}`,
+        data: jobData,
+      };
+    });
+    await this.mailQueue.addBulk(jobs);
+  }
 
   // get public event info (only name)
   async getEventInfo(eventId: string): Promise<{ name: string }> {
@@ -171,17 +196,20 @@ export class GuestsService {
     const guests = await this.findAllInvitableGuests(event.id);
     if (guests.length === 0) return { message: 'Keine Gäste zum Einladen gefunden.', queueCount: 0 };
 
-    const jobs = guests.map((guest) => ({
-      name: 'send-invitation',
-      data: {
-        guest,
-        eventName: event.name,
-        eventId: event.id,
-      },
-    }));
-    await this.mailQueue.addBulk(jobs);
-
+    await this.queueMailJobs(guests, event, 'INVITE');
     return { message: 'Einladungen werden im Hintergrund verarbeitet.', queueCount: guests.length };
+  }
+
+  async createAssignmentNotifications(event: Event) {
+    // HIER BRAUCHE ICH DIE ASSIGNEMENT oder reicht guest????
+    const guests = await this.guestRepository.find({
+      where: { eventId: event.id, inviteStatus: InviteStatus.ACCEPTED },
+    });
+
+    if (guests.length === 0) return { message: 'Keine Gäste zum Benachrichtigen gefunden.', queueCount: 0 };
+
+    await this.queueMailJobs(guests, event, 'ASSIGN');
+    return { message: 'Benachrichtigungen werden im Hintergrund verarbeitet.', queueCount: guests.length };
   }
 
   async getConfirmationStats(eventId: string): Promise<GuestsInvitationStats> {

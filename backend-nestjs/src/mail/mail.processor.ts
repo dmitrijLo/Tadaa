@@ -4,19 +4,8 @@ import { MailService } from './mail.service';
 import { GuestsService } from 'src/guests/guests.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Job, UnrecoverableError } from 'bullmq';
-import { Guest } from 'src/guests/entities/guest.entity';
 import { InviteStatus } from 'src/enums';
-
-interface ProcessResult {
-  guestId: string;
-  status: 'SENT' | 'FAILED';
-}
-
-interface MailJob {
-  guest: Guest;
-  eventName: string;
-  eventId: string;
-}
+import { MailJob, ProcessResult } from './dto/mail.dto';
 
 @Processor('mail-queue')
 export class MailProcessor extends WorkerHost {
@@ -39,26 +28,32 @@ export class MailProcessor extends WorkerHost {
   }
 
   async process(job: Job<MailJob>): Promise<ProcessResult> {
-    const { guest, eventId, eventName } = job.data;
-    if (!guest || !eventId || !eventName) {
-      const errorMsg = 'Invalid Job Data: guest | eventId | eventName is missing.';
+    const { type, guest, event, assignmentContext } = job.data;
+    if (!guest || !event) {
+      const errorMsg = 'Invalid Job Data: guest | event is missing.';
       this.logger.error(errorMsg);
 
       // BullMQ spezifischer Fehler, damit es nicht versucht die eMail erneut zu versenden.
       throw new UnrecoverableError(errorMsg);
     }
     try {
-      this.logger.debug(`Processing mail for guest ${guest.id} (Event: ${eventId})`);
-      await this.mailService.sendGuestInvitation(guest, eventName);
+      this.logger.debug(`Processing mail for guest ${guest.id} (Event: ${event.id})`);
+      if (type === 'INVITE') {
+        await this.mailService.sendGuestInvitation(guest, event);
 
-      try {
-        await this.guestService.markInviteStatusAs(guest.id, InviteStatus.INVITED);
-      } catch (dbError) {
-        this.logger.warn(`Mail sent, but DB update failed for guest ${guest.id}: ${dbError}`);
+        try {
+          await this.guestService.markInviteStatusAs(guest.id, InviteStatus.INVITED);
+        } catch (dbError) {
+          this.logger.warn(`Mail sent, but DB update failed for guest ${guest.id}: ${dbError}`);
+        }
+      } else if (type === 'ASSIGN') {
+        await this.mailService.sendAssignmentMail(guest, event, assignmentContext);
+      } else {
+        throw new Error(`Unknown Mail Type: ${type}`);
       }
 
       this.eventEmitter.emit('mail.sent', {
-        eventId,
+        eventId: event.id,
         guestId: guest.id,
         status: 'SUCCESS',
       });
@@ -68,7 +63,7 @@ export class MailProcessor extends WorkerHost {
       const errorMsg = err instanceof Error ? err.message : 'Unknown error';
       this.logger.error(`Failed to send mail to ${guest.email}`, err instanceof Error ? err.stack : err);
       this.eventEmitter.emit('mail.sent', {
-        eventId,
+        eventId: event.id,
         guestId: guest.id,
         status: 'ERROR',
         reason: errorMsg,
