@@ -40,32 +40,27 @@ import { DevAwareAuthGuard } from './auth/guards/jwt-dev.guard';
     MailerModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const host = configService.get<string>('MAIL_HOST');
-        const port = configService.get<number>('MAIL_PORT');
-        console.log('📧 MAIL CONFIG CHECK:', { host, port });
-        return {
-          transport: {
-            host,
-            port,
-            secure: false,
-            auth: {
-              user: configService.get<string>('MAIL_USER'),
-              pass: configService.get<string>('MAIL_PASS'),
-            },
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: configService.get<string>('MAIL_HOST'),
+          port: configService.get<number>('MAIL_PORT'),
+          secure: false,
+          auth: {
+            user: configService.get<string>('MAIL_USER'),
+            pass: configService.get<string>('MAIL_PASS'),
           },
-          defaults: {
-            from: configService.get<string>('MAIL_FROM'),
+        },
+        defaults: {
+          from: configService.get<string>('MAIL_FROM'),
+        },
+        template: {
+          dir: process.cwd() + '/src/templates',
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
           },
-          template: {
-            dir: process.cwd() + '/src/templates',
-            adapter: new HandlebarsAdapter(),
-            options: {
-              strict: true,
-            },
-          },
-        };
-      },
+        },
+      }),
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
