@@ -370,11 +370,15 @@ export default function EventSettings({
         dayjs(data.invitationDate).isValid()
       ) {
         submitData.invitationDate = data.invitationDate;
+      } else if (!useInvitationDate) {
+        submitData.invitationDate = null as unknown as Date;
       }
 
       // Only include draftDate if toggle is active and date is valid
       if (useDraftDate && data.draftDate && dayjs(data.draftDate).isValid()) {
         submitData.draftDate = data.draftDate;
+      } else if (!useDraftDate) {
+        submitData.draftDate = null as unknown as Date;
       }
 
       await onSubmit(submitData as CreateEventDto);
