@@ -35,13 +35,16 @@ export default function RootLayout({
           theme={{
             token: {
               colorPrimary: "#580e9f",
-              borderRadius: 4,
-              borderRadiusLG: 8,
+              borderRadius: 8,
               colorBgContainer: "white",
             },
             components: {
               Menu: {
                 itemPaddingInline: 40,
+              },
+              Progress: {
+                defaultColor: "var(--colorHighlightPrimary)",
+                circleTextColor: "var(--colorTextSecondary)",
               },
             },
           }}
