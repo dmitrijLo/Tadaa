@@ -57,7 +57,7 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const router = useRouter();
   const { collapsed, toggleCollapsed } = useSidebarStore();
-  const { hasHydrated, isAuthenticated } = useAuthStore();
+  const { hasHydrated, currentUser } = useAuthStore();
 
   const breadcrumbItems = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
@@ -78,12 +78,12 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
   }, [pathname]);
 
   useEffect(() => {
-    if (hasHydrated && !isAuthenticated()) {
+    if (hasHydrated && !currentUser) {
       router.push("/login");
     }
-  }, [hasHydrated, isAuthenticated, router]);
+  }, [hasHydrated, currentUser, router]);
 
-  if (!hasHydrated || !isAuthenticated()) {
+  if (!hasHydrated || !currentUser) {
     return (
       <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
         <Spin size="large" />

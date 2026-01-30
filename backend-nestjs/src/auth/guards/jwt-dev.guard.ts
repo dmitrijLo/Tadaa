@@ -26,7 +26,8 @@ export class DevAwareAuthGuard extends AuthGuard('jwt') {
 
     if (hasDevBypass && process.env.NODE_ENV !== 'production') {
       const request = context.switchToHttp().getRequest();
-      if (!request.headers['authorization']) {
+      // Only inject dev user if no real auth is present (header or cookie)
+      if (!request.headers['authorization'] && !request.cookies?.accessToken) {
         const defaultUserId = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
         const userId = request.headers['x-dev-user-id'] || defaultUserId;
         request.user = { id: userId, username: 'dev-user', roles: ['user'] };

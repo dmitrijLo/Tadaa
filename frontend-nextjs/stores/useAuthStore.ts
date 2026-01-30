@@ -5,16 +5,6 @@ import { createJSONStorage, persist } from "zustand/middleware";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
-function isTokenExpired(token: string): boolean {
-  try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
-    // exp is in seconds, Date.now() is in milliseconds
-    return payload.exp * 1000 < Date.now();
-  } catch {
-    return true;
-  }
-}
-
 type CurrentUser = {
   id: string;
   email: string;
@@ -23,12 +13,10 @@ type CurrentUser = {
 
 type AuthState = {
   currentUser: CurrentUser | null;
-  token: string | null;
   loading: boolean;
   error: string | null;
   hasHydrated: boolean;
   setHasHydrated: (state: boolean) => void;
-  isAuthenticated: () => boolean;
   register: (email: string, name: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -36,28 +24,21 @@ type AuthState = {
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       currentUser: null,
-      token: null,
       loading: false,
       error: null,
       hasHydrated: false,
       setHasHydrated: (state: boolean) => set({ hasHydrated: state }),
-      isAuthenticated: () => {
-        const token = get().token;
-        return !!token && !isTokenExpired(token);
-      },
 
-      // REGISTER
       async register(email, name, password) {
         set({ loading: true, error: null });
 
         try {
           const res = await fetch(`${API_URL}/auth/register`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({ email, name, password }),
           });
 
@@ -67,29 +48,22 @@ export const useAuthStore = create<AuthState>()(
           }
 
           await res.json();
-          set({
-            loading: false,
-          });
+          set({ loading: false });
         } catch (error) {
           const message = (error as Error).message;
-          set({
-            error: message,
-            loading: false,
-          });
+          set({ error: message, loading: false });
           throw error;
         }
       },
 
-      // LOGIN
       async login(email, password) {
         set({ loading: true, error: null });
 
         try {
           const res = await fetch(`${API_URL}/auth/login`, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
             body: JSON.stringify({ email, password }),
           });
 
@@ -105,24 +79,21 @@ export const useAuthStore = create<AuthState>()(
               name: data.user.name,
               email: data.user.email,
             },
-            token: data.accessToken,
             loading: false,
           });
         } catch (error) {
           const message = (error as Error).message;
-          set({
-            error: message,
-            loading: false,
-            currentUser: null,
-            token: null,
-          });
+          set({ error: message, loading: false, currentUser: null });
           throw error;
         }
       },
 
-      //LOGOUT
       logout() {
-        set({ currentUser: null, token: null, error: null, loading: false });
+        fetch(`${API_URL}/auth/logout`, {
+          method: "POST",
+          credentials: "include",
+        }).catch(() => {});
+        set({ currentUser: null, error: null, loading: false });
         localStorage.removeItem("auth-storage");
       },
     }),
@@ -130,16 +101,9 @@ export const useAuthStore = create<AuthState>()(
       name: "auth-storage",
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
-        token: state.token,
         currentUser: state.currentUser,
       }),
       onRehydrateStorage: () => (state) => {
-        // clear expired tokens on app startup
-        if (state?.token && isTokenExpired(state.token)) {
-          localStorage.removeItem("auth-storage");
-          state.token = null;
-          state.currentUser = null;
-        }
         state?.setHasHydrated(true);
       },
     },

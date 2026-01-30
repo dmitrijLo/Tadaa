@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/stores/useAuthStore";
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError } from "axios";
 
 const isClient = typeof window !== "undefined";
 
@@ -14,22 +14,7 @@ export const BACKEND_URL = isClient
 export const api = axios.create({
   baseURL: BACKEND_URL,
   headers: { "Content-Type": "application/json" },
-});
-
-api.interceptors.request.use((cfg: InternalAxiosRequestConfig) => {
-  if (!isClient) return cfg;
-
-  const token = useAuthStore.getState().token;
-  if (token) {
-    cfg.headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  // Dev fallback disabled - keeping for reference
-  // if (!token && process.env.NODE_ENV === "development") {
-  //   cfg.headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
-  // }
-
-  return cfg;
+  withCredentials: true,
 });
 
 api.interceptors.response.use(
@@ -44,27 +29,6 @@ api.interceptors.response.use(
   },
 );
 
-export const getAuthHeader = () => {
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (!isClient) return headers;
-
-  try {
-    const token = useAuthStore.getState().token;
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
-    // Dev fallback disabled - keeping for reference
-    // if (!token && process.env.NODE_ENV === "development") {
-    //   headers["x-dev-user-id"] = TEST_EVENTHOST_UUID;
-    // }
-  } catch (error) {
-    console.error("Error getting auth header:", error);
-  }
-  return headers;
-};
-
 type ApiResponse<T> = {
   data: T | null;
   error: string | null;
@@ -76,7 +40,8 @@ export const makeApiRequest = async <T>(
   try {
     const response = await fetch(url, {
       cache: "no-store",
-      headers: getAuthHeader(),
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
     });
 
     if (!response.ok) {
