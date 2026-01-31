@@ -101,13 +101,14 @@ export const useInterestStore = create<InterestStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      const result = await api.post<InterestOption[]>(
-        `${INTERESTS_PATH}/${guestId}`,
-        guestInterest,
-      );
+      const result = await api.post<{
+        interests: InterestOption[];
+        noInterest: InterestOption[];
+      }>(`${INTERESTS_PATH}/${guestId}`, guestInterest);
 
       set({
-        [like ? "interests" : "noInterest"]: result.data,
+        interests: result.data.interests,
+        noInterest: result.data.noInterest,
         isLoading: false,
       });
     } catch {
