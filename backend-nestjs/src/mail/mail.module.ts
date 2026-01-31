@@ -5,9 +5,10 @@ import { ConfigModule } from '@nestjs/config';
 import { GuestsModule } from 'src/guests/guests.module';
 import { BullModule } from '@nestjs/bullmq';
 import { MailProcessor } from './mail.processor';
+import { EventsModule } from 'src/events/events.module';
 
 @Module({
-  imports: [GuestsModule, ConfigModule, BullModule.registerQueue({ name: 'mail-queue' })],
+  imports: [GuestsModule, EventsModule, ConfigModule, BullModule.registerQueue({ name: 'mail-queue' })],
   controllers: [MailController],
   providers: [MailService, MailProcessor],
   exports: [MailService, BullModule],

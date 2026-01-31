@@ -5,7 +5,8 @@ import { GuestsService } from 'src/guests/guests.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Job, UnrecoverableError } from 'bullmq';
 import { InviteStatus } from 'src/enums';
-import { MailJob, ProcessResult } from './dto/mail.dto';
+import { MailJobData, ProcessResult, ScheduleJobData } from './dto/mail.dto';
+import { EventsService } from 'src/events/events.service';
 
 @Processor('mail-queue')
 export class MailProcessor extends WorkerHost {
@@ -14,6 +15,7 @@ export class MailProcessor extends WorkerHost {
   constructor(
     private readonly mailService: MailService,
     private readonly guestService: GuestsService,
+    private readonly eventsService: EventsService,
     private readonly eventEmitter: EventEmitter2,
   ) {
     super();
@@ -27,8 +29,32 @@ export class MailProcessor extends WorkerHost {
     });
   }
 
-  async process(job: Job<MailJob>): Promise<ProcessResult> {
-    const { type, guest, event, assignmentContext } = job.data;
+  async process(
+    job: Job<MailJobData | ScheduleJobData>,
+  ): Promise<ProcessResult | { message: string; queueCount: number }> {
+    const { type, eventId } = job.data as ScheduleJobData;
+
+    if (type === 'TRIGGER_INVITES') {
+      this.logger.log(`Auto-Trigger: Invite guests for Event ${eventId}`);
+      try {
+        const event = await this.eventsService.findOne(eventId);
+        return this.guestService.inviteGuests(event);
+      } catch (err) {
+        throw new UnrecoverableError('Event not found');
+      }
+    }
+
+    if (type === 'TRIGGER_ASSIGNMENTS') {
+      this.logger.log(`Auto-Trigger: Sending assignments for Event ${eventId}`);
+      try {
+        const event = await this.eventsService.findOne(eventId);
+        return this.guestService.createAssignmentNotifications(event);
+      } catch (err) {
+        throw new UnrecoverableError('Event not found');
+      }
+    }
+
+    const { guest, event, assignmentContext } = job.data as MailJobData;
     if (!guest || !event) {
       const errorMsg = 'Invalid Job Data: guest | event is missing.';
       this.logger.error(errorMsg);
@@ -36,6 +62,7 @@ export class MailProcessor extends WorkerHost {
       // BullMQ spezifischer Fehler, damit es nicht versucht die eMail erneut zu versenden.
       throw new UnrecoverableError(errorMsg);
     }
+
     try {
       this.logger.debug(`Processing mail for guest ${guest.id} (Event: ${event.id})`);
       if (type === 'INVITE') {

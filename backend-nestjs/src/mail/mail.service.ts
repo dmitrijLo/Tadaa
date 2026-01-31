@@ -1,8 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Event } from 'src/events/entities/event.entity';
-import { Guest } from 'src/guests/entities/guest.entity';
+import { AssignmentContext, MailEventData, MailGuestData } from './dto/mail.dto';
 
 @Injectable()
 export class MailService {
@@ -19,7 +18,7 @@ export class MailService {
     });
   }
 
-  async sendGuestInvitation(guest: Guest, event: Event) {
+  async sendGuestInvitation(guest: MailGuestData, event: MailEventData) {
     const { invitationLink, trackingPixelUrl } = this.generetaUrls(guest.id);
 
     return this.mailerService.sendMail({
@@ -42,8 +41,12 @@ export class MailService {
     });
   }
 
-  async sendAssignmentMail(guest: Guest, event: Event, assignmentData: any) {
+  async sendAssignmentMail(guest: MailGuestData, event: MailEventData, context: AssignmentContext) {
     const { invitationLink, trackingPixelUrl } = this.generetaUrls(guest.id);
+    let recipientText = context.recipientName;
+    if (!recipientText && context.pickOrder) {
+      recipientText = `Du bist Nummer ${context.pickOrder} in der Reihenfolge!`;
+    }
 
     return this.mailerService.sendMail({
       to: guest.email,
@@ -61,7 +64,7 @@ export class MailService {
         eventMode: event.eventMode,
         eventRule: event.drawRule,
         assignment: {
-          recipientName: guest.assignedRecipient,
+          recipientName: recipientText,
         },
       },
     });

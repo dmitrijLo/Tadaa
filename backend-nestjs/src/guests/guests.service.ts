@@ -1,19 +1,24 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
 import { EntityManager, Repository } from 'typeorm';
-import { InviteStatus } from '../enums';
+import { EventStatus, InviteStatus } from '../enums';
 import { Event } from '../events/entities/event.entity';
 import { GuestResponseDto, GuestsInvitationStats } from './dto/guest-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { UpdateGuestDto } from './dto/update-guest.dto';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { MailJob, MailType } from 'src/mail/dto/mail.dto';
+import { MailEventData, MailGuestData, MailJobData, MailType } from 'src/mail/dto/mail.dto';
+import { AssignmentService } from 'src/assignment/assignment.service';
+import { EventsService } from 'src/events/events.service';
+import { OnEvent } from '@nestjs/event-emitter';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class GuestsService {
+  private readonly logger = new Logger(EventsService.name);
   private readonly INVITE_STATUS_SEQUENCE = {
     [InviteStatus.DRAFT]: 0,
     [InviteStatus.INVITED]: 1,
@@ -24,23 +29,45 @@ export class GuestsService {
 
   constructor(
     @InjectRepository(Guest)
-    private guestRepository: Repository<Guest>,
+    private readonly guestRepository: Repository<Guest>,
     @InjectRepository(Event)
-    private eventRepository: Repository<Event>,
+    private readonly eventRepository: Repository<Event>,
+    private readonly usersService: UsersService,
+    private readonly assignmentService: AssignmentService,
     @InjectQueue('mail-queue') private readonly mailQueue: Queue,
   ) {}
 
   private async queueMailJobs(guests: Guest[], event: Event, type: MailType) {
+    const eventData: MailEventData = {
+      id: event.id,
+      name: event.name,
+      host: event.host.name,
+      description: event.description,
+      eventDate: event.eventDate,
+      budget: event.budget,
+      currency: event.currency,
+      draftDate: event.draftDate,
+      eventMode: event.eventMode,
+      drawRule: event.drawRule,
+    };
+
     const jobs = guests.map((guest) => {
-      const jobData: MailJob = {
+      const guestData: MailGuestData = {
+        id: guest.id,
+        name: guest.name,
+        email: guest.email,
+      };
+
+      const jobData: MailJobData = {
         type,
-        guest,
-        event,
+        guest: guestData,
+        event: eventData,
+        assignmentContext: {},
       };
 
       if (type === 'ASSIGN') {
         if (guest.assignedRecipient) {
-          jobData.assignmentContext = { assignedId: guest.assignedRecipient };
+          jobData.assignmentContext = { recipientName: guest.assignedRecipient.name };
         } else if (guest.pickOrder) {
           jobData.assignmentContext = { pickOrder: guest.pickOrder };
         }
@@ -56,19 +83,15 @@ export class GuestsService {
 
   // get public event info (only name)
   async getEventInfo(eventId: string): Promise<{ name: string }> {
-    const event = await this.eventRepository.findOneBy({ id: eventId });
-    if (!event) {
-      throw new NotFoundException('Event not found');
-    }
+    const event = await this.eventRepository.findOne({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event was not found.');
     return { name: event.name };
   }
 
   // register guest for event (public endpoint)
   async registerForEvent(eventId: string, createGuestDto: CreateGuestDto): Promise<GuestResponseDto> {
-    const event = await this.eventRepository.findOneBy({ id: eventId });
-    if (!event) {
-      throw new NotFoundException(`Event with ID "${eventId}" not found`);
-    }
+    const event = await this.eventRepository.findOne({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event was not found.');
     return this.create(event, createGuestDto);
   }
 
@@ -201,9 +224,15 @@ export class GuestsService {
   }
 
   async createAssignmentNotifications(event: Event) {
-    // HIER BRAUCHE ICH DIE ASSIGNEMENT oder reicht guest????
+    if (event.status !== EventStatus.ASSIGNED) {
+      this.logger.log(`Event ${event.id} not assigned. Running draw algorithm...`);
+      await this.assignmentService.draw(event.id);
+      event.status = EventStatus.ASSIGNED;
+    }
+
     const guests = await this.guestRepository.find({
       where: { eventId: event.id, inviteStatus: InviteStatus.ACCEPTED },
+      relations: ['assignedRecipient'],
     });
 
     if (guests.length === 0) return { message: 'Keine Gäste zum Benachrichtigen gefunden.', queueCount: 0 };
@@ -328,24 +357,40 @@ export class GuestsService {
   }
 
   // create host as guest
-  async createHostGuest(data: { email: string; name: string; eventId: string }): Promise<Guest> {
-    const { email, name, eventId } = data;
+  // get host user to extract email and name
+  // const hostUser = await this.usersService.findbyId(hostId);
+  // if (hostUser && hostUser.email) {
+  //   const hostGuest = await this.guestService.createHostGuest({
+  //     email: hostUser.email,
+  //     name: hostUser.name || 'Host',
+  //     eventId: savedEvent.id,
+  //   });
+  //   this.logger.log(`Host added as guest: ${hostGuest.id}`);
+  // }
 
-    const existingGuest = await this.guestRepository.findOne({
-      where: { email, eventId },
+  // async createHostGuest(data: { email: string; name: string; eventId: string }): Promise<Guest> {
+  @OnEvent('event.created')
+  async handleEventCreated(payload: { event: Event; hostId: string }) {
+    const { hostId, event } = payload;
+    const hostUser = await this.usersService.findbyId(hostId);
+
+    if (!hostUser || !hostUser.email) return;
+
+    const hostExistsAsGuest = await this.guestRepository.findOne({
+      where: { email: hostUser.email, eventId: event.id },
     });
 
-    if (existingGuest) {
-      return existingGuest;
+    if (hostExistsAsGuest) {
+      return;
     }
 
     const hostGuest = this.guestRepository.create({
-      email,
-      name,
-      eventId,
+      email: hostUser.email,
+      name: hostUser.name || 'Host',
+      eventId: event.id,
       inviteStatus: InviteStatus.ACCEPTED,
     });
 
-    return await this.guestRepository.save(hostGuest);
+    await this.guestRepository.save(hostGuest);
   }
 }
