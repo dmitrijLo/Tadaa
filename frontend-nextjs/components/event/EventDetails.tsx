@@ -4,22 +4,9 @@ import { formatGermanDateTime } from "@/utils/formatters";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import { eventModeByModusMock } from "@/constants/modes";
 import { drawRuleByRuleMock } from "@/constants/drawRules";
-import {
-  Button,
-  Card,
-  Col,
-  Flex,
-  Progress,
-  Row,
-  Statistic,
-  StatisticProps,
-  Steps,
-  theme,
-} from "antd";
+import { Card, Flex, Progress, Statistic, Steps, theme } from "antd";
 import type { StepsProps } from "antd";
-import { useState } from "react";
 import {
-  InfoCircleOutlined,
   TeamOutlined,
   UserAddOutlined,
   UserDeleteOutlined,
@@ -30,18 +17,12 @@ type EventDetailsProps = {
   guests?: Guest[];
 };
 
-const getCurrentStep = (
-  invitationDate: Date,
-  draftDate: Date,
-  eventDate: Date,
-): number => {
-  const now = new Date();
-
-  if (now < new Date(invitationDate)) {
+const getCurrentStep = (eventStatus: string): number => {
+  if (eventStatus === "draft" || eventStatus === "created") {
     return 0; // Noch nicht eingeladen
-  } else if (now < new Date(draftDate)) {
+  } else if (eventStatus === "invited") {
     return 1; // Eingeladen, noch nicht ausgelost
-  } else if (now < new Date(eventDate)) {
+  } else if (eventStatus === "assigned") {
     return 2; // Ausgelost, noch nicht beschenkt
   } else {
     return 3; // Event vorbei
@@ -52,7 +33,6 @@ export default function EventDetails({
   event,
   guests = [],
 }: EventDetailsProps) {
-  const { token } = theme.useToken();
   const viewportWidth = useWindowSize().width;
   const modeInfo = eventModeByModusMock[event.eventMode];
   const drawRuleInfo = drawRuleByRuleMock[event.drawRule];
@@ -66,11 +46,6 @@ export default function EventDetails({
     (guest) => guest.inviteStatus === "denied",
   ).length;
 
-  const guestsPending = eventGuests.filter(
-    (guest) =>
-      guest.inviteStatus === "invited" || guest.inviteStatus === "opened",
-  ).length;
-
   const formattedInvitationDate = formatGermanDateTime(event.invitationDate);
   const formattedDraftDate = formatGermanDateTime(event.draftDate);
   const formattedEventDate = formatGermanDateTime(event.eventDate);
@@ -81,22 +56,22 @@ export default function EventDetails({
 
   const guestsAcceptedPercent = (guestsAccepted / guestsAttending) * 100 || 0;
 
-  const current = getCurrentStep(
-    event.invitationDate,
-    event.draftDate,
-    event.eventDate,
-  );
+  const current = getCurrentStep(event.status);
 
   const sharedProps: StepsProps = {
     current,
     items: [
       {
         title: "Einladen",
-        content: `Am ${formattedInvitationDate}`,
+        content: formattedInvitationDate
+          ? `Am ${formattedInvitationDate}`
+          : "Findet manuell statt",
       },
       {
         title: "Geschenke besorgen",
-        content: `Ab ${formattedDraftDate}`,
+        content: formattedDraftDate
+          ? `Ab ${formattedDraftDate}`
+          : "Auslosung manuell starten",
       },
       {
         title: "Beschenken",

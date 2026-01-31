@@ -142,6 +142,10 @@ body {
   fill: rgba(199, 19, 105, 1) !important;
 }
 
+.ant-steps-panel .ant-steps-item-title {
+  font-weight: bold !important;
+}
+
 .accentContainer {
   background: var(--color-gray-50);
   border-radius: 8px;
