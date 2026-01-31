@@ -1,6 +1,6 @@
 "use client";
 
-import { Divider, Card } from "antd";
+import { Divider } from "antd";
 import InterestNoteComponent from "../interests/InterestNoteComponent";
 import InterestOptionComponent from "../interests/InterestComponent";
 import { useEffect, useState } from "react";
@@ -13,7 +13,6 @@ export default function GuestAcceptedView({ guest }: { guest: Guest }) {
   const [formattedDate, setFormattedDate] = useState<string>("");
   const [formattedDraftDate, setFormattedDraftDate] = useState<string>("");
 
-  
   useEffect(() => {
     setFormattedDate(
       new Date(guest.event.eventDate).toLocaleDateString("de-DE"),
@@ -22,11 +21,9 @@ export default function GuestAcceptedView({ guest }: { guest: Guest }) {
       new Date(guest.event.draftDate).toLocaleDateString("de-DE"),
     );
   }, [guest.event.eventDate, guest.event.draftDate]);
+
   return (
-    <Card
-      size="small"
-      className="max-w-md w-full shadow-2xl animate-in fade-in duration-700"
-    >
+    <>
       <Paragraph>
         Du hast dich erfolgreich zum Event{" "}
         <Text strong>{guest.event.name}</Text> am{" "}
@@ -37,6 +34,6 @@ export default function GuestAcceptedView({ guest }: { guest: Guest }) {
       <InterestOptionComponent guest={guest} guestId={guestId} />
       <Divider />
       <InterestNoteComponent guestId={guestId} />
-    </Card>
+    </>
   );
 }

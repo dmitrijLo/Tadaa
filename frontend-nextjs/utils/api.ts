@@ -106,6 +106,11 @@ export const registerGuestForEvent = async (
       if (response.status === 404) {
         throw new Error("Event nicht gefunden.");
       }
+      if (response.status === 400) {
+        throw new Error(
+          "Die Registrierung ist geschlossen. Die Einladungen wurden bereits verschickt.",
+        );
+      }
       throw new Error(errorData.message || "Registrierung fehlgeschlagen");
     }
 
