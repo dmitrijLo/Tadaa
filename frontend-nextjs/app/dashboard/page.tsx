@@ -1,4 +1,4 @@
-import { BACKEND_URL, makeApiRequest } from "@/utils/api";
+import { serverApiRequest, SERVER_BACKEND_URL } from "@/utils/server-api";
 import DashboardEvents from "@/components/dashboard/DashboardEvents";
 
 interface PaginatedEventResponse {
@@ -12,7 +12,7 @@ interface PaginatedEventResponse {
 
 export default async function DashboardPage() {
   const { data: eventsData, error: eventsErr } =
-    await makeApiRequest<PaginatedEventResponse>(`${BACKEND_URL}/events`);
+    await serverApiRequest<PaginatedEventResponse>(`${SERVER_BACKEND_URL}/events`);
 
   if (eventsErr || !eventsData) {
     return <DashboardEvents />;
@@ -43,8 +43,8 @@ export default async function DashboardPage() {
 
   let statsData: GuestStatsResponse | null = null;
   if (featuredEvent) {
-    const { data } = await makeApiRequest<GuestStatsResponse>(
-      `${BACKEND_URL}/events/${featuredEvent.id}/stats`,
+    const { data } = await serverApiRequest<GuestStatsResponse>(
+      `${SERVER_BACKEND_URL}/events/${featuredEvent.id}/stats`,
     );
     statsData = data;
   }

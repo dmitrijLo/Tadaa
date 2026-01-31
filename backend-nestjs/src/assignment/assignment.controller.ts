@@ -1,10 +1,10 @@
 import { Controller, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { AssignmentService } from './assignment.service';
-import { JwtDevGuard } from 'src/auth/guards/jwt-dev.guard';
+import { DevBypass } from 'src/auth/decorators/dev-bypass.decorator';
 import { EventOwnerGuard } from 'src/events/guards/event-owner.guard';
 
 @Controller('events')
-@UseGuards(JwtDevGuard)
+@DevBypass()
 export class AssignmentController {
   constructor(private readonly assignmentService: AssignmentService) {}
 

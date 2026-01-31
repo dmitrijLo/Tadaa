@@ -16,7 +16,8 @@ export class GuestsController {
     return this.guestsService.getEventInfo(eventId);
   }
 
-  // get guest by invite token
+  // get guest by invite token (public - UUID acts as access token)
+  @Public()
   @Get(':guestId')
   findByToken(@Param('guestId', ParseUUIDPipe) guestId: string) {
     return this.guestsService.findOneById(guestId);
@@ -32,6 +33,8 @@ export class GuestsController {
     return this.guestsService.updateGuestStatus(guestId, updateData.accept, updateData.declineMessage);
   }
 
+  // guest self-registration (public)
+  @Public()
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('register/:eventId')
   registerForEvent(@Param('eventId', ParseUUIDPipe) eventId: string, @Body() createGuestDto: CreateGuestDto) {
