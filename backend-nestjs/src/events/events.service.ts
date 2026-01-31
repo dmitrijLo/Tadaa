@@ -65,11 +65,16 @@ export class EventsService implements OnApplicationBootstrap {
   }
 
   async create(createEventDto: CreateEventDto, hostId: string): Promise<Event> {
-    const event = this.eventRepository.create({
+    // Convert null to undefined for TypeORM compatibility
+    const eventData = {
       ...createEventDto,
+      invitationDate: createEventDto.invitationDate ?? undefined,
+      draftDate: createEventDto.draftDate ?? undefined,
       hostId,
       status: EventStatus.CREATED,
-    });
+    };
+
+    const event = this.eventRepository.create(eventData);
 
     const savedEvent = await this.saveAndSchedule(event);
 
@@ -110,7 +115,15 @@ export class EventsService implements OnApplicationBootstrap {
 
   async update(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
     const existingEvent = await this.findOne(id);
-    const updatedEvent = this.eventRepository.merge(existingEvent, updateEventDto);
+
+    // Convert null to undefined for TypeORM compatibility
+    const updateData = {
+      ...updateEventDto,
+      invitationDate: updateEventDto.invitationDate ?? undefined,
+      draftDate: updateEventDto.draftDate ?? undefined,
+    };
+
+    const updatedEvent = this.eventRepository.merge(existingEvent, updateData);
     return this.saveAndSchedule(updatedEvent);
   }
 
