@@ -356,23 +356,11 @@ export class GuestsService {
     );
   }
 
-  // create host as guest
-  // get host user to extract email and name
-  // const hostUser = await this.usersService.findbyId(hostId);
-  // if (hostUser && hostUser.email) {
-  //   const hostGuest = await this.guestService.createHostGuest({
-  //     email: hostUser.email,
-  //     name: hostUser.name || 'Host',
-  //     eventId: savedEvent.id,
-  //   });
-  //   this.logger.log(`Host added as guest: ${hostGuest.id}`);
-  // }
-
   // async createHostGuest(data: { email: string; name: string; eventId: string }): Promise<Guest> {
   @OnEvent('event.created')
   async handleEventCreated(payload: { event: Event; hostId: string }) {
     const { hostId, event } = payload;
-    const hostUser = await this.usersService.findbyId(hostId);
+    const hostUser = await this.usersService.findById(hostId);
 
     if (!hostUser || !hostUser.email) return;
 
