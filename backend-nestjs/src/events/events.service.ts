@@ -9,6 +9,9 @@ import { GuestsService } from 'src/guests/guests.service';
 import { UsersService } from 'src/users/users.service';
 import { EventResponseDto, PaginatedEventsResponse } from './dto/event-response.dto';
 import { plainToInstance } from 'class-transformer';
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 @Injectable()
 export class EventsService implements OnApplicationBootstrap {
@@ -20,8 +23,10 @@ export class EventsService implements OnApplicationBootstrap {
   constructor(
     @InjectRepository(Event)
     private readonly eventRepository: Repository<Event>,
-    private readonly guestService: GuestsService,
-    private readonly usersService: UsersService,
+    // private readonly guestService: GuestsService,
+    // private readonly usersService: UsersService,
+    private readonly eventEmitter: EventEmitter2,
+    @InjectQueue('mail-queue') private mailQueue: Queue,
   ) {}
 
   async onApplicationBootstrap() {
@@ -29,7 +34,7 @@ export class EventsService implements OnApplicationBootstrap {
   }
 
   private async seedDevEvent() {
-    if (process.env.JWT_DEV_MODE !== 'true') return;
+    if (process.env.NODE_ENV === 'production') return;
 
     const eventExists = await this.eventRepository.findOneBy({ id: this.EVENT_ID });
 
@@ -66,18 +71,10 @@ export class EventsService implements OnApplicationBootstrap {
       status: EventStatus.CREATED,
     });
 
-    const savedEvent = await this.eventRepository.save(event);
+    const savedEvent = await this.saveAndSchedule(event);
 
-    // get host user to extract email and name
-    const hostUser = await this.usersService.findbyId(hostId);
-    if (hostUser && hostUser.email) {
-      const hostGuest = await this.guestService.createHostGuest({
-        email: hostUser.email,
-        name: hostUser.name || 'Host',
-        eventId: savedEvent.id,
-      });
-      this.logger.log(`Host added as guest: ${hostGuest.id}`);
-    }
+    // we emit an event and create the event host as guest for this event
+    this.eventEmitter.emit('event.created', { event: savedEvent, hostId });
 
     return savedEvent;
   }
@@ -112,13 +109,13 @@ export class EventsService implements OnApplicationBootstrap {
   }
 
   async update(id: string, updateEventDto: UpdateEventDto): Promise<Event> {
-    await this.findOne(id);
-
-    await this.eventRepository.update(id, updateEventDto);
-    return (await this.eventRepository.findOne({ where: { id } })) as Event;
+    const existingEvent = await this.findOne(id);
+    const updatedEvent = this.eventRepository.merge(existingEvent, updateEventDto);
+    return this.saveAndSchedule(updatedEvent);
   }
 
   async remove(event: Event): Promise<void> {
+    await this.cleanupSchedules(event);
     await this.eventRepository.remove(event);
   }
 
@@ -126,11 +123,80 @@ export class EventsService implements OnApplicationBootstrap {
     await this.eventRepository.update(eventId, { status: nextStatus });
   }
 
+  async saveAndSchedule(eventData: Partial<Event>) {
+    const savedEvent = await this.eventRepository.save(eventData);
+    await this.syncSchedules(savedEvent);
+    return savedEvent;
+  }
+
+  private async syncSchedules(event: Event) {
+    let hasChanges = false;
+
+    /*
+     * sync invitation schedule,
+     * delete old, then schedule new
+     */
+    if (event.scheduledInviteJobId) {
+      await this.removeJobSafely(event.scheduledInviteJobId);
+      event.scheduledInviteJobId = null;
+      hasChanges = true;
+    }
+
+    if (event.invitationDate) {
+      const delay = this.calculateDelay(event.invitationDate);
+      if (delay > 0) {
+        const job = await this.mailQueue.add(
+          'trigger-invites',
+          { type: 'TRIGGER_INVITES', eventId: event.id },
+          { delay, jobId: `invite-${event.id}-${Date.now()}` },
+        );
+
+        if (job && job.id) {
+          event.scheduledInviteJobId = job.id;
+          hasChanges = true;
+          this.logger.log(`Scheduled Invitations for Event ${event.id} in ${Math.round(delay / 60000)} minutes`);
+        }
+      } else {
+        this.logger.warn(`Invitation date is in the past. No auto-schedule created.`);
+      }
+    }
+
+    /*
+     * sync assignment schedule,
+     * delete old, then schedule new
+     */
+    if (event.scheduledAssignJobId) {
+      await this.removeJobSafely(event.scheduledAssignJobId);
+      event.scheduledAssignJobId = null;
+      hasChanges = true;
+    }
+
+    if (event.draftDate) {
+      const delay = this.calculateDelay(event.draftDate);
+      if (delay > 0) {
+        const job = await this.mailQueue.add(
+          'trigger-assignments',
+          { type: 'TRIGGER_ASSIGNMENTS', eventId: event.id },
+          { delay, jobId: `assign-${event.id}-${Date.now()}` },
+        );
+
+        if (job && job.id) {
+          event.scheduledAssignJobId = job.id;
+          hasChanges = true;
+          this.logger.log(`Scheduled Assignments for Event ${event.id} in ${Math.round(delay / 60000)} minutes`);
+        }
+      } else {
+        this.logger.warn(`Assignments date is in the past. No auto-schedule created.`);
+      }
+    }
+    if (hasChanges) await this.eventRepository.save(event);
+  }
+
   /*
    * Helper Methods
    */
   async verifyEventExists(eventId: string): Promise<Event> {
-    const event = await this.eventRepository.findOne({ where: { id: eventId } });
+    const event = await this.eventRepository.findOne({ where: { id: eventId }, relations: ['host'] });
     if (!event) throw new NotFoundException(`Event with ID "${eventId}" not found`);
 
     return event;
@@ -141,5 +207,29 @@ export class EventsService implements OnApplicationBootstrap {
     if (event.hostId !== userId) throw new ForbiddenException('You do not have permission to modify this event.');
 
     return event;
+  }
+
+  async cleanupSchedules(event: Event) {
+    if (event.scheduledInviteJobId) await this.removeJobSafely(event.scheduledInviteJobId);
+    if (event.scheduledAssignJobId) await this.removeJobSafely(event.scheduledAssignJobId);
+  }
+
+  private async removeJobSafely(jobId: string) {
+    try {
+      const job = await this.mailQueue.getJob(jobId);
+      if (job) await job.remove();
+    } catch (err) {
+      this.logger.warn(`Could not remove job ${jobId}: ${err.message}`);
+    }
+  }
+
+  private calculateDelay(date: Date | string): number {
+    const target = new Date(date);
+
+    if (isNaN(target.getTime())) {
+      this.logger.error(`CRITICAL: Scheduling failed. Invalid date format found: ${date}`);
+    }
+
+    return target.getTime() - Date.now();
   }
 }

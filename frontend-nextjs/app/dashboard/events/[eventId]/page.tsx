@@ -1,5 +1,5 @@
 import { EventDetailTabs } from "@/components";
-import { BACKEND_URL, makeApiRequest } from "@/utils/api";
+import { serverApiRequest, SERVER_BACKEND_URL } from "@/utils/server-api";
 
 interface PageProps {
   params: Promise<{ eventId: string }>;
@@ -12,8 +12,8 @@ export default async function EventDetailPage({ params }: PageProps) {
     { data: initialEvent, error: eventErr },
     { data: initialGuests, error: guestsErr },
   ] = await Promise.all([
-    makeApiRequest<Event>(`${BACKEND_URL}/events/${eventId}`),
-    makeApiRequest<Guest[]>(`${BACKEND_URL}/events/${eventId}/guests`),
+    serverApiRequest<Event>(`${SERVER_BACKEND_URL}/events/${eventId}`),
+    serverApiRequest<Guest[]>(`${SERVER_BACKEND_URL}/events/${eventId}/guests`),
   ]);
 
   if (!initialEvent || !initialGuests) {

@@ -1,5 +1,9 @@
 import { EventForm } from "@/components";
-import { api } from "@/utils/api";
+import {
+  serverApiPost,
+  serverApiPatch,
+  SERVER_BACKEND_URL,
+} from "@/utils/server-api";
 
 export default function NewEventPage() {
   async function createEvent(
@@ -7,44 +11,34 @@ export default function NewEventPage() {
   ): Promise<{ id: string }> {
     "use server";
 
-    try {
-      const payload: Record<string, string | number> = {
-        name: formData.name,
-        description: formData.description || "",
-        budget: formData.budget,
-        currency: "EUR",
-        eventMode: formData.eventMode,
-        drawRule: formData.drawRule,
-        eventDate: new Date(formData.eventDate).toISOString(),
-      };
+    const payload = {
+      name: formData.name,
+      description: formData.description || "",
+      budget: formData.budget,
+      currency: "EUR",
+      eventMode: formData.eventMode,
+      drawRule: formData.drawRule,
+      eventDate: new Date(formData.eventDate).toISOString(),
+      invitationDate: new Date(formData.invitationDate).toISOString(),
+      draftDate: new Date(formData.draftDate).toISOString(),
+    };
 
-      if (formData.invitationDate) {
-        payload.invitationDate = new Date(
-          formData.invitationDate,
-        ).toISOString();
-      }
+    console.log(
+      "Sending payload to backend:",
+      JSON.stringify(payload, null, 2),
+    );
 
-      if (formData.draftDate) {
-        payload.draftDate = new Date(formData.draftDate).toISOString();
-      }
+    const { data, error } = await serverApiPost<{ id: string }>(
+      `${SERVER_BACKEND_URL}/events`,
+      payload,
+    );
 
-      console.log(
-        "Sending payload to backend:",
-        JSON.stringify(payload, null, 2),
-      );
-      const response = await api.post("/events", payload);
-      return { id: response.data.id };
-    } catch (error) {
+    if (error || !data) {
       console.error("Fehler beim Erstellen des Events:", error);
-      if (error && typeof error === "object" && "response" in error) {
-        const axiosError = error as {
-          response: { data: unknown; status: number };
-        };
-        console.error("Response data:", axiosError.response.data);
-        console.error("Response status:", axiosError.response.status);
-      }
-      throw error;
+      throw new Error(error || "Event creation failed");
     }
+
+    return { id: data.id };
   }
 
   async function updateEvent(
@@ -53,31 +47,26 @@ export default function NewEventPage() {
   ): Promise<void> {
     "use server";
 
-    try {
-      const payload: Record<string, string | number> = {
-        name: formData.name,
-        description: formData.description || "",
-        budget: formData.budget,
-        currency: "EUR",
-        eventMode: formData.eventMode,
-        drawRule: formData.drawRule,
-        eventDate: new Date(formData.eventDate).toISOString(),
-      };
+    const payload = {
+      name: formData.name,
+      description: formData.description || "",
+      budget: formData.budget,
+      currency: "EUR",
+      eventMode: formData.eventMode,
+      drawRule: formData.drawRule,
+      eventDate: new Date(formData.eventDate).toISOString(),
+      invitationDate: new Date(formData.invitationDate).toISOString(),
+      draftDate: new Date(formData.draftDate).toISOString(),
+    };
 
-      if (formData.invitationDate) {
-        payload.invitationDate = new Date(
-          formData.invitationDate,
-        ).toISOString();
-      }
+    const { error } = await serverApiPatch(
+      `${SERVER_BACKEND_URL}/events/${eventId}`,
+      payload,
+    );
 
-      if (formData.draftDate) {
-        payload.draftDate = new Date(formData.draftDate).toISOString();
-      }
-
-      await api.patch(`/events/${eventId}`, payload);
-    } catch (error) {
+    if (error) {
       console.error("Fehler beim Aktualisieren des Events:", error);
-      throw error;
+      throw new Error(error);
     }
   }
 

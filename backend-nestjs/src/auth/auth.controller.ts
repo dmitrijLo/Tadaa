@@ -4,8 +4,10 @@ import {
   HttpCode,
   Post,
   Request,
+  Res,
   UseGuards,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto } from 'src/auth/dto/register.dto';
@@ -29,7 +31,29 @@ export class AuthController {
   @Post('login')
   @UseGuards(AuthGuard('local'))
   @HttpCode(200)
-  async login(@Request() req: any, @Body() loginDto: LoginDto) {
-    return await this.authService.login(req.user);
+  async login(
+    @Request() req: any,
+    @Body() loginDto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.authService.login(req.user);
+
+    res.cookie('accessToken', result.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 3600000,
+      path: '/',
+    });
+
+    return { user: result.user };
+  }
+
+  @Public()
+  @Post('logout')
+  @HttpCode(200)
+  async logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('accessToken', { path: '/' });
+    return { message: 'Logged out' };
   }
 }

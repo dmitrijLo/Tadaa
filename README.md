@@ -66,18 +66,25 @@ cp .env.production.example .env.production
 
 ## Development Auth Bypass
 
-For development purposes, you can bypass the regular JWT authentication to test protected routes easily. This allows frontend and backend teams to work in parallel without waiting for the full authentication flow to be implemented.
+For development purposes, endpoints marked with `@DevBypass()` can skip JWT authentication. This allows frontend and backend teams to work in parallel without waiting for the full authentication flow.
+
+**How it works:**
+
+- When `NODE_ENV !== 'production'`, endpoints with `@DevBypass()` allow requests without a token
+- If an `Authorization` header is present, normal JWT validation is used
+- In production (`NODE_ENV=production`), `@DevBypass()` has no effect - all protected routes require valid JWT
 
 **Usage:**
 
-1. Enable the dev mode in your `.env` file: `JWT_DEV_MODE=true`
-2. Restart the backend container to apply the environment variable change: `docker compose restart backend`
-3. Access protected routes directly. A default development user will be automatically injected: `curl http://localhost:3001/events`
-
-_Optional:_ To specify a custom user ID, you can still use the `X-Dev-User-Id` header:
-
 ```bash
+# access protected routes directly (dev user auto-injected)
+curl http://localhost:3001/events
+
+# or specify a custom user ID
 curl -H "X-Dev-User-Id: a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11" http://localhost:3001/events
+
+# token auth still works when provided
+curl -H "Authorization: Bearer <token>" http://localhost:3001/events
 ```
 
 ## Dev-Notes
@@ -142,15 +149,14 @@ Tadaa/
 
 Das Projekt verwendet eine zentrale `.env`-Datei im Root-Verzeichnis. Wichtige Variablen:
 
-| Variable              | Beschreibung                       | Beispiel                              |
-| --------------------- | ---------------------------------- | ------------------------------------- |
-| `NODE_ENV`            | Umgebung (development/production)  | `development`                         |
-| `DATABASE_URL`        | PostgreSQL Verbindungs-URL         | `postgresql://user:pass@host:5432/db` |
-| `JWT_SECRET`          | Secret für JWT-Token-Signierung    | `your-secret-key`                     |
-| `JWT_DEV_MODE`        | Development Auth Bypass aktivieren | `true`                                |
-| `FRONTEND_URLS`       | Erlaubte CORS Origins (komma-separiert) | `http://localhost:3000`          |
-| `NEXT_PUBLIC_API_URL` | Backend API URL für Frontend       | `http://localhost:3001`               |
-| `OPENAI_API_KEY`      | OpenAI API Key (optional)          | `sk-...`                              |
+| Variable              | Beschreibung                            | Beispiel                              |
+| --------------------- | --------------------------------------- | ------------------------------------- |
+| `NODE_ENV`            | Umgebung (controls dev auth bypass)     | `development`                         |
+| `DATABASE_URL`        | PostgreSQL Verbindungs-URL              | `postgresql://user:pass@host:5432/db` |
+| `JWT_SECRET`          | Secret für JWT-Token-Signierung         | `your-secret-key`                     |
+| `FRONTEND_URLS`       | Erlaubte CORS Origins (komma-separiert) | `http://localhost:3000`               |
+| `NEXT_PUBLIC_API_URL` | Backend API URL für Frontend            | `http://localhost:3001`               |
+| `OPENAI_API_KEY`      | OpenAI API Key (optional)               | `sk-...`                              |
 
 **Für lokale Entwicklung:** `.env.example` kopieren und anpassen
 **Für Production:** `.env.production.example` kopieren und mit echten Credentials füllen

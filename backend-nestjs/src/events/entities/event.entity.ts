@@ -62,4 +62,11 @@ export class Event {
 
   @OneToMany(() => Guest, (guest) => guest.event, { cascade: true })
   guests: Guest[];
+
+  // IDs des BullMQ Jobs, wird benötigt um sich den "Job" zu merken,
+  // falls man Anderungen an diesem vollziehen muss
+  @Column({ type: 'text', nullable: true })
+  scheduledInviteJobId: string | null;
+  @Column({ type: 'text', nullable: true })
+  scheduledAssignJobId: string | null;
 }

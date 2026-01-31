@@ -33,7 +33,7 @@ const items: MenuItem[] = [
   },
   {
     key: "sub1",
-    label: <Link href="/dashboard/events">Events</Link>,
+    label: "Events",
     icon: <GiftOutlined />,
     children: [
       {
@@ -48,15 +48,15 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
   const { token } = theme.useToken();
   const router = useRouter();
   const { collapsed, toggleCollapsed } = useSidebarStore();
-  const { hasHydrated, token: authToken } = useAuthStore();
+  const { hasHydrated, currentUser } = useAuthStore();
 
   useEffect(() => {
-    if (hasHydrated && !authToken) {
+    if (hasHydrated && !currentUser) {
       router.push("/login");
     }
-  }, [hasHydrated, authToken, router]);
+  }, [hasHydrated, currentUser, router]);
 
-  if (!hasHydrated || !authToken) {
+  if (!hasHydrated || !currentUser) {
     return (
       <div
         style={{

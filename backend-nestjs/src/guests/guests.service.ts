@@ -1,18 +1,24 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateGuestDto } from './dto/create-guest.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Guest } from './entities/guest.entity';
-import { createQueryBuilder, EntityManager, Repository } from 'typeorm';
-import { InviteStatus } from '../enums';
+import { EntityManager, Repository } from 'typeorm';
+import { EventStatus, InviteStatus } from '../enums';
 import { Event } from '../events/entities/event.entity';
 import { GuestResponseDto, GuestsInvitationStats } from './dto/guest-response.dto';
 import { plainToInstance } from 'class-transformer';
 import { UpdateGuestDto } from './dto/update-guest.dto';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { MailEventData, MailGuestData, MailJobData, MailType } from 'src/mail/dto/mail.dto';
+import { AssignmentService } from 'src/assignment/assignment.service';
+import { EventsService } from 'src/events/events.service';
+import { OnEvent } from '@nestjs/event-emitter';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class GuestsService {
+  private readonly logger = new Logger(EventsService.name);
   private readonly INVITE_STATUS_SEQUENCE = {
     [InviteStatus.DRAFT]: 0,
     [InviteStatus.INVITED]: 1,
@@ -23,27 +29,69 @@ export class GuestsService {
 
   constructor(
     @InjectRepository(Guest)
-    private guestRepository: Repository<Guest>,
+    private readonly guestRepository: Repository<Guest>,
     @InjectRepository(Event)
-    private eventRepository: Repository<Event>,
+    private readonly eventRepository: Repository<Event>,
+    private readonly usersService: UsersService,
+    private readonly assignmentService: AssignmentService,
     @InjectQueue('mail-queue') private readonly mailQueue: Queue,
   ) {}
 
+  private async queueMailJobs(guests: Guest[], event: Event, type: MailType) {
+    const eventData: MailEventData = {
+      id: event.id,
+      name: event.name,
+      host: event.host.name,
+      description: event.description,
+      eventDate: event.eventDate,
+      budget: event.budget,
+      currency: event.currency,
+      draftDate: event.draftDate,
+      eventMode: event.eventMode,
+      drawRule: event.drawRule,
+    };
+
+    const jobs = guests.map((guest) => {
+      const guestData: MailGuestData = {
+        id: guest.id,
+        name: guest.name,
+        email: guest.email,
+      };
+
+      const jobData: MailJobData = {
+        type,
+        guest: guestData,
+        event: eventData,
+        assignmentContext: {},
+      };
+
+      if (type === 'ASSIGN') {
+        if (guest.assignedRecipient) {
+          jobData.assignmentContext = { recipientName: guest.assignedRecipient.name };
+        } else if (guest.pickOrder) {
+          jobData.assignmentContext = { pickOrder: guest.pickOrder };
+        }
+      }
+
+      return {
+        name: `send-${type.toLowerCase()}`,
+        data: jobData,
+      };
+    });
+    await this.mailQueue.addBulk(jobs);
+  }
+
   // get public event info (only name)
   async getEventInfo(eventId: string): Promise<{ name: string }> {
-    const event = await this.eventRepository.findOneBy({ id: eventId });
-    if (!event) {
-      throw new NotFoundException('Event not found');
-    }
+    const event = await this.eventRepository.findOne({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event was not found.');
     return { name: event.name };
   }
 
   // register guest for event (public endpoint)
   async registerForEvent(eventId: string, createGuestDto: CreateGuestDto): Promise<GuestResponseDto> {
-    const event = await this.eventRepository.findOneBy({ id: eventId });
-    if (!event) {
-      throw new NotFoundException(`Event with ID "${eventId}" not found`);
-    }
+    const event = await this.eventRepository.findOne({ where: { id: eventId } });
+    if (!event) throw new NotFoundException('Event was not found.');
     return this.create(event, createGuestDto);
   }
 
@@ -171,22 +219,31 @@ export class GuestsService {
     const guests = await this.findAllInvitableGuests(event.id);
     if (guests.length === 0) return { message: 'Keine Gäste zum Einladen gefunden.', queueCount: 0 };
 
-    const jobs = guests.map((guest) => ({
-      name: 'send-invitation',
-      data: {
-        guest,
-        eventName: event.name,
-        eventId: event.id,
-      },
-    }));
-    await this.mailQueue.addBulk(jobs);
-
+    await this.queueMailJobs(guests, event, 'INVITE');
     return { message: 'Einladungen werden im Hintergrund verarbeitet.', queueCount: guests.length };
+  }
+
+  async createAssignmentNotifications(event: Event) {
+    if (event.status !== EventStatus.ASSIGNED) {
+      this.logger.log(`Event ${event.id} not assigned. Running draw algorithm...`);
+      await this.assignmentService.draw(event.id);
+      event.status = EventStatus.ASSIGNED;
+    }
+
+    const guests = await this.guestRepository.find({
+      where: { eventId: event.id, inviteStatus: InviteStatus.ACCEPTED },
+      relations: ['assignedRecipient'],
+    });
+
+    if (guests.length === 0) return { message: 'Keine Gäste zum Benachrichtigen gefunden.', queueCount: 0 };
+
+    await this.queueMailJobs(guests, event, 'ASSIGN');
+    return { message: 'Benachrichtigungen werden im Hintergrund verarbeitet.', queueCount: guests.length };
   }
 
   async getConfirmationStats(eventId: string): Promise<GuestsInvitationStats> {
     const stats: GuestsInvitationStats = { totalGuests: 0, accepted: 0, denied: 0, open: 0 };
-    const rawResults: { status: string; count: string }[] = await this.guestRepository
+    const rawResults: { status: InviteStatus; count: string }[] = await this.guestRepository
       .createQueryBuilder('guest')
       .select('guest.inviteStatus', 'status')
       .addSelect('COUNT(guest.id)', 'count')
@@ -197,11 +254,13 @@ export class GuestsService {
     for (const r of rawResults) {
       const count = parseInt(r.count, 10);
       stats.totalGuests += count;
-      r.status === InviteStatus.ACCEPTED
-        ? (stats.accepted += count)
-        : r.status === InviteStatus.DENIED
-          ? (stats.denied += count)
-          : (stats.open += count);
+      if (r.status === InviteStatus.ACCEPTED) {
+        stats.accepted += count;
+      } else if (r.status === InviteStatus.DENIED) {
+        stats.denied += count;
+      } else {
+        stats.open += count;
+      }
     }
 
     return stats;
@@ -254,8 +313,9 @@ export class GuestsService {
 
   async markInviteStatusAs(guestId: string, nextInviteStatus: InviteStatus) {
     const guest = await this.guestRepository.findOne({ where: { id: guestId }, select: ['id', 'inviteStatus'] });
+    if (!guest) throw new NotFoundException('Guest not found for this event.');
+
     // nothing to update here
-    if (!guest) return;
     if (nextInviteStatus === guest.inviteStatus) return;
     // eventHost wants (and can) reset inviteStatus
     if (nextInviteStatus === InviteStatus.DRAFT) {
@@ -267,7 +327,10 @@ export class GuestsService {
     const nextRank = this.INVITE_STATUS_SEQUENCE[nextInviteStatus];
     // draft -> invited -> opened -> accepted <-> denied
     if (nextRank >= prevRank) {
-      await this.guestRepository.update(guestId, { inviteStatus: nextInviteStatus });
+      await this.guestRepository.update(
+        { id: guestId, inviteStatus: guest.inviteStatus },
+        { inviteStatus: nextInviteStatus },
+      );
     }
   }
 
@@ -293,25 +356,29 @@ export class GuestsService {
     );
   }
 
-  // create host as guest
-  async createHostGuest(data: { email: string; name: string; eventId: string }): Promise<Guest> {
-    const { email, name, eventId } = data;
+  // async createHostGuest(data: { email: string; name: string; eventId: string }): Promise<Guest> {
+  @OnEvent('event.created')
+  async handleEventCreated(payload: { event: Event; hostId: string }) {
+    const { hostId, event } = payload;
+    const hostUser = await this.usersService.findById(hostId);
 
-    const existingGuest = await this.guestRepository.findOne({
-      where: { email, eventId },
+    if (!hostUser || !hostUser.email) return;
+
+    const hostExistsAsGuest = await this.guestRepository.findOne({
+      where: { email: hostUser.email, eventId: event.id },
     });
 
-    if (existingGuest) {
-      return existingGuest;
+    if (hostExistsAsGuest) {
+      return;
     }
 
     const hostGuest = this.guestRepository.create({
-      email,
-      name,
-      eventId,
+      email: hostUser.email,
+      name: hostUser.name || 'Host',
+      eventId: event.id,
       inviteStatus: InviteStatus.ACCEPTED,
     });
 
-    return await this.guestRepository.save(hostGuest);
+    await this.guestRepository.save(hostGuest);
   }
 }

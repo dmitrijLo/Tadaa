@@ -8,8 +8,6 @@ import { DrawRule, EventStatus } from 'src/enums/enums';
 @Injectable()
 export class AssignmentService {
   constructor(
-    @InjectRepository(Guest)
-    private readonly GuestRepository: Repository<Guest>,
     @InjectRepository(Event)
     private readonly EventRepository: Repository<Event>,
     private readonly dataSource: DataSource,
@@ -24,13 +22,13 @@ export class AssignmentService {
     });
     if (!fullEvent || !fullEvent.guests) throw new NotFoundException();
 
-    const drawMethods: Record<DrawRule, Guest[]> = {
-      [DrawRule.CHAIN]: this.chainAssign(fullEvent),
-      [DrawRule.EXCHANGE]: this.exchangeAssign(fullEvent),
-      [DrawRule.PICK_ORDER]: this.pickOrderAssign(fullEvent),
+    const drawMethods: Record<DrawRule, () => Guest[]> = {
+      [DrawRule.CHAIN]: () => this.chainAssign(fullEvent),
+      [DrawRule.EXCHANGE]: () => this.exchangeAssign(fullEvent),
+      [DrawRule.PICK_ORDER]: () => this.pickOrderAssign(fullEvent),
     };
 
-    const assignedGuests = drawMethods[fullEvent.drawRule];
+    const assignedGuests = drawMethods[fullEvent.drawRule]();
 
     // Save all assignments atomically
     await this.dataSource.transaction(async (manager) => {
@@ -58,7 +56,7 @@ export class AssignmentService {
       const hostEmail = event.host?.email;
       guests = guests.filter((g) => g.email !== hostEmail);
     }
-    const shuffled = this.shuffle(guests);
+    const shuffled: Guest[] = this.shuffle(guests);
     for (let i = 0; i < shuffled.length; i += 2) {
       shuffled[i].assignedRecipient = shuffled[i + 1];
       shuffled[i + 1].assignedRecipient = shuffled[i];
