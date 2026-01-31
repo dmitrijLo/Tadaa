@@ -40,18 +40,12 @@ import { EventFromRequest } from 'src/decorators/event-payload.decorator';
 import { Event } from './entities/event.entity';
 import { UpdateGuestDto } from 'src/guests/dto/update-guest.dto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Observable, fromEvent } from 'rxjs';
+import { Observable, fromEvent, merge } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { EventStatus } from 'src/enums';
 import { BaseUserDto } from 'src/users/dto/create-user.dto';
 import { PaginatedEventsResponse, PaginationQueryDto } from './dto/event-response.dto';
-
-interface MailSentEvent {
-  eventId: string;
-  status: 'SUCCESS' | 'ERROR' | 'DONE';
-  guestId: string;
-  reason?: string;
-}
+import { MailSentEvent } from 'src/mail/dto/mail.dto';
 
 @Controller('events')
 @ApiTags('Events')
@@ -134,13 +128,32 @@ export class EventsController {
     return this.guestsService.inviteGuests(event);
   }
 
+  @Post(':eventId/assignments/notify')
+  @ApiOperation({ description: 'Send assignment notification emails to guests.' })
+  @ApiParam({ name: 'eventId', type: 'string', format: 'uuid' })
+  @ApiResponse({})
+  @UseGuards(EventOwnerGuard)
+  async sendAssignmentNotifications(@EventFromRequest() event: Event) {
+    return this.guestsService.createAssignmentNotifications(event);
+  }
+
+  /*
+   * Dieses SSE kann sowohl für die /invite als auch
+   * /notify-assignments verwendet werden
+   */
   @Sse(':eventId/mail-stream')
   @UseGuards(EventOwnerGuard)
   mailStream(@Param('eventId') eventId: string): Observable<MessageEvent> {
-    return fromEvent(this.eventEmitter, 'mail.sent').pipe(
+    const mailStatusUpdates$ = fromEvent(this.eventEmitter, 'mail.sent').pipe(
       filter((payload: MailSentEvent) => payload.eventId === eventId),
       map((payload) => ({ data: payload }) as MessageEvent),
     );
+
+    const queueDrained$ = fromEvent(this.eventEmitter, 'queue.drained').pipe(
+      map(() => ({ type: 'QUEUE_DRAINED', data: { status: 'IDLE' } }) as MessageEvent),
+    );
+
+    return merge(mailStatusUpdates$, queueDrained$);
   }
 
   @Post()
