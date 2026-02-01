@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f4f4; padding: 20px; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    .header { text-align: center; border-bottom: 2px solid #f0f0f0; padding-bottom: 20px; margin-bottom: 20px; }
+    .btn { display: inline-block; background-color: #e74c3c; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 50px; font-weight: bold; margin-top: 20px; box-shadow: 0 2px 5px rgba(231, 76, 60, 0.3); }
+    .footer { margin-top: 30px; font-size: 12px; color: #999; text-align: center; line-height: 1.5; }
+    
+    /* Die gelbe Info-Box */
+    .details { background-color: #fffaf0; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 5px solid #f1c40f; }
+    .details p { margin: 8px 0; }
+    
+    /* Der Block für den Beschreibungstext des Hosts */
+    .description-box { font-style: italic; color: #555; border-left: 2px solid #ddd; padding-left: 15px; margin: 20px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="{{logoUrl}}" alt="Logo" style="max-width: 120px; display: block; margin: 0 auto;">
+    </div>
+
+    <h2 style="text-align: center; color: #2c3e50;">Einladung zum Wichteln! 🎁</h2>
+    
+    <p>Hallo {{guestName}},</p>
+    
+    <p><strong>{{hostName}}</strong> lädt dich herzlich ein, beim Event <strong>"{{eventName}}"</strong> dabei zu sein!</p>
+    
+    {{#if eventDescription}}
+    <div class="description-box">
+      "{{eventDescription}}"
+    </div>
+    {{/if}}
+    
+    <div class="details">
+      <p><strong>📅 Datum:</strong> {{eventDate}}</p>
+      <p><strong>💰 Budget:</strong> {{budget}}</p>
+      <p><strong>📍 Modus:</strong> {{eventMode}}</p>
+      {{#if eventRule}}
+      <p><strong>🎲 Regel:</strong> {{eventRule}}</p>
+      {{/if}}
+      <p style="color: #c0392b; margin-top: 15px;"><strong>⏰ Bitte sage bis zum {{deadline}} zu!</strong></p>
+    </div>
+
+    <p>Bist du dabei? Klicke unten, um deine Teilnahme zu bestätigen.</p>
+
+    <div style="text-align: center;">
+      <a href="{{link}}" class="btn">Einladung ansehen & Antworten</a>
+    </div>
+
+    <p style="margin-top: 30px;">Viele Grüße,<br>Dein Wichtel-Team</p>
+  </div>
+  
+  <div class="footer">
+    <p>Diese E-Mail wurde an {{guestName}} gesendet.<br>
+    Falls der Button nicht funktioniert: <a href="{{link}}" style="color: #999;">{{link}}</a></p>
+  </div>
+</body>
+</html>

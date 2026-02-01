@@ -1,0 +1,213 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  /* gap: 12px; */
+  width: 100%;
+}
+
+/* Die einzelne Karte (Row) */
+.card {
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  position: relative;
+
+  margin-bottom: 12px;
+  transition: all 0.2s;
+}
+
+.card:hover {
+  border-color: #d9d9d9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Der "Add New" Bereich darf etwas anders aussehen */
+.addCard {
+  background: #fafafa;
+  border: 1px dashed #d9d9d9;
+}
+
+/* Das Grid Layout */
+.formGrid {
+  display: grid;
+  gap: 8px 12px;
+  align-items: center;
+  /* Mobile First: Alles untereinander (1 Spalte) */
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "name actions"
+    "email status";
+}
+
+/* Desktop Breakpoint (ab Tablet) */
+@media (min-width: 768px) {
+  .formGrid {
+    /* Desktop: Handle | Name | Email | Actions */
+    grid-template-columns: auto 1fr 1.5fr auto auto;
+    grid-template-areas: "handle name email status actions";
+    gap: 16px;
+  }
+}
+
+/* Zuweisung der Grid Areas */
+
+.areaHandle {
+  grid-area: handle;
+  display: flex;
+  justify-content: center;
+}
+.areaName {
+  grid-area: name;
+}
+.areaEmail {
+  grid-area: email;
+}
+.areaStatus {
+  grid-area: status;
+  display: flex;
+  justify-content: flex-end;
+  /* align-items: center; */
+  /* justify-content: center; */
+}
+.areaActions {
+  grid-area: actions;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.inputWrapper {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+/* .inputWrapper { */
+/*   position: relative; */
+/*   display: flex; */
+/*   flex-direction: column; */
+/*   padding-bottom: 22px; */
+/* } */
+
+.areaActions {
+  grid-area: actions;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Drag Handle Styling */
+.dragHandle {
+  color: #bfbfbf;
+  cursor: grab;
+  font-size: 1.2rem;
+  padding: 0 8px;
+  /* Auf Mobile verstecken wir den Handle vielleicht oder zeigen ihn oben rechts */
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .areaEmail {
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
+
+  .areaStatus {
+    justify-content: flex-end;
+  }
+}
+
+@media (min-width: 768px) {
+  .dragHandle {
+    display: block;
+  }
+}
+
+.errorText {
+  color: #ff4d4f;
+  font-size: 12px;
+  line-height: 1.5;
+
+  position: absolute;
+  top: 100%;
+  left: 0.25rem;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.dropTop {
+  border-top: 2px solid #1890ff;
+  transition: all 0.1s;
+}
+.dropBottom {
+  border-bottom: 2px solid #1890ff;
+  transition: all 0.1s;
+}
+.dropMiddle {
+  background-color: #e6f7ff;
+  border-top: 1px dashed #1890ff;
+  opacity: 0.9;
+}
+.connector::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -24px;
+  width: 24px;
+  height: 30px;
+  border-left: 2px solid #722ed1;
+  border-bottom: 2px solid #722ed1;
+  border-bottom-left-radius: 12px;
+  pointer-events: none;
+  z-index: 1;
+}
+.connectionBadge {
+  position: absolute;
+  left: -34px;
+  top: 40%;
+  transform: translateY(-50%);
+
+  width: 24px;
+  height: 24px;
+  background: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 50%; /* Rundes Icon */
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #1890ff;
+  z-index: 2;
+
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Kleiner Schatten für Tiefe */
+}
+
+.parentOfCouple {
+  margin-bottom: -2px !important;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom: 1.5px solid #eee;
+}
+.childOfCouple {
+  margin-top: 0 !important;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-top: 1.5px dashed #722ed1;
+}
+
+.textDispplay {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding-left: 11px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: rgba(0, 0, 0, 0.88);
+}

@@ -1,43 +1,92 @@
 services:
+  redis:
+    image: redis:alpine
+    ports: ["6379:6379"]
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+  mailpit:
+    image: axllent/mailpit
+    container_name: tadaa_mailpit
+    restart: unless-stopped
+    ports: ["1025:1025", "8025:8025"]
+    volumes:
+      - mailpit_data:/data
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_STMP_AUTH_ACCEPTS_ANY: 1
+      MP_STMP_AUTH_ALLOW_INSECURE: 1
+  db:
+    image: postgres:18
+    container_name: tadaa-db
+    environment:
+      POSTGRES_DB: tadaa_db
+      POSTGRES_USER: tadaa_user
+      POSTGRES_PASSWORD: tadaa_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tadaa_user -d tadaa_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     container_name: tadaa-backend
     build:
-      context: .
-      dockerfile: apps/backend-nestjs/Dockerfile.dev
+      context: ./backend-nestjs
+      dockerfile: Dockerfile.dev
     ports:
       - "3001:3001"
     environment:
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_PORT: ${DATABASE_PORT:-5432}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
-      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_URL: ${DATABASE_URL}
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: ${PORT:-3001}
       JWT_SECRET: ${JWT_SECRET}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      JWT_DEV_MODE: ${JWT_DEV_MODE}
-      PORT: 3001
-      NODE_ENV: development
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_FROM: ${MAIL_FROM:-"Tadaa Event Planner <no-reply@localhost>"}
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
     volumes:
-      - ./:/workspace
-      - node_modules:/workspace/node_modules
+      - ./backend-nestjs:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
   frontend:
     container_name: tadaa-frontend
     build:
-      context: .
-      dockerfile: apps/frontend-nextjs/Dockerfile.dev
+      context: ./frontend-nextjs
+      dockerfile: Dockerfile.dev
     ports:
       - "3000:3000"
     environment:
-      PUBLIC_API_URL: http://localhost:3001
-      INTERNAL_API_URL: http://backend:3001
-      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+      API_URL: http://backend:3001
+      NODE_ENV: ${NODE_ENV:-development}
     volumes:
-      - ./:/workspace
-      - node_modules:/workspace/node_modules
+      - ./frontend-nextjs:/app
+      - /app/node_modules
     depends_on:
       - backend
 
-volumes:
-  node_modules:
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
 
+volumes:
+  postgres_data:
+  mailpit_data:
+  redis_data:

@@ -1,0 +1,102 @@
+services:
+  # --- INFRASTRUCTURE ---
+  db:
+    image: postgres:18
+    container_name: tadaa-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tadaa_db
+      POSTGRES_USER: tadaa_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  mailpit:
+    image: axllent/mailpit
+    restart: unless-stopped
+    container_name: tadaa_mailpit
+    ports: ["1025:1025", "8025:8025"]
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_STMP_AUTH_ACCEPTS_ANY: 1
+      MP_STMP_AUTH_ALLOW_INSECURE: 1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # --- APP ---
+  backend:
+    container_name: tadaa-backend
+    restart: unless-stopped
+    image: ${IMAGE_REPO}/backend:latest
+    # ports:
+    #   - "3001:3001"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://tadaa_user:${DB_PASSWORD}@db:5432/tadaa_db
+      FRONTEND_URLS: ${FRONTEND_URLS}
+      PORT: ${PORT:-3001}
+      DB_SYNC: ${DB_SYNC}
+      JWT_SECRET: ${JWT_SECRET}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@tadaa-events.com"}
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
+    depends_on:
+      - db
+      - redis
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    container_name: tadaa-frontend
+    restart: unless-stopped
+    image: ${IMAGE_REPO}/frontend:latest
+    environment:
+      NODE_ENV: production
+      INTERNAL_API_URL: http://backend:3001/api
+    depends_on:
+      - backend
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # --- NETWORK
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel run --protocol http2
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TOKEN}
+
+volumes:
+  postgres_data:
+  redis_data:
