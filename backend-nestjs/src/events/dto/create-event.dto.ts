@@ -33,13 +33,15 @@ export class CreateEventDto {
   @IsAfterToday()
   eventDate?: Date;
 
-  @IsDate()
+  @IsOptional()
   @Type(() => Date)
+  @IsDate()
   @IsBeforeField('eventDate')
-  invitationDate?: Date;
+  invitationDate?: Date | null;
 
-  @IsDate()
+  @IsOptional()
   @Type(() => Date)
+  @IsDate()
   @IsBetweenFields('invitationDate', 'eventDate')
-  draftDate?: Date;
+  draftDate?: Date | null;
 }

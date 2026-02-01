@@ -1,5 +1,29 @@
 import { EventForm } from "@/components";
-import { serverApiPost, serverApiPatch, SERVER_BACKEND_URL } from "@/utils/server-api";
+import {
+  serverApiPost,
+  serverApiPatch,
+  SERVER_BACKEND_URL,
+} from "@/utils/server-api";
+
+function eventPayload(
+  formData: CreateEventDto,
+): Record<string, string | number | null> {
+  return {
+    name: formData.name,
+    description: formData.description || "",
+    budget: formData.budget,
+    currency: "EUR",
+    eventMode: formData.eventMode,
+    drawRule: formData.drawRule,
+    eventDate: new Date(formData.eventDate).toISOString(),
+    invitationDate: formData.invitationDate
+      ? new Date(formData.invitationDate).toISOString()
+      : null,
+    draftDate: formData.draftDate
+      ? new Date(formData.draftDate).toISOString()
+      : null,
+  };
+}
 
 export default function NewEventPage() {
   async function createEvent(
@@ -7,17 +31,7 @@ export default function NewEventPage() {
   ): Promise<{ id: string }> {
     "use server";
 
-    const payload = {
-      name: formData.name,
-      description: formData.description || "",
-      budget: formData.budget,
-      currency: "EUR",
-      eventMode: formData.eventMode,
-      drawRule: formData.drawRule,
-      eventDate: new Date(formData.eventDate).toISOString(),
-      invitationDate: new Date(formData.invitationDate).toISOString(),
-      draftDate: new Date(formData.draftDate).toISOString(),
-    };
+    const payload = eventPayload(formData);
 
     console.log(
       "Sending payload to backend:",
@@ -43,17 +57,7 @@ export default function NewEventPage() {
   ): Promise<void> {
     "use server";
 
-    const payload = {
-      name: formData.name,
-      description: formData.description || "",
-      budget: formData.budget,
-      currency: "EUR",
-      eventMode: formData.eventMode,
-      drawRule: formData.drawRule,
-      eventDate: new Date(formData.eventDate).toISOString(),
-      invitationDate: new Date(formData.invitationDate).toISOString(),
-      draftDate: new Date(formData.draftDate).toISOString(),
-    };
+    const payload = eventPayload(formData);
 
     const { error } = await serverApiPatch(
       `${SERVER_BACKEND_URL}/events/${eventId}`,
