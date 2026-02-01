@@ -1,5 +1,14 @@
 "use client";
-import { Button, Divider, Layout, Menu, MenuProps, Spin, theme } from "antd";
+import {
+  Button,
+  Divider,
+  Drawer,
+  Layout,
+  Menu,
+  MenuProps,
+  Spin,
+  theme,
+} from "antd";
 import { PropsWithChildren, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -13,6 +22,7 @@ import {
 import { useSidebarStore } from "@/stores/useSidebarStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import DashboardBreadcrumb from "@/components/layout/DashboardBreadcrumb";
+import { useWindowSize } from "@/hooks/useWindowSize";
 
 const { Content, Sider } = Layout;
 
@@ -49,6 +59,8 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
   const router = useRouter();
   const { collapsed, toggleCollapsed } = useSidebarStore();
   const { hasHydrated, currentUser } = useAuthStore();
+  const { width } = useWindowSize();
+  const isMobile = width ? width < 768 : false;
 
   useEffect(() => {
     if (hasHydrated && !currentUser) {
@@ -73,7 +85,7 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
 
   return (
     <>
-      {showSidebar && (
+      {showSidebar && !isMobile && (
         <Sider
           width={"auto"}
           style={{
@@ -95,6 +107,29 @@ export default function DashboardPageLayout({ children }: PropsWithChildren) {
           </div>
         </Sider>
       )}
+
+      {showSidebar && isMobile && (
+        <Drawer
+          placement="left"
+          onClose={toggleCollapsed}
+          open={!collapsed}
+          closeIcon={null}
+          width={250}
+          styles={{
+            body: { padding: 0 },
+          }}
+        >
+          <Menu
+            defaultSelectedKeys={["2"]}
+            className={"sidebarMenu"}
+            mode="inline"
+            theme="light"
+            items={items}
+            onClick={() => toggleCollapsed()}
+          />
+        </Drawer>
+      )}
+
       <Layout className={"contentContainer"}>
         <Content
           style={{
