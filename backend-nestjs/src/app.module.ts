@@ -17,6 +17,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { AssignmentModule } from './assignment/assignment.module';
 import { DevAwareAuthGuard } from './auth/guards/jwt-dev.guard';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -54,7 +55,7 @@ import { DevAwareAuthGuard } from './auth/guards/jwt-dev.guard';
           from: configService.get<string>('MAIL_FROM'),
         },
         template: {
-          dir: process.cwd() + '/src/templates',
+          dir: join(__dirname, 'templates'),
           adapter: new HandlebarsAdapter(),
           options: {
             strict: true,
@@ -65,13 +66,17 @@ import { DevAwareAuthGuard } from './auth/guards/jwt-dev.guard';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        url: configService.get<string>('DATABASE_URL'),
-        autoLoadEntities: true,
-        synchronize: true,
-        logging: configService.get<string>('NODE_ENV') === 'development',
-      }),
+      useFactory: (configService: ConfigService) => {
+        const isDev = configService.get<string>('NODE_ENV') === 'development';
+        const forceSync = configService.get<string>('DB_SYNC') === 'true';
+        return {
+          type: 'postgres',
+          url: configService.get<string>('DATABASE_URL'),
+          autoLoadEntities: true,
+          synchronize: isDev || forceSync,
+          logging: isDev,
+        };
+      },
     }),
     UsersModule,
     EventsModule,
