@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');
 
   const frontendUrls = process.env.FRONTEND_URLS
     ? process.env.FRONTEND_URLS.split(',').map((url) => url.trim())
