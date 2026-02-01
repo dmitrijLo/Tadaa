@@ -164,3 +164,44 @@ body {
   pointer-events: none !important;
   opacity: 0.2 !important;
 }
+
+/* Fix Ant Design Carousel width overflow */
+.carousel-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.carousel-wrapper .ant-carousel {
+  width: 100% !important;
+}
+
+.carousel-wrapper .slick-slider {
+  width: 100% !important;
+}
+
+.carousel-wrapper .slick-list {
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+.carousel-wrapper .slick-track {
+  display: flex !important;
+  width: 100% !important;
+}
+
+.carousel-wrapper .slick-slide {
+  float: none !important;
+  width: 100% !important;
+  flex-shrink: 0 !important;
+}
+
+.carousel-wrapper .slick-slide > div {
+  width: 100% !important;
+}
+
+.carousel-wrapper .slick-slide > div > div {
+  width: 100% !important;
+}
+
