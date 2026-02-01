@@ -112,6 +112,8 @@ body {
   background: transparent !important;
 }
 
+/* Ant Design solid Buttons */
+
 .ant-btn-color-primary.ant-btn-variant-solid {
   background: var(--gradientPrimary) !important;
   border: none !important;
@@ -130,8 +132,23 @@ body {
   color: #fff !important;
 }
 
+/* Ant Design outlined Buttons */
+
 .ant-btn-variant-outlined {
   border-width: 2px !important;
+}
+
+.ant-btn-color-primary.ant-btn-variant-outlined {
+  background-image: linear-gradient(white, white), var(--gradientPrimary);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  border: 2px solid transparent;
+}
+
+.ant-btn-color-primary.ant-btn-variant-outlined:hover {
+  background-image:
+    linear-gradient(white, white), var(--gradientPrimaryHover) !important;
+  border: 2px solid transparent !important;
 }
 
 .ant-steps-panel .ant-steps-item-active {
@@ -205,3 +222,12 @@ body {
   width: 100% !important;
 }
 
+/* Ant Design custom dots */
+
+.ant-carousel .slick-dots li button::after {
+  background: rgb(116, 83, 147) !important;
+}
+
+.ant-carousel .slick-dots li.slick-active::after {
+  background: var(--colorHighlightPrimary) !important;
+}

@@ -3,24 +3,24 @@
 import { Divider } from "antd";
 import InterestNoteComponent from "../interests/InterestNoteComponent";
 import InterestOptionComponent from "../interests/InterestComponent";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Typography } from "antd";
+import { formatGermanDateTime } from "@/utils/formatters";
 
 const { Paragraph, Text } = Typography;
 
 export default function GuestAcceptedView({ guest }: { guest: Guest }) {
   const { id: guestId } = guest;
-  const [formattedDate, setFormattedDate] = useState<string>("");
-  const [formattedDraftDate, setFormattedDraftDate] = useState<string>("");
 
-  useEffect(() => {
-    setFormattedDate(
-      new Date(guest.event.eventDate).toLocaleDateString("de-DE"),
-    );
-    setFormattedDraftDate(
-      new Date(guest.event.draftDate).toLocaleDateString("de-DE"),
-    );
-  }, [guest.event.eventDate, guest.event.draftDate]);
+  const formattedDate = useMemo(
+    () => formatGermanDateTime(guest.event.eventDate),
+    [guest.event.eventDate],
+  );
+
+  const formattedDraftDate = useMemo(
+    () => formatGermanDateTime(guest.event.draftDate),
+    [guest.event.draftDate],
+  );
 
   return (
     <>
