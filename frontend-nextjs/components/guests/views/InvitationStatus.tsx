@@ -1,17 +1,8 @@
 "use client";
 
-import {
-  Card,
-  Typography,
-  Button,
-  Input,
-  Space,
-  message,
-  Popconfirm,
-} from "antd";
+import { Typography, Button, Input, Space, message, Popconfirm } from "antd";
 import { notFound } from "next/navigation";
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/utils/api";
 
 const { TextArea } = Input;
@@ -22,7 +13,6 @@ const handleResponse = async (
   accept: boolean,
   declineMessage: string,
 ) => {
-  console.log(guestId, accept, declineMessage);
   try {
     await api.patch(`/guests/${guestId}/acceptinvitation`, {
       accept,
@@ -48,9 +38,9 @@ export default function InvitationStatus({ guest }: { guest: Guest }) {
   };
 
   return (
-    <Card>
-      <Title>Möchtest du teilnehmen?</Title>
-      <Space orientation="vertical" style={{ width: "100%" }}>
+    <>
+      <Title level={4}>Möchtest du teilnehmen?</Title>
+      <Space direction="vertical" style={{ width: "100%" }}>
         <Button
           type="primary"
           size="large"
@@ -84,6 +74,6 @@ export default function InvitationStatus({ guest }: { guest: Guest }) {
           </Button>
         </Popconfirm>
       </Space>
-    </Card>
+    </>
   );
 }

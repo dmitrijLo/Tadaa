@@ -8,6 +8,21 @@ import { DrawRule } from "@/types/enums";
 
 const { Text, Paragraph } = Typography;
 
+const GradientTitle = ({ children }: { children: React.ReactNode }) => (
+  <div
+    className="font-bold uppercase flex justify-center text-lg mb-4"
+    style={{
+      background: "var(--gradientPrimary)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      backgroundClip: "text",
+      color: "transparent",
+    }}
+  >
+    {children}
+  </div>
+);
+
 export default function RevealPartner({ guest }: { guest: Guest }) {
   const { assignedRecipient, pickOrder } = guest;
   const [formattedDate, setFormattedDate] = useState<string>("");
@@ -38,7 +53,6 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
     </Paragraph>
   );
 
-  // If pick order is used, show pick order view
   if (guest.event.drawRule === DrawRule.PICK_ORDER) {
     const sortedGuests = guest.event.guests
       ? [...guest.event.guests].sort(
@@ -47,34 +61,19 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
       : [];
 
     return (
-      <Card
-        className="max-w-md w-full shadow-2xl animate-in fade-in duration-700"
-        title={
-          <span
-            className="font-bold uppercase flex justify-center"
-            style={{
-              background: "var(--gradientPrimary)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              color: "transparent", 
-            }}
-          >
-            Deine Wichtel-Reihenfolge
-          </span>
-        }
-      >
+      <>
+        <GradientTitle>Deine Wichtel-Reihenfolge</GradientTitle>
         <div className="space-y-4">
           {introParagraph}
 
-          <Card>
+          <Card size="small">
             <Paragraph className="mb-0">
               Du bist an Position <Text strong>{pickOrder}</Text>.
             </Paragraph>
             <Paragraph type="secondary" className="text-sm">
               Die Geschenke werden nacheinander gewählt. Wenn du dran bist,
               suchst du dir eins aus.
-            </Paragraph>{" "}
+            </Paragraph>
             <Divider className="my-2" />
             <Text strong className="block mb-3">
               Alle Teilnehmer:
@@ -122,22 +121,20 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
           </Card>
           {outroParagraph}
         </div>
-      </Card>
+      </>
     );
   }
 
   if (!assignedRecipient) notFound();
 
-  // Standard view showing assigned recipient details, when chain or exchange
   const collapseItems = [
     {
       key: "1",
       label: <Text>Dann klicke hier:</Text>,
-
       children: (
         <div className="space-y-4">
           <div>
-            <Text className=" font-bold block mb-2 underline">
+            <Text className="font-bold block mb-2 underline">
               <HeartOutlined className="mr-1" /> Mag ich:
             </Text>
             <Space wrap>
@@ -158,7 +155,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
             </Space>
           </div>
           <div>
-            <Text className=" font-bold block mb-2 underline">
+            <Text className="font-bold block mb-2 underline">
               <StopOutlined className="mr-1" /> Lieber nicht:
             </Text>
             <Space wrap>
@@ -182,28 +179,14 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
       ),
     },
   ];
+
   return (
-    <Card
-      className="max-w-md w-full shadow-2xl animate-in fade-in duration-700"
-      title={
-        <span
-          className="font-bold uppercase flex justify-center"
-          style={{
-            background: "var(--gradientPrimary)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            color: "transparent", 
-          }}
-        >
-          Dein Wichtel-Los
-        </span>
-      }
-    >
+    <>
+      <GradientTitle>Dein Wichtel-Los</GradientTitle>
       <div className="space-y-4">
         {introParagraph}
 
-        <Card>
+        <Card size="small">
           <Paragraph className="mb-0">
             Kaufe nun dein Geschenk für{" "}
             <Text strong>{assignedRecipient.name}</Text> im Wert von{" "}
@@ -222,7 +205,6 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
                 erfahren?
               </Text>
             </div>
-            {/* Aufklappbare Interessen mit Ant Design Collapse */}
             <Collapse
               ghost
               expandIconPlacement="end"
@@ -231,7 +213,6 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
             />
           </div>
 
-          {/* AI Gift Suggestions */}
           <div className="mt-4">
             <GiftSuggestions recipientId={assignedRecipient.id} />
           </div>
@@ -252,6 +233,6 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
 
         {outroParagraph}
       </div>
-    </Card>
+    </>
   );
 }

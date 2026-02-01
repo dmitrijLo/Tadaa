@@ -72,6 +72,8 @@ export const useGuestInvitations = (eventId: string) => {
 
       sse.onerror = () => {
         console.warn("SSE Connection lost on error");
+        closeConnection();
+        setIsSending(false);
       };
 
       const response = await api.post(`/events/${eventId}/guests/invite`);

@@ -92,6 +92,12 @@ export class GuestsService {
   async registerForEvent(eventId: string, createGuestDto: CreateGuestDto): Promise<GuestResponseDto> {
     const event = await this.eventRepository.findOne({ where: { id: eventId } });
     if (!event) throw new NotFoundException('Event was not found.');
+
+    const allowedStatuses = [EventStatus.DRAFT, EventStatus.CREATED];
+    if (!allowedStatuses.includes(event.status)) {
+      throw new BadRequestException('Registration is closed. Invitations have already been sent.');
+    }
+
     return this.create(event, createGuestDto);
   }
 
