@@ -19,7 +19,7 @@ export class MailService {
   }
 
   async sendGuestInvitation(guest: MailGuestData, event: MailEventData) {
-    const { invitationLink, trackingPixelUrl } = this.generetaUrls(guest.id);
+    const { invitationLink, trackingPixelUrl } = this.generateUrls(guest.id);
 
     return this.mailerService.sendMail({
       to: guest.email,
@@ -42,7 +42,7 @@ export class MailService {
   }
 
   async sendAssignmentMail(guest: MailGuestData, event: MailEventData, context: AssignmentContext) {
-    const { invitationLink, trackingPixelUrl } = this.generetaUrls(guest.id);
+    const { invitationLink, trackingPixelUrl } = this.generateUrls(guest.id);
     let recipientText = context.recipientName;
     if (!recipientText && context.pickOrder) {
       recipientText = `Du bist Nummer ${context.pickOrder} in der Reihenfolge!`;
@@ -74,12 +74,12 @@ export class MailService {
    * HELPER
    */
 
-  private generetaUrls(guestId: string) {
-    const baseUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:3000';
-    const backendUrl = this.configService.get('BACKEND_URL') || 'http://localhost:3001';
+  private generateUrls(guestId: string) {
+    const baseUrl = this.configService.get<string>('FRONTEND_URLS') || 'http://localhost:3000';
+    const apiUrl = this.configService.get('NODE_ENV') === 'production' ? `${baseUrl}/api` : 'http://localhost:3001/api';
     return {
       invitationLink: `${baseUrl}/guests/${guestId}`,
-      trackingPixelUrl: `${backendUrl}/mail/logo.png?guestId=${guestId}`,
+      trackingPixelUrl: `${apiUrl}/mail/logo.png?guestId=${guestId}`,
     };
   }
 }

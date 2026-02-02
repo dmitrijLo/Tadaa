@@ -112,6 +112,8 @@ body {
   background: transparent !important;
 }
 
+/* Ant Design solid Buttons */
+
 .ant-btn-color-primary.ant-btn-variant-solid {
   background: var(--gradientPrimary) !important;
   border: none !important;
@@ -130,8 +132,23 @@ body {
   color: #fff !important;
 }
 
+/* Ant Design outlined Buttons */
+
 .ant-btn-variant-outlined {
   border-width: 2px !important;
+}
+
+.ant-btn-color-primary.ant-btn-variant-outlined {
+  background-image: linear-gradient(white, white), var(--gradientPrimary);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  border: 2px solid transparent;
+}
+
+.ant-btn-color-primary.ant-btn-variant-outlined:hover {
+  background-image:
+    linear-gradient(white, white), var(--gradientPrimaryHover) !important;
+  border: 2px solid transparent !important;
 }
 
 .ant-steps-panel .ant-steps-item-active {
@@ -163,4 +180,54 @@ body {
 .disabledArea {
   pointer-events: none !important;
   opacity: 0.2 !important;
+}
+
+/* Fix Ant Design Carousel width overflow */
+.carousel-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.carousel-wrapper .ant-carousel {
+  width: 100% !important;
+}
+
+.carousel-wrapper .slick-slider {
+  width: 100% !important;
+}
+
+.carousel-wrapper .slick-list {
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+.carousel-wrapper .slick-track {
+  display: flex !important;
+  width: 100% !important;
+}
+
+.carousel-wrapper .slick-slide {
+  float: none !important;
+  width: 100% !important;
+  flex-shrink: 0 !important;
+}
+
+.carousel-wrapper .slick-slide > div {
+  width: 100% !important;
+}
+
+.carousel-wrapper .slick-slide > div > div {
+  width: 100% !important;
+}
+
+/* Ant Design custom dots */
+
+.ant-carousel .slick-dots li button::after {
+  background: rgb(116, 83, 147) !important;
+}
+
+.ant-carousel .slick-dots li.slick-active::after {
+  background: var(--colorHighlightPrimary) !important;
 }

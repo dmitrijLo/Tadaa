@@ -25,16 +25,14 @@ export default function DashboardEvents({
         Deine Events
       </Title>
 
-      <div className="max-w-4xl mx-auto p-4">
-        <Title level={2}>Nächstes Highlight</Title>
-        <FeaturedEventCard event={featuredEvent} stats={eventStats} />
+      <Title level={2}>Nächstes Highlight</Title>
+      <FeaturedEventCard event={featuredEvent} stats={eventStats} />
 
-        <EventList
-          events={upcomingEvents || []}
-          title="Weitere geplante Events"
-        />
-        <EventList events={pastEvents || []} title="Vergangene Events" />
-      </div>
+      <EventList
+        events={upcomingEvents || []}
+        title="Weitere geplante Events"
+      />
+      <EventList events={pastEvents || []} title="Vergangene Events" />
     </>
   );
 }

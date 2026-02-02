@@ -39,9 +39,6 @@ export default function RootLayout({
               colorBgContainer: "white",
             },
             components: {
-              Menu: {
-                itemPaddingInline: 40,
-              },
               Progress: {
                 defaultColor: "var(--colorHighlightPrimary)",
                 circleTextColor: "var(--colorTextSecondary)",

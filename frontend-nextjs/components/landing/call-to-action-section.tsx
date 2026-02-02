@@ -6,7 +6,7 @@ import { CSSProperties } from "react";
 const { Paragraph } = Typography;
 const pStyle: CSSProperties = {
   fontSize: "1.25rem",
-  color: "rgba(255, 255, 255, 0.9)",
+  color: "var(--colorTextSecondary)",
   marginBottom: "30px",
 };
 

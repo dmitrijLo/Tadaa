@@ -137,7 +137,7 @@ export default function GuestForm({
               icon={<PlusOutlined />}
               block
             >
-              Add
+              Hinzufügen
             </Button>
           )}
         </div>

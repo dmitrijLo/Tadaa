@@ -12,19 +12,19 @@ export const eventModes: readonly EventStatusInfo[] = [
     status: EventStatus.DRAFT,
     name: "draft",
     label: "Entwurf",
-    color: "default",
+    color: "orange",
   },
   {
     status: EventStatus.CREATED,
     name: "created",
     label: "Erstellt",
-    color: "blue",
+    color: "",
   },
   {
     status: EventStatus.INVITED,
     name: "invited",
     label: "Eingeladen",
-    color: "gold",
+    color: "geekblue",
   },
   {
     status: EventStatus.ASSIGNED,
@@ -36,7 +36,7 @@ export const eventModes: readonly EventStatusInfo[] = [
     status: EventStatus.DONE,
     name: "done",
     label: "Abgeschlossen",
-    color: "orange",
+    color: "",
   },
 ] as const;
 

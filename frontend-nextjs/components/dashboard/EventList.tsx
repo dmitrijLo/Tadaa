@@ -1,5 +1,7 @@
 "use client";
-import { getEventModeConfig } from "@/utils/event-helpers";
+import { eventModeByModus } from "@/constants/eventStates";
+import { eventModeByModusMock } from "@/constants/modes";
+import { formatGermanDateTime } from "@/utils/formatters";
 import { Avatar, Pagination, Typography } from "antd";
 import Link from "next/link";
 import { useState } from "react";
@@ -13,8 +15,8 @@ interface EventListProps {
 }
 
 export const EventList = ({ events, title }: EventListProps) => {
-  if (events.length === 0) return null;
   const [currentPage, setCurrentPage] = useState(1);
+  if (events.length === 0) return null;
   const pageCount = Math.ceil(events.length / PAGE_SIZE);
   const startIdx = (currentPage - 1) * PAGE_SIZE;
   const eventsToShow = events.slice(startIdx, startIdx + PAGE_SIZE);
@@ -24,7 +26,7 @@ export const EventList = ({ events, title }: EventListProps) => {
       {title && <Title level={4}>{title}</Title>}
       <div className="flex flex-col gap-2">
         {eventsToShow.map((item) => {
-          const mode = getEventModeConfig(item.eventMode);
+          const mode = eventModeByModusMock[item.eventMode];
           return (
             <Link
               className="group block"
@@ -46,8 +48,8 @@ export const EventList = ({ events, title }: EventListProps) => {
                       {item.name}
                     </span>
                     <div className="text-xs text-gray-400">
-                      {new Date(item.eventDate).toLocaleDateString("de-DE")} •{" "}
-                      {item.status}
+                      {formatGermanDateTime(item.eventDate) || "Kein Datum"} •{" "}
+                      {eventModeByModus[item.status]?.label || item.status}
                     </div>
                   </div>
                 </div>
@@ -55,7 +57,7 @@ export const EventList = ({ events, title }: EventListProps) => {
                 {/* Rechter Teil: Preis*/}
                 <div className="pr-5 hidden sm:block min-w-20 text-right">
                   <Text strong>
-                    {item.budget} {item.currency}
+                    {item.budget} {item.currency === "EUR" ? "€" : "$"}
                   </Text>
                 </div>
               </div>
