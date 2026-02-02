@@ -23,6 +23,7 @@ export class InterestsController {
     return this.interestsService.findAll();
   }
 
+  @Public()
   @Post()
   create(@Body() createInterestDto: CreateInterestDto): Promise<InterestDto> {
     return this.interestsService.create(createInterestDto);
