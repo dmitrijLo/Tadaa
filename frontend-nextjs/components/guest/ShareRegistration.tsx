@@ -36,6 +36,7 @@ export default function ShareRegistration({
       <Tooltip title="Registrierungslink kopieren">
         <Button
           type="text"
+          size="large"
           icon={<LinkOutlined />}
           onClick={handleCopyLink}
         />
@@ -43,6 +44,7 @@ export default function ShareRegistration({
       <Tooltip title="QR-Code anzeigen">
         <Button
           type="text"
+          size="large"
           icon={<QrcodeOutlined />}
           onClick={() => setModalOpen(true)}
         />
@@ -58,7 +60,10 @@ export default function ShareRegistration({
         }
         title="QR-Code für Registrierung"
       >
-        <div id="qr-print-area" style={{ textAlign: "center", padding: "20px" }}>
+        <div
+          id="qr-print-area"
+          style={{ textAlign: "center", padding: "20px" }}
+        >
           <img
             src="/logo.png"
             alt="Logo"

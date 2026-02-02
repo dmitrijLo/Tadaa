@@ -1,8 +1,12 @@
 "use client";
-import { getEventModeConfig, getEventStatusColor } from "@/utils/event-helpers";
+import { eventModeByModusMock } from "@/constants/modes";
+import { eventModeByModus } from "@/constants/eventStates";
 import { Badge, Card, Col, Row, Statistic, Tag, Typography } from "antd";
 import Link from "next/link";
 import { GuestInvitationProgress } from "../guest/GuestInvitationProgress";
+import { useMemo } from "react";
+import { formatGermanDateTime } from "@/utils/formatters";
+import { drawRuleByRuleMock } from "@/constants/drawRules";
 
 const { Text } = Typography;
 
@@ -12,7 +16,8 @@ interface FeaturedEventProps {
 }
 
 export const FeaturedEventCard = ({ event, stats }: FeaturedEventProps) => {
-  const modeConfig = getEventModeConfig(event.eventMode);
+  const modeConfig = eventModeByModusMock[event.eventMode];
+  const drawRuleConfig = drawRuleByRuleMock[event.drawRule];
   const { totalGuests, accepted, denied, open } = stats || {
     totalGuests: 0,
     accepted: 0,
@@ -21,11 +26,19 @@ export const FeaturedEventCard = ({ event, stats }: FeaturedEventProps) => {
   };
 
   const cardStyle = {
-    borderColor: modeConfig.color,
-    boxShadow: `0 4px 20px -5px ${modeConfig.color}`,
+    borderColor: `var(--ant-${modeConfig.color}-3)`,
+    boxShadow: `0 4px 20px -5px var(--ant-${modeConfig.color}-3)`,
   };
+
+  const formattedEventDate = useMemo(
+    () => formatGermanDateTime(event.eventDate),
+    [event.eventDate],
+  );
   return (
-    <Badge.Ribbon text={event.status} color={getEventStatusColor(event.status)}>
+    <Badge.Ribbon
+      text={eventModeByModus[event.status]?.label || event.status}
+      color={eventModeByModus[event.status]?.color || "default"}
+    >
       <Link className="block group" href={`/dashboard/events/${event.id}`}>
         <Card
           hoverable
@@ -33,43 +46,61 @@ export const FeaturedEventCard = ({ event, stats }: FeaturedEventProps) => {
           style={cardStyle}
           title={
             <div className="flex items-center gap-2">
-              <span style={{ color: modeConfig.color, fontSize: "1.2rem" }}>
+              <span
+                style={{
+                  color: `var(--ant-${modeConfig.color}-5)`,
+                  fontSize: "1.2rem",
+                }}
+              >
                 {modeConfig.icon}
               </span>
               <span>{event.name}</span>
             </div>
           }
         >
-          <Text type="secondary" className="block pl-5 pr-5 mb-4 line-clamp-2">
+          <Text type="secondary" className="block mb-4 line-clamp-2">
             {event.description || "Keine Beschreibung verfügbar."}
           </Text>
-          <Row gutter={16} className="text-center mb-4 items-center">
-            <Col span={8}>
+          <div className="flex gap-2 justify-start font-normal mb-4 flex-wrap">
+            <Tag color={modeConfig.color} variant="outlined">
+              Modus: {modeConfig.name}
+            </Tag>
+            <Tag variant="outlined">
+              Auslosung: {drawRuleConfig ? drawRuleConfig.name : "Unbekannt"}
+            </Tag>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              gap: "32px",
+              flexWrap: "wrap",
+              justifyContent: "flex-start",
+            }}
+          >
+            <div style={{ flex: "1 1 150px" }}>
               <Statistic
                 title="Budget"
                 value={event.budget}
                 precision={2}
-                prefix={event.currency === "EUR" ? "€" : "$"}
+                suffix={event.currency === "EUR" ? "€" : "$"}
+                formatter={(value) =>
+                  new Intl.NumberFormat("de-DE", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 2,
+                  }).format(Number(value))
+                }
               />
-            </Col>
-            <Col span={8}>
-              <Statistic
-                title="Datum"
-                value={new Date(event.eventDate).toLocaleDateString("de-DE")}
-              />
-            </Col>
-            <Col span={8}>
+            </div>
+            <div style={{ flex: "1 1 200px" }}>
+              <Statistic title="Datum" value={formattedEventDate} />
+            </div>
+            <div style={{ flex: "1 1 150px" }}>
               <GuestInvitationProgress
                 total={totalGuests}
                 accepted={accepted}
                 denied={denied}
               />
-            </Col>
-          </Row>
-
-          <div className="flex gap-2 justify-end">
-            <Tag color={modeConfig.color}>Mode: {modeConfig.label}</Tag>
-            <Tag>Draw Rule: {event.drawRule}</Tag>
+            </div>
           </div>
         </Card>
       </Link>

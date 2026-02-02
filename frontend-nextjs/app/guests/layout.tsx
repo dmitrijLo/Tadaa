@@ -3,9 +3,5 @@ export default function GuestsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      {children}
-    </div>
-  );
+  return <div className="flex items-start justify-center">{children}</div>;
 }

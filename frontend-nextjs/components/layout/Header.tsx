@@ -45,7 +45,12 @@ export default function AppHeader() {
         {
           key: "logout",
           label: (
-            <Button type="default" size="large" onClick={handleLogout}>
+            <Button
+              color="primary"
+              variant="outlined"
+              size="large"
+              onClick={handleLogout}
+            >
               Logout
             </Button>
           ),
@@ -59,7 +64,7 @@ export default function AppHeader() {
           key: "login",
           label: (
             <Link href="/login">
-              <Button type="default" size="large">
+              <Button color="primary" variant="outlined" size="large">
                 Login
               </Button>
             </Link>

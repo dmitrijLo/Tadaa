@@ -43,32 +43,40 @@ export default function GiftSuggestions({ recipientId }: GiftSuggestionsProps) {
       <Text className="font-bold block mb-2">
         <GiftOutlined className="mr-1" /> KI-Geschenkvorschläge:
       </Text>
-      <Carousel dots={{ className: "custom-dots" }} autoplay={false}>
-        {suggestions.map((suggestion, index) => (
-          <div key={index}>
-            <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-4 mx-1 min-h-[130px]">
-              <div className="flex justify-between items-start mb-2">
-                <Tag color="blue" className="text-xs">
-                  {suggestion.category}
-                </Tag>
-                <Text strong className="text-green-600 text-sm">
-                  {suggestion.estimatedPrice}
-                </Text>
+      <div className="carousel-wrapper">
+        <Carousel
+          dots={{ className: "custom-dots" }}
+          autoplay={false}
+          infinite={true}
+        >
+          {suggestions.map((suggestion, index) => (
+            <div key={index}>
+              <div className="px-1">
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg p-4 min-h-[130px]">
+                  <div className="flex justify-between items-start mb-2">
+                    <Tag variant="outlined" color="blue" className="text-xs">
+                      {suggestion.category}
+                    </Tag>
+                    <Text strong className="text-green-600 text-sm">
+                      {suggestion.estimatedPrice}
+                    </Text>
+                  </div>
+                  <Text strong className="block mb-1">
+                    {suggestion.name}
+                  </Text>
+                  <Paragraph
+                    type="secondary"
+                    className="text-xs mb-0"
+                    ellipsis={{ rows: 2 }}
+                  >
+                    {suggestion.description}
+                  </Paragraph>
+                </div>
               </div>
-              <Text strong className="block mb-1">
-                {suggestion.name}
-              </Text>
-              <Paragraph
-                type="secondary"
-                className="text-xs mb-0"
-                ellipsis={{ rows: 2 }}
-              >
-                {suggestion.description}
-              </Paragraph>
             </div>
-          </div>
-        ))}
-      </Carousel>
+          ))}
+        </Carousel>
+      </div>
     </div>
   );
 }

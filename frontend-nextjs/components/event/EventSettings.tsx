@@ -14,21 +14,15 @@ import {
 import locale from "antd/locale/de_DE";
 import dayjs from "dayjs";
 import { Controller, useWatch, useForm } from "react-hook-form";
-import {
-  InfoCircleOutlined,
-  GiftOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  SwapOutlined,
-  LinkOutlined,
-  OrderedListOutlined,
-} from "@ant-design/icons";
+import { InfoCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import { ModeSelector } from "@/components";
 import type { ModeOption } from "@/components/event/ModeSelector";
 import { eventModeByModusMock, eventModesMock } from "@/constants/modes";
 import { drawRuleByRuleMock, drawRulesMock } from "@/constants/drawRules";
 import { EventMode, DrawRule } from "@/types/enums";
 import { useMemo, useState, useEffect } from "react";
+
+const { TextArea } = Input;
 
 const formatter: InputNumberProps<number>["formatter"] = (value) => {
   const [start, end] = `${value}`.split(".") || [];
@@ -313,32 +307,14 @@ export default function EventSettings({
     }
   }, [eventDate, invitationDate, draftDate, setValue]);
 
-  const modeIcons: Record<EventMode, React.ReactNode> = useMemo(
-    () => ({
-      [EventMode.CLASSIC]: <GiftOutlined />,
-      [EventMode.SCRAP]: <DeleteOutlined />,
-      [EventMode.CUSTOM]: <EditOutlined />,
-    }),
-    [],
-  );
-
-  const ruleIcons: Record<DrawRule, React.ReactNode> = useMemo(
-    () => ({
-      [DrawRule.EXCHANGE]: <SwapOutlined />,
-      [DrawRule.CHAIN]: <LinkOutlined />,
-      [DrawRule.PICK_ORDER]: <OrderedListOutlined />,
-    }),
-    [],
-  );
-
   const modeOptions: ModeOption<EventMode>[] = useMemo(
     () =>
       eventModesMock.map((mode) => ({
         label: mode.name,
         value: mode.mode,
-        icon: modeIcons[mode.mode],
+        icon: mode.icon,
       })),
-    [modeIcons],
+    [],
   );
 
   const drawRuleOptions: ModeOption<DrawRule>[] = useMemo(
@@ -346,9 +322,9 @@ export default function EventSettings({
       drawRulesMock.map((rule) => ({
         label: rule.name,
         value: rule.mode,
-        icon: ruleIcons[rule.mode],
+        icon: rule.icon,
       })),
-    [ruleIcons],
+    [],
   );
 
   const handleFormSubmit = async (data: FormData) => {
@@ -453,10 +429,15 @@ export default function EventSettings({
           name="description"
           control={control}
           render={({ field }) => (
-            <Input
+            /*<Input
               {...field}
               placeholder="Optional: Beschreibung des Events"
               size="large"
+            />*/
+            <TextArea
+              {...field}
+              rows={4}
+              placeholder="Optional: Beschreibung des Events"
             />
           )}
         />

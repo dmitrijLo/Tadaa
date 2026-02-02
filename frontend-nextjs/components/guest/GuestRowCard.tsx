@@ -12,14 +12,7 @@ import { useGuestStore } from "@/stores/useGuestsStore";
 import { useRef, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import { InviteStatus } from "@/types/enums";
-
-const STATUS_TAG: Record<string, string> = {
-  [InviteStatus.DRAFT]: "cyan",
-  [InviteStatus.INVITED]: "geekblue",
-  [InviteStatus.OPENED]: "gold",
-  [InviteStatus.ACCEPTED]: "green",
-  [InviteStatus.DENIED]: "volcano",
-};
+import { inviteStatusByStatus } from "@/constants/inviteStatus";
 
 const getDropPosition = (e: React.DragEvent, element: HTMLElement) => {
   const rect = element.getBoundingClientRect();
@@ -160,10 +153,11 @@ export default function GuestRow({
         {/* Status Badge */}
         <div className={styles.areaStatus}>
           <Tag
-            color={STATUS_TAG[guest.inviteStatus || "default"]}
-            variant="solid"
+            color={inviteStatusByStatus[guest.inviteStatus]?.color || "default"}
+            variant="outlined"
           >
-            {guest.inviteStatus}
+            {inviteStatusByStatus[guest.inviteStatus]?.name ||
+              guest.inviteStatus}
           </Tag>
         </div>
 

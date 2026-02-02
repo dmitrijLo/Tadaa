@@ -3,8 +3,9 @@ import { Card, Typography, Collapse, Tag, Divider, Space } from "antd";
 import { HeartOutlined, StopOutlined } from "@ant-design/icons";
 import { notFound } from "next/navigation";
 import GiftSuggestions from "../interests/GiftSuggestions";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { DrawRule } from "@/types/enums";
+import { formatGermanDateTime } from "@/utils/formatters";
 
 const { Text, Paragraph } = Typography;
 
@@ -25,13 +26,11 @@ const GradientTitle = ({ children }: { children: React.ReactNode }) => (
 
 export default function RevealPartner({ guest }: { guest: Guest }) {
   const { assignedRecipient, pickOrder } = guest;
-  const [formattedDate, setFormattedDate] = useState<string>("");
 
-  useEffect(() => {
-    setFormattedDate(
-      new Date(guest.event.eventDate).toLocaleDateString("de-DE"),
-    );
-  }, [guest.event.eventDate]);
+  const formattedDate = useMemo(
+    () => formatGermanDateTime(guest.event.eventDate),
+    [guest.event.eventDate],
+  );
 
   const introParagraph = (
     <Paragraph>
@@ -40,7 +39,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
       <Text strong>{formattedDate}</Text> statt. Kaufe nun dein Geschenk im Wert
       von{" "}
       <Text strong>
-        {guest.event.budget} {guest.event.currency}{" "}
+        {guest.event.budget} {guest.event.currency === "EUR" ? "€" : "$"}{" "}
       </Text>
       .
     </Paragraph>
@@ -191,7 +190,7 @@ export default function RevealPartner({ guest }: { guest: Guest }) {
             Kaufe nun dein Geschenk für{" "}
             <Text strong>{assignedRecipient.name}</Text> im Wert von{" "}
             <Text strong>
-              {guest.event.budget} {guest.event.currency}
+              {guest.event.budget} {guest.event.currency === "EUR" ? "€" : "$"}
             </Text>
             .
           </Paragraph>
