@@ -13,7 +13,6 @@ interface ImageCarouselProps extends CarouselProps {
 }
 
 const slideStyle: React.CSSProperties = {
-  background: "#364d79",
   color: "#fff",
   textAlign: "center",
   paddingBottom: "20px",

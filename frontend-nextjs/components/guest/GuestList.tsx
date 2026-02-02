@@ -18,7 +18,11 @@ interface GuestListProps {
   initialGuests: Guest[];
 }
 
-export default function GuestList({ eventId, eventName, initialGuests }: GuestListProps) {
+export default function GuestList({
+  eventId,
+  eventName,
+  initialGuests,
+}: GuestListProps) {
   const { sendInvitations, isSending } = useGuestInvitations(eventId);
   const guests = useGuestList();
   const { init } = useGuestStore();
@@ -37,9 +41,15 @@ export default function GuestList({ eventId, eventName, initialGuests }: GuestLi
   return (
     <div className={styles.container}>
       <div style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <Title level={4} style={{ margin: 0 }}>
-            Guests ({guests.length})
+            Gäste ({guests.length})
           </Title>
           <div style={{ display: "flex", gap: 4 }}>
             <ShareRegistration eventId={eventId} eventName={eventName} />
@@ -58,7 +68,7 @@ export default function GuestList({ eventId, eventName, initialGuests }: GuestLi
             hasChild={guest.hasChild}
           />
         ))}
-        {guests.length > 0 && <Divider plain>Add Guest</Divider>}
+        {guests.length > 0 && <Divider plain>Gäste hinzufügen</Divider>}
         <GuestRow eventId={eventId} isChild={false} hasChild={false} />
       </div>
 
@@ -74,10 +84,10 @@ export default function GuestList({ eventId, eventName, initialGuests }: GuestLi
         block
       >
         {isSending
-          ? "Sending Invitations..."
+          ? "Einladung wird versendet..."
           : hasGuestsToInvite
-            ? "Send Invitations"
-            : "No Invitations to send"}
+            ? "Einladung versenden"
+            : "Keine Einladungen zum Versenden vorhanden"}
       </Button>
     </div>
   );

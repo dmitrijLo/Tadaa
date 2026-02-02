@@ -54,7 +54,8 @@ export default function EventDetails({
     (guest) => guest.inviteStatus !== "denied",
   ).length;
 
-  const guestsAcceptedPercent = (guestsAccepted / guestsAttending) * 100 || 0;
+  const guestsAcceptedPercent =
+    Math.floor((guestsAccepted / guestsAttending) * 100) || 0;
 
   const current = getCurrentStep(event.status);
 

@@ -10,7 +10,7 @@ interface PaginatedEventResponse {
   };
 }
 
-export default async function DashboardPage() {
+export default async function EventsPage() {
   const { data: eventsData, error: eventsErr } =
     await serverApiRequest<PaginatedEventResponse>(
       `${SERVER_BACKEND_URL}/events`,
@@ -55,6 +55,8 @@ export default async function DashboardPage() {
     <DashboardEvents
       featuredEvent={featuredEvent}
       eventStats={statsData || undefined}
+      upcomingEvents={upcomingEvents}
+      pastEvents={pastEvents}
     />
   );
 }
